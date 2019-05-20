@@ -55,6 +55,7 @@ public static async Task<HttpResponseMessage> GetBalanceRun(
          }
      }
 ```
+All of the properties of these two attributes are set to *AutoResolve* so they can be set at run time.
 
 ## Comparison to other event sourcing technologies
 
