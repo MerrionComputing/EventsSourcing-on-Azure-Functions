@@ -19,9 +19,47 @@ The [azure functions](https://azure.microsoft.com/en-us/services/functions/) cod
 
 The goal is to be able to interact with the event streams for entities without an extra plumbing in the azure function itself - with both access to event streams and to run projections being via bound variables that are instantiated when the azure function is executed.
 
+To add events to an event stream you would use an *Event stream* attribute and class thus:-
+
+```csharp
+[FunctionName("DepositMoney")]
+public static async Task<HttpResponseMessage> DepositMoneyRun(
+      [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequestMessage req,
+      [EventStream("Bank", "Account", "A-1234-IE-299")] EventStream esBankAccount)
+      {
+      if (null != esBankAccount)
+         {
+         if (esBankAccount.Exists)
+           {
+             // add a deposit event
+             await esBankAccount.AppendEvent(new MoneyDeposited("USD",
+                    1000.00,
+                    "Interbank transfer"
+                    ));
+            }
+         }
+     }
+```
+
+To get the values out of an event stream you would use a *Projection* attribute and class thus:-
+
+```csharp
+[FunctionName("GetBalance")]
+public static async Task<HttpResponseMessage> GetBalanceRun(
+      [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]HttpRequestMessage req,
+      [Projection("Bank", "Account", "A-1234-IE-299", nameof(Running_Balance_Projection))] Projection prjBankAccountBalance)
+      {
+      if (null != prjBankAccountBalance)
+         {
+             Running_Balance_Projection projectedBalance = await prjBankAccountBalance
+         }
+     }
+```
+All of the properties of these two attributes are set to *AutoResolve* so they can be set at run time.
+
 ## Comparison to other event sourcing technologies
 
-In this library the state of an entity has to be retrieved on demand - this is to allow for the functions application to be spun down to nothing and indeed for multiple independent azure functions applications to use the same 
+In this library the state of an entity has to be retrieved on demand - this is to allow for the functions application to be spun down to nothing and indeed for multiple independent azure functions applications to use the same underlying event stream without having to have any "always on" consistency service.
 
 ## Requirements
 
