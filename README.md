@@ -21,7 +21,7 @@ The goal is to be able to interact with the event streams for entities without a
 
 To add events to an event stream you would use an *Event stream* attribute and class thus:-
 
-```c-sharp
+```csharp
 [FunctionName("DepositMoney")]
 public static async Task<HttpResponseMessage> DepositMoneyRun(
       [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequestMessage req,
@@ -43,7 +43,7 @@ public static async Task<HttpResponseMessage> DepositMoneyRun(
 
 To get the values out of an event stream you would use a *Projection* attribute and class thus:-
 
-```c-sharp
+```csharp
 [FunctionName("GetBalance")]
 public static async Task<HttpResponseMessage> GetBalanceRun(
       [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]HttpRequestMessage req,
