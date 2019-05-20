@@ -1,0 +1,5 @@
+﻿Interfaces
+==========
+
+These interfaces provide the contract to which the implementation of the underlying event sourcing code must comply.
+This allows for that implementation to be swapped-out to test alternate implementations.

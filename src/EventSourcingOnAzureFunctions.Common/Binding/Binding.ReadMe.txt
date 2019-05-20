@@ -1,0 +1,4 @@
+﻿Binding
+=======
+
+These classes implement the parameter binding which allows the event stream and projection classes to be created when an Azure Function is called
