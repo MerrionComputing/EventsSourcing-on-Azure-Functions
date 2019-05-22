@@ -1,4 +1,5 @@
-﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.Storage.Blob;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         const string METATDATA_DOMAIN = "DOMAIN";
         const string METADATA_ENTITY_TYPE_NAME = "ENTITYTYPENAME";
         const string METADATA_SEQUENCE = "SEQUENCE";
-        const string METADATA_RECORD_COUNT = "RECORDCOUNT";
         const string METADATA_INSTANCE_KEY = "INSTANCEKEY";
         const string METADATA_DATE_CREATED = "DATECREATED";
         const string METADATA_CORRELATION_ID = "CORRELATIONIDENTIFIER";
@@ -58,6 +58,30 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
+
+
+        /// <summary>
+        /// Get the number of records in this event stream
+        /// </summary>
+        /// <returns>
+        /// The number of events appended to this event stream
+        /// </returns>
+        public int GetRecordCount()
+        {
+            if (null != EventStreamBlob )
+            {
+                return (EventStreamBlob.Properties.AppendBlobCommittedBlockCount.GetValueOrDefault());
+            }
+            else
+            {
+                // No blob exists - throw an exception ?
+                throw new EventStreamReadException(this,
+                    0,
+                    "Event stream blob not initialised");
+            }
+        }
+
+
         private readonly string _instanceKey;
         /// <summary>
         /// The specific uniquely identitified instance of the entity to which this event stream pertains
@@ -81,6 +105,36 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         private readonly CloudBlobClient _blobClient;
 
 
+        /// <summary>
+        /// Make sure the blob info attributes are up to date 
+        /// </summary>
+        /// <remarks>
+        /// This is similar in concept to FileSystemInfo.Refresh
+        /// </remarks>
+        public async Task Refresh()
+        {
+            if (EventStreamBlob != null)
+            {
+                bool exists = await EventStreamBlob.ExistsAsync();
+                if (exists )
+                {
+                    // just refresh the attributes
+                    await EventStreamBlob.FetchAttributesAsync(); 
+                }
+                else
+                {
+                    await EventStreamBlob.CreateOrReplaceAsync();
+                    // Set the original metadata
+                    EventStreamBlob.Metadata[METATDATA_DOMAIN] = DomainName;
+                    EventStreamBlob.Metadata[METADATA_ENTITY_TYPE_NAME] = EntityTypeName;
+                    EventStreamBlob.Metadata[METADATA_INSTANCE_KEY] = InstanceKey;
+                    EventStreamBlob.Metadata[METADATA_SEQUENCE] = @"0";
+                    EventStreamBlob.Metadata[METADATA_DATE_CREATED] = DateTime.UtcNow.ToString("O");
+                    // and commit it back
+                    await EventStreamBlob.SetMetadataAsync(); 
+                }
+            }
+        }
 
 
         public BlobEventStreamBase(IEventStreamIdentity identity,
@@ -104,7 +158,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             _instanceKey = identity.InstanceKey;
 
             // make the blob reference that will hold the events
-            _blob = _blobBasePath.GetAppendBlobReference(EventStreamBlobFilename); 
+            _blob = _blobBasePath.GetAppendBlobReference(EventStreamBlobFilename);
 
         }
 

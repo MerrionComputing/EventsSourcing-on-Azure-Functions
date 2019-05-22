@@ -35,5 +35,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </param>
         void SetContext(IWriteContext writerContext);
 
+        /// <summary>
+        /// Returns true if the underlying event stream exists
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> Exists();
+
     }
 }
