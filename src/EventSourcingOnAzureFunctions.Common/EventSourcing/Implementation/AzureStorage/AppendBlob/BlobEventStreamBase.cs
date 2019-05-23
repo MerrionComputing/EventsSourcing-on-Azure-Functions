@@ -9,23 +9,27 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob
 {
     public class BlobEventStreamBase
-        : AzureStorageEventStreamBase, IEventStreamIdentity
+        : AzureStorageEventStreamBase, 
+        IEventStreamIdentity
     {
 
         // Named additional special attributes for the append blob 
-        const string METATDATA_DOMAIN = "DOMAIN";
-        const string METADATA_ENTITY_TYPE_NAME = "ENTITYTYPENAME";
-        const string METADATA_SEQUENCE = "SEQUENCE";
-        const string METADATA_INSTANCE_KEY = "INSTANCEKEY";
-        const string METADATA_DATE_CREATED = "DATECREATED";
-        const string METADATA_CORRELATION_ID = "CORRELATIONIDENTIFIER";
+        public const string METATDATA_DOMAIN = "DOMAIN";
+        public const string METADATA_ENTITY_TYPE_NAME = "ENTITYTYPENAME";
+        public const string METADATA_SEQUENCE = "SEQUENCE";
+        public const string METADATA_INSTANCE_KEY = "INSTANCEKEY";
+        public const string METADATA_DATE_CREATED = "DATECREATED";
+        public const string METADATA_CORRELATION_ID = "CORRELATIONIDENTIFIER";
 
         // Named specific sub-folders
-        const string ORPHANS_FOLDER = "uncategorised";
-        const string EVENTSTREAM_FOLDER = "eventstreams";
-        const string SNAPSHOTS_FOLDER = "snapshots";
+        public const string ORPHANS_FOLDER = "uncategorised";
+        public const string EVENTSTREAM_FOLDER = "eventstreams";
+        public const string SNAPSHOTS_FOLDER = "snapshots";
 
         private readonly CloudBlobContainer _blobBasePath;
+
+
+
         /// <summary>
         /// The container where the blob for this specific event stream can be found
         /// </summary>
@@ -81,6 +85,28 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
+        /// <summary>
+        /// Gets the current top sequence number of the event stream
+        /// </summary>
+        public async Task<int> GetSequenceNumber()
+        {
+
+            if (null != EventStreamBlob )
+            {
+                bool exists = await EventStreamBlob.ExistsAsync();
+                if (exists)
+                {
+                    await EventStreamBlob.FetchAttributesAsync();
+                    int sequenceNumber;
+                    if (int.TryParse(EventStreamBlob.Metadata[METADATA_SEQUENCE ], out sequenceNumber  ))
+                    {
+                        return sequenceNumber;
+                    }
+                }
+            }
+
+            return 0;
+        }
 
         private readonly string _instanceKey;
         /// <summary>

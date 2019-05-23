@@ -16,14 +16,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <param name="eventInstance">
         /// The specific event to append to the end of the store
         /// </param>
-        /// <param name="extectedTopSequenceNumber">
+        /// <param name="expectedTopSequenceNumber">
         /// If this is set and the sequence number of the event stream is higher then the event is not written
         /// </param>
         /// <param name="eventVersionNumber">
         /// The version number of the event being written
         /// </param>
         Task AppendEvent(IEvent eventInstance,
-            int extectedTopSequenceNumber = 0,
+            int expectedTopSequenceNumber = 0,
             int eventVersionNumber = 1);
 
 

@@ -7,7 +7,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 {
     [JsonObject(Title = "")]
     public class BlobBlockJsonWrappedEvent
-        : IJsonSerialisedEvent
+        : IJsonSerialisedEvent, IEventContext
     {
 
         /// <summary>
@@ -25,9 +25,121 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </summary>
         public int SequenceNumber { get; set; }
 
+        /// <summary>
+        /// The inner event detail converted into a JSON class
+        /// </summary>
+        public JObject EventInstanceAsJson { get; set; }
 
-        public JObject EventInstanceAsJson => throw new NotImplementedException();
+        /// <summary>
+        /// Who caused this event to be written 
+        /// </summary>
+        public string Who { get; set; }
+
+        /// <summary>
+        /// Where did the command to write this event come from
+        /// </summary>
+        public string Source { get; set; }
+
+        /// <summary>
+        /// Additional context commentary to add to the event wrapper
+        /// </summary>
+        /// <remarks>
+        /// This is not for business meaningful data but rather for debugging or logging purposes
+        /// </remarks>
+        public string Commentary { get; set; }
+
+        /// <summary>
+        /// Correlation identifier used to find events that were written by the same thing (command or transaction)
+        /// </summary>
+        public string CorrelationIdentifier { get; set; }
 
 
+        /// <summary>
+        /// The date/time the event was written to the event stream
+        /// </summary>
+        public DateTime WriteTime { get; set; }
+
+        internal string ToJSonText()
+        {
+            return JsonConvert.SerializeObject(this, DefaultJSonSerialiserSettings());
+        }
+
+        /// <summary>
+        /// The common serialiser settings for readinr or writing the wrapped event
+        /// </summary>
+        /// <returns></returns>
+        internal JsonSerializerSettings DefaultJSonSerialiserSettings()
+        {
+            return new JsonSerializerSettings() { Formatting = Formatting.Indented , TypeNameHandling= TypeNameHandling.Objects };
+        }
+
+        /// <summary>
+        /// Create a wrapper for this JSON event
+        /// </summary>
+        /// <param name="eventTypeName">
+        /// The type of event in this wrapper
+        /// </param>
+        /// <param name="sequenceNumber">
+        /// The ordinal sequence of the event in the event stream
+        /// </param>
+        /// <param name="VersionNumber">
+        /// The version number of the event schema
+        /// </param>
+        /// <param name="writeTime">
+        /// The date/time the event was written to the event stream
+        /// </param>
+        /// <param name="eventInstance">
+        /// Th eunderlying data for this event instance
+        /// </param>
+        /// <param name="context">
+        /// Extra context information to be written in with the event 
+        /// </param>
+        public static BlobBlockJsonWrappedEvent Create(string eventTypeName,
+            int sequenceNumber, 
+            int versionNumber, 
+            DateTime? writeTime, 
+            IEvent eventInstance, 
+            IWriteContext context)
+        {
+
+            if (string.IsNullOrWhiteSpace(eventTypeName) )
+            {
+                if (null != eventInstance)
+                {
+                    // Use the type name if no explicit name is passed in
+                    eventTypeName = eventInstance.GetType().FullName;
+                }
+                else
+                {
+                    // Mark this as being just a place holder - used when we need to copy an event stream but "wipe out" some events
+                    eventTypeName = "Placeholder event";
+                }
+            }
+
+            if (! writeTime.HasValue )
+            {
+                writeTime = DateTime.UtcNow;
+            }
+
+            BlobBlockJsonWrappedEvent ret = new BlobBlockJsonWrappedEvent()
+            {
+                EventTypeName = eventTypeName,
+                SequenceNumber = sequenceNumber ,
+                VersionNumber = versionNumber
+            };
+
+            if (null != eventInstance )
+            {
+                ret.EventInstanceAsJson = JObject.FromObject(eventInstance);
+            }
+
+            if (null != context )
+            {
+                ret.CorrelationIdentifier = context.CorrelationIdentifier;
+                ret.Commentary = context.Commentary;
+            }
+
+            return ret;
+        }
     }
 }

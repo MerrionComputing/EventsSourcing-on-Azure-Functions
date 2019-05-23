@@ -20,5 +20,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </summary>
         int SequenceNumber { get; }
 
+
     }
 }

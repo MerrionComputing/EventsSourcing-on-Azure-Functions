@@ -64,6 +64,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions
         {
 
             _sequenceNumber = sequenceNumber;
+            if (null != eventStreamIdentity)
+            {
+                _domainName = eventStreamIdentity.DomainName;
+                _entityTypeName = eventStreamIdentity.EntityTypeName;
+                _instanceKey = eventStreamIdentity.InstanceKey;
+            }
 
         }
 
