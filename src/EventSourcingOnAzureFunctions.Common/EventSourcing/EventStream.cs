@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -127,8 +128,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
             // wire up the event stream writer 
             // TODO : Cater for different backing technologies... currently just AppendBlob
-            //_writer = new blob(attribute,
-            //    connectionStringName = _connectionStringName);
+            _writer = new BlobEventStreamWriter(attribute,  connectionStringName:_connectionStringName);
 
             if (null != context)
             {
