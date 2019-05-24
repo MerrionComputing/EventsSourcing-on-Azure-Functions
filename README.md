@@ -44,16 +44,26 @@ public static async Task<HttpResponseMessage> DepositMoneyRun(
 To get the values out of an event stream you would use a *Projection* attribute and class thus:-
 
 ```csharp
-[FunctionName("GetBalance")]
-public static async Task<HttpResponseMessage> GetBalanceRun(
-      [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]HttpRequestMessage req,
-      [Projection("Bank", "Account", "A-1234-IE-299", nameof(Running_Balance_Projection))] Projection prjBankAccountBalance)
-      {
-      if (null != prjBankAccountBalance)
-         {
-             Running_Balance_Projection projectedBalance = await prjBankAccountBalance
-         }
-     }
+        [FunctionName("GetBalance")]
+        public static async Task<HttpResponseMessage> GetBalanceRun(
+          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = "GetBalance/{accountnumber}")]HttpRequestMessage req,
+          string accountnumber,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
+        {
+
+            string result = $"No balance found for account {accountnumber}";
+
+            if (null != prjBankAccountBalance)
+            {
+                Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(); 
+                if (null != projectedBalance )
+                {
+                    result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} (As at record {projectedBalance.CurrentSequenceNumber}) ";
+                }
+            }
+
+            return req.CreateResponse(System.Net.HttpStatusCode.OK, result); 
+        }
 ```
 All of the properties of these two attributes are set to *AutoResolve* so they can be set at run time.
 
