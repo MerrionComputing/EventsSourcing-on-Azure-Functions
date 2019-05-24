@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -35,6 +38,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </summary>
         public string Who { get; set; }
 
+
         /// <summary>
         /// Where did the command to write this event come from
         /// </summary>
@@ -58,6 +62,25 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// The date/time the event was written to the event stream
         /// </summary>
         public DateTime WriteTime { get; set; }
+
+        private IEvent _eventInstance;
+        /// <summary>
+        /// The evnt instance as an ordinary object
+        /// </summary>
+        [JsonIgnore ]
+        public IEvent EventInstance {
+            get
+            {
+                if (null == _eventInstance )
+                {
+                    if (null != EventInstanceAsJson )
+                    {
+                        return EventInstanceAsJson.ToObject<IEvent>();
+                    }
+                }
+                return _eventInstance;
+            }
+        }
 
         internal string ToJSonText()
         {
@@ -140,6 +163,35 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
             return ret;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rawStream">
+        /// The stream of data to read events from
+        /// </param>
+        internal static IEnumerable<BlobBlockJsonWrappedEvent> FromBinaryStream(Stream rawStream)
+        {
+            string jsonText;
+
+            using (System.IO.StreamReader sr = new StreamReader(rawStream))
+            {
+                jsonText = @"{ ""events"": [ " + sr.ReadLine().Replace(@"}{", @"},{") + @" ] }";
+
+                JObject jsonO = JObject.Parse(jsonText);
+                if (null != jsonO)
+                {
+                    JArray ja = (JArray)jsonO["events"];
+                    if (null != ja)
+                    {
+                        return ja.ToObject<IEnumerable<BlobBlockJsonWrappedEvent>>(); 
+                    }
+                }
+            }
+
+            return Enumerable.Empty<BlobBlockJsonWrappedEvent>();
         }
     }
 }

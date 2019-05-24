@@ -1,6 +1,9 @@
-﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Azure.Storage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,13 +23,87 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         public async Task<IEnumerable<IEvent>> GetEvents(int StartingSequenceNumber = 0, DateTime? effectiveDateTime = null)
         {
-            throw new NotImplementedException();
+            
+            if (null == EventStreamBlob  )
+            {
+                using (System.IO.Stream rawStream = await GetUnderlyingStream())
+                {
+                    if (! (rawStream.Position >= rawStream.Length ))
+                    {
+                        List<IEvent> ret = new List<IEvent>();
+                        foreach (BlobBlockJsonWrappedEvent  record in BlobBlockJsonWrappedEvent.FromBinaryStream(rawStream))
+                        {
+                            if (null != record )
+                            {
+                                if (record.SequenceNumber >= StartingSequenceNumber )
+                                {
+                                    ret.Add(record.EventInstance);
+                                }
+                            }
+                        }
+
+                        return ret;
+                    }
+                }
+            }
+
+            return Enumerable.Empty<IEvent>();
+
         }
 
         public async Task<IEnumerable<IEventContext>> GetEventsWithContext(int StartingSequenceNumber = 0, DateTime? effectiveDateTime = null)
         {
-            throw new NotImplementedException();
+
+            if (null == EventStreamBlob)
+            {
+                using (System.IO.Stream rawStream = await GetUnderlyingStream())
+                {
+                    if (!(rawStream.Position >= rawStream.Length))
+                    {
+                        List<IEventContext> ret = new List<IEventContext>();
+                        foreach (BlobBlockJsonWrappedEvent record in BlobBlockJsonWrappedEvent.FromBinaryStream(rawStream))
+                        {
+                            if (null != record)
+                            {
+                                if (record.SequenceNumber >= StartingSequenceNumber)
+                                {
+                                    ret.Add(record);
+                                }
+                            }
+                        }
+
+                        return ret;
+                    }
+                }
+            }
+
+            return Enumerable.Empty<IEventContext>();
+
         }
+
+
+        private async Task<System.IO.Stream> GetUnderlyingStream()
+        {
+            if (null != EventStreamBlob )
+            {
+                System.IO.MemoryStream targetStream = new System.IO.MemoryStream();
+                try
+                {
+                    await EventStreamBlob.DownloadToStreamAsync(targetStream);
+                }
+                catch(StorageException exBlob)
+                {
+                    throw new EventStreamReadException(this, 0, "Unable to access the underlying event stream",
+                        innerException: exBlob ,
+                        source:nameof(BlobEventStreamReader ));
+                }
+                targetStream.Seek(0, System.IO.SeekOrigin.Begin);
+                return targetStream;
+            }
+
+            return null;
+        }
+
 
         public BlobEventStreamReader(IEventStreamIdentity identity,
             string connectionStringName = @"")
@@ -51,5 +128,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             return new BlobEventStreamReader(identity, connectionStringName);
         }
+
+
+        public static ProjectionProcessor CreateProjectionProcessor(IEventStreamIdentity identity,
+            string connectionStringName = @"")
+        {
+            return new ProjectionProcessor(Create(identity, connectionStringName ));
+        }
+
     }
 }

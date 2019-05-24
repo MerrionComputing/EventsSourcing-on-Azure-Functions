@@ -9,17 +9,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
     /// </summary>
     public interface IEvent
     {
-
         /// <summary>
-        /// The version number of the event schema 
+        /// The readable type of this event
         /// </summary>
-        int VersionNumber { get; }
+        string EventTypeName { get; }
 
-        /// <summary>
-        /// The incremental sequence number of this event in the stream/history in which it is written
-        /// </summary>
-        int SequenceNumber { get; }
-
+         /// <summary>
+         /// The underlying business data of the object
+         /// </summary>
+        object EventPayload { get; }
 
     }
 }

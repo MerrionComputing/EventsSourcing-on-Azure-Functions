@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingOnAzureFunctions.Common", "EventSourcingOnAzureFunctions.Common\EventSourcingOnAzureFunctions.Common.csproj", "{76E78032-C0B2-4B3F-B02E-6DBC632A3E2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventSourcingOnAzureFunctions.Common", "EventSourcingOnAzureFunctions.Common\EventSourcingOnAzureFunctions.Common.csproj", "{76E78032-C0B2-4B3F-B02E-6DBC632A3E2F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingOnAzureFunctions.Test", "EventSourcingOnAzureFunctions.Test\EventSourcingOnAzureFunctions.Test.csproj", "{82BC910A-E35D-4011-8D5F-79AB27A32C41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{76E78032-C0B2-4B3F-B02E-6DBC632A3E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76E78032-C0B2-4B3F-B02E-6DBC632A3E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76E78032-C0B2-4B3F-B02E-6DBC632A3E2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82BC910A-E35D-4011-8D5F-79AB27A32C41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82BC910A-E35D-4011-8D5F-79AB27A32C41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82BC910A-E35D-4011-8D5F-79AB27A32C41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82BC910A-E35D-4011-8D5F-79AB27A32C41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

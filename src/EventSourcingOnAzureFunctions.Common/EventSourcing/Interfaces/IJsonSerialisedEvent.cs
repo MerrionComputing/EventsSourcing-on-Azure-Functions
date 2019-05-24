@@ -9,7 +9,6 @@
     /// language event name for this
     /// </remarks>
     public interface IJsonSerialisedEvent
-        : IEvent 
     {
 
         /// <summary>

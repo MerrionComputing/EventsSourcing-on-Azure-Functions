@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -114,10 +115,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
             if (null == _projectionProcessor)
             {
-
                 // TODO : Allow for different backing technologies... currently just AppendBlob
-                // _projectionProcessor = CQRSAzure.EventSourcing.Azure.Blob.Untyped.BlobEventStreamReaderUntyped.CreateProjectionProcessor(attribute,
-                //    ConnectionStringNameAttribute.DefaultBlobStreamSettings(_domainName, _aggregateTypeName));
+                _projectionProcessor = BlobEventStreamReader.CreateProjectionProcessor(attribute, _connectionStringName);
             }
 
         }

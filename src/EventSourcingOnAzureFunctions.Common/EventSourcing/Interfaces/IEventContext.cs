@@ -8,8 +8,23 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
     /// Event and its context information provided when it was written
     /// </summary>
     public interface IEventContext
-        : IEvent, IWriteContext 
+        : IWriteContext
     {
+
+        /// <summary>
+        /// The version number of the event schema 
+        /// </summary>
+        int VersionNumber { get; }
+
+        /// <summary>
+        /// The incremental sequence number of this event in the stream/history in which it is written
+        /// </summary>
+        int SequenceNumber { get; }
+
+        /// <summary>
+        /// The specific event in this context
+        /// </summary>
+        IEvent EventInstance {get;}
 
     }
 }
