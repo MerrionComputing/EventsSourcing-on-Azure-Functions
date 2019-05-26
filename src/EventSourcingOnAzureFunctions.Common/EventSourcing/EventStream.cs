@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
@@ -71,6 +72,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        public async Task AppendEvent(object eventToAppend, int? expectedTopSequence = null)
+        {
+            if (null != _writer )
+            {
+                // make an event instance of this event and append it to the event stream
+                await _writer.AppendEvent(EventInstance.Wrap(eventToAppend), expectedTopSequence.GetValueOrDefault(0)); 
+            }
+        }
 
         private IWriteContext _context = null;
         /// <summary>
