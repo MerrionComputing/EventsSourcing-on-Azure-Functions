@@ -39,5 +39,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
                 // Otherwise wrap and return it
                 return new EventInstance(EventNameAttribute.GetEventName(eventPayload.GetType()), eventPayload);
             }
+        }
     }
 }

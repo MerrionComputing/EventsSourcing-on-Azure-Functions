@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
     /// <summary>
-    /// Top levekl access to the event stream for an entity
+    /// Top level access to the event stream for an entity
     /// </summary>
     public class EventStream
         : IEventStreamIdentity
