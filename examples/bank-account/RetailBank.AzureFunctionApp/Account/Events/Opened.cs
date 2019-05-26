@@ -12,5 +12,15 @@ namespace RetailBank.AzureFunctionApp.Account.Events
     public class Opened
     {
 
+        /// <summary>
+        /// The date/time this account was opened in our system
+        /// </summary>
+        public DateTime LoggedOpeningDate { get; set; }
+
+        /// <summary>
+        /// The commentary attached to the account being opened 
+        /// </summary>
+        public string Commentary { get; set; }
+
     }
 }
