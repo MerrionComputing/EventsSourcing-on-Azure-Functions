@@ -62,6 +62,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 try
                 {
+                    // Create it if it doesn't exist and initialsie the metadata
+                    await base.Refresh();
                     await EventStreamBlob.AppendBlockAsync(new System.IO.MemoryStream(Encoding.UTF8.GetBytes(evtToWrite.ToJSonText())));
                 }
                 catch (StorageException exBlob)

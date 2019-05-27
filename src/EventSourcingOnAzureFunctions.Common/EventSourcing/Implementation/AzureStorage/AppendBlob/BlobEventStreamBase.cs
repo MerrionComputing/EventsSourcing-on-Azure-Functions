@@ -174,9 +174,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 _blobClient = _storageAccount.CreateCloudBlobClient();
                 if (null != _blobClient)
                 {
-                    _blobBasePath = _blobClient.GetContainerReference(GetEventStreamStorageFolderPath(identity.DomainName, identity.EntityTypeName ));
-                    // make sure the folder exists 
-                    _blobBasePath.CreateIfNotExists();
+                    string containerFullPath = GetEventStreamStorageFolderPath(identity.DomainName, identity.EntityTypeName);
+                    _blobBasePath = _blobClient.GetContainerReference(containerFullPath);
                 }
             }
 
@@ -259,12 +258,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 }
             }
 
-            return domainPath + '/' + GetEventStreamStorageFolderPath(entityType);
+            return domainPath + '/' + MakeValidStorageFolderName(entityType);
         }
 
         public static string GetEventStreamStorageFolderPath( string entityType)
         {
-            return EVENTSTREAM_FOLDER + '/' + MakeValidStorageFolderName(entityType);
+            return MakeValidStorageFolderName(entityType) + '/' + EVENTSTREAM_FOLDER;
         }
     }
 }
