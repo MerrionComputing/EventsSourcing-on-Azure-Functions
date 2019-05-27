@@ -21,7 +21,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             {
                 foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext())
                 {
-                    //ret.OnEventRead(wrappedEvent.SequenceNumber, wrappedEvent.)
+                    // TODO: get as-of date from the event
+                    ret.OnEventRead(wrappedEvent.SequenceNumber, null);
 
                     if (ret.HandlesEventType(wrappedEvent.EventInstance.EventTypeName  ) )
                     {
@@ -36,6 +37,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             return  ret;
         }
 
+        /// <summary>
+        /// Does the underlying event stream over which this projection should run exists yet?
+        /// </summary>
+        public async Task<bool> Exists()
+        {
+            if (null != eventStreamReader)
+            {
+                return await  eventStreamReader.Exists();
+            }
+            return false;
+        }
 
         public ProjectionProcessor(BlobEventStreamReader blobEventStreamReader)
         {

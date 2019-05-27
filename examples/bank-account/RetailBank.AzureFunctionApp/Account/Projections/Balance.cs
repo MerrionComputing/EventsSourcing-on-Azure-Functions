@@ -1,5 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Newtonsoft.Json;
 using RetailBank.AzureFunctionApp.Account.Events;
 using System;
 using System.Collections.Generic;
@@ -29,39 +30,7 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
             }
         }
 
-        /// <summary>
-        /// What types of event does this projection care about?
-        /// </summary>
-        /// <param name="eventTypeName">
-        /// The name of the type of event
-        /// </param>
-        public override bool HandlesEventType(string eventTypeName)
-        {
-            if (eventTypeName == EventNameAttribute.GetEventName(typeof(Events.MoneyDeposited)))
-            {
-                return true;
-            }
 
-            if (eventTypeName == EventNameAttribute.GetEventName(typeof(Events.MoneyWithdrawn)))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public override void HandleEvent(string eventTypeName, object eventToHandle)
-        {
-            if (eventTypeName == EventNameAttribute.GetEventName(typeof(Events.MoneyDeposited)))
-            {
-                HandleEventInstance((MoneyDeposited)eventToHandle); 
-            }
-
-            if (eventTypeName == EventNameAttribute.GetEventName(typeof(Events.MoneyWithdrawn)))
-            {
-                HandleEventInstance((MoneyWithdrawn )eventToHandle);
-            }
-        }
 
         public void HandleEventInstance(MoneyDeposited eventInstance)
         {

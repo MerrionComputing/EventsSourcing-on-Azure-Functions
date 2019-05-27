@@ -23,19 +23,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         public async Task<IEnumerable<IEvent>> GetEvents(int StartingSequenceNumber = 0, DateTime? effectiveDateTime = null)
         {
-            
-            if (null == EventStreamBlob  )
+
+            if (null == EventStreamBlob)
             {
                 using (System.IO.Stream rawStream = await GetUnderlyingStream())
                 {
-                    if (! (rawStream.Position >= rawStream.Length ))
+                    if (!(rawStream.Position >= rawStream.Length))
                     {
                         List<IEvent> ret = new List<IEvent>();
-                        foreach (BlobBlockJsonWrappedEvent  record in BlobBlockJsonWrappedEvent.FromBinaryStream(rawStream))
+                        foreach (BlobBlockJsonWrappedEvent record in BlobBlockJsonWrappedEvent.FromBinaryStream(rawStream))
                         {
-                            if (null != record )
+                            if (null != record)
                             {
-                                if (record.SequenceNumber >= StartingSequenceNumber )
+                                if (record.SequenceNumber >= StartingSequenceNumber)
                                 {
                                     ret.Add(record.EventInstance);
                                 }
@@ -54,25 +54,28 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public async Task<IEnumerable<IEventContext>> GetEventsWithContext(int StartingSequenceNumber = 0, DateTime? effectiveDateTime = null)
         {
 
-            if (null == EventStreamBlob)
+            if (null != EventStreamBlob)
             {
-                using (System.IO.Stream rawStream = await GetUnderlyingStream())
+                if (EventStreamBlob.Exists())
                 {
-                    if (!(rawStream.Position >= rawStream.Length))
+                    using (System.IO.Stream rawStream = await GetUnderlyingStream())
                     {
-                        List<IEventContext> ret = new List<IEventContext>();
-                        foreach (BlobBlockJsonWrappedEvent record in BlobBlockJsonWrappedEvent.FromBinaryStream(rawStream))
+                        if (!(rawStream.Position >= rawStream.Length))
                         {
-                            if (null != record)
+                            List<IEventContext> ret = new List<IEventContext>();
+                            foreach (BlobBlockJsonWrappedEvent record in BlobBlockJsonWrappedEvent.FromBinaryStream(rawStream))
                             {
-                                if (record.SequenceNumber >= StartingSequenceNumber)
+                                if (null != record)
                                 {
-                                    ret.Add(record);
+                                    if (record.SequenceNumber >= StartingSequenceNumber)
+                                    {
+                                        ret.Add(record);
+                                    }
                                 }
                             }
-                        }
 
-                        return ret;
+                            return ret;
+                        }
                     }
                 }
             }
@@ -84,18 +87,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         private async Task<System.IO.Stream> GetUnderlyingStream()
         {
-            if (null != EventStreamBlob )
+            if (null != EventStreamBlob)
             {
                 System.IO.MemoryStream targetStream = new System.IO.MemoryStream();
                 try
                 {
                     await EventStreamBlob.DownloadToStreamAsync(targetStream);
                 }
-                catch(StorageException exBlob)
+                catch (StorageException exBlob)
                 {
                     throw new EventStreamReadException(this, 0, "Unable to access the underlying event stream",
-                        innerException: exBlob ,
-                        source:nameof(BlobEventStreamReader ));
+                        innerException: exBlob,
+                        source: nameof(BlobEventStreamReader));
                 }
                 targetStream.Seek(0, System.IO.SeekOrigin.Begin);
                 return targetStream;
@@ -108,8 +111,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public BlobEventStreamReader(IEventStreamIdentity identity,
             string connectionStringName = @"")
             : base(identity,
-                  writeAccess:false ,
-                  connectionStringName: connectionStringName )
+                  writeAccess: false,
+                  connectionStringName: connectionStringName)
         {
 
         }
@@ -133,8 +136,27 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public static ProjectionProcessor CreateProjectionProcessor(IEventStreamIdentity identity,
             string connectionStringName = @"")
         {
-            return new ProjectionProcessor(Create(identity, connectionStringName ));
+            return new ProjectionProcessor(Create(identity, connectionStringName));
         }
 
+        /// <summary>
+        /// Does an event stream already exist for this Domain/Type/Instance
+        /// </summary>
+        /// <remarks>
+        /// This can be used for e.g. checking it exists as part of a validation
+        /// </remarks>
+        public Task<bool> Exists()
+        {
+            if (base.EventStreamBlob != null)
+            {
+                return base.EventStreamBlob.ExistsAsync();
+            }
+            else
+            {
+                // If the blob doesn't exist then the event stream doesn't exist
+                return Task.FromResult<bool>(false);
+            }
+        }
+ 
     }
 }

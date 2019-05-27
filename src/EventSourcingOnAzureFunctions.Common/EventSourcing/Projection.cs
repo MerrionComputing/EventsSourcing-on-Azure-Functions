@@ -120,5 +120,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
 
         }
+
+        public async Task<bool> Exists()
+        {
+            if (null != _projectionProcessor)
+            {
+                return await _projectionProcessor.Exists();
+            }
+            return false;
+        }
     }
 }

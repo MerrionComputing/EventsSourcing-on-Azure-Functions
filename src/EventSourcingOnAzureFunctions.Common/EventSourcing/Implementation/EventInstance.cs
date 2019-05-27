@@ -12,19 +12,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
         /// <summary>
         /// The name of this type of event
         /// </summary>
-        public string EventTypeName { get; }
+        public string EventTypeName { get; set; }
 
         /// <summary>
         /// The business data payload for the event
         /// </summary>
-        public object EventPayload { get; }
+        public object EventPayload { get; set;  }
 
-        internal EventInstance(string typeName,
-            object instanceData)
+        public EventInstance(string eventTypeName,
+            object eventPayload)
         {
-            EventTypeName = typeName;
-            EventPayload = instanceData;
+            EventTypeName = eventTypeName;
+            EventPayload = eventPayload;
         }
+
+
 
         public static IEvent Wrap(object eventPayload)
         {

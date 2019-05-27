@@ -13,6 +13,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
     {
 
         /// <summary>
+        /// Does the underlying event stream for this reader exists
+        /// </summary>
+        Task<bool> Exists();
+
+        /// <summary>
         /// Get the entire event stream for a given event stream identity
         /// </summary>
         Task<IEnumerable<IEvent>> GetAllEvents();
@@ -31,6 +36,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </returns>
         Task<IEnumerable<IEvent>> GetEvents(int StartingSequenceNumber = 0,
             DateTime? effectiveDateTime = null);
+
+        
 
         /// <summary>
         /// Gets the event stream with the additional context of the events for a given event stream identity from a given starting place

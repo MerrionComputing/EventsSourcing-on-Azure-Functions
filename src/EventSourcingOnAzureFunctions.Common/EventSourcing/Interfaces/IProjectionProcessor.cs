@@ -9,7 +9,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
     {
 
 
-        Task<TProjection> Process<TProjection>() where TProjection : IProjection, new();
+        /// <summary>
+        /// Does the event stream over which this projection is slated to run exist
+        /// </summary>
+        Task<bool> Exists();
 
+        /// <summary>
+        /// Run the given projection over the underlying event stream
+        /// </summary>
+        /// <typeparam name="TProjection">
+        /// The type of projection to run
+        /// </typeparam>
+        Task<TProjection> Process<TProjection>() where TProjection : IProjection, new();
     }
 }

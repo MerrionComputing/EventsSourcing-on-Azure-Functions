@@ -75,7 +75,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     if (null != EventInstanceAsJson )
                     {
-                        return EventInstanceAsJson.ToObject<IEvent>();
+                        _eventInstance = EventInstanceAsJson.ToObject<EventInstance> ();
                     }
                 }
                 return _eventInstance;
@@ -178,15 +178,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             using (System.IO.StreamReader sr = new StreamReader(rawStream))
             {
-                jsonText = @"{ ""events"": [ " + sr.ReadLine().Replace(@"}{", @"},{") + @" ] }";
+                string innerJSON = sr.ReadToEnd();
 
-                JObject jsonO = JObject.Parse(jsonText);
-                if (null != jsonO)
+                if (!string.IsNullOrWhiteSpace(innerJSON))
                 {
-                    JArray ja = (JArray)jsonO["events"];
-                    if (null != ja)
+                    jsonText = @"{ ""events"": [ " + innerJSON.Replace(@"}{", @"},{") + @" ] }";
+
+                    JObject jsonO = JObject.Parse(jsonText);
+                    if (null != jsonO)
                     {
-                        return ja.ToObject<IEnumerable<BlobBlockJsonWrappedEvent>>(); 
+                        JArray ja = (JArray)jsonO["events"];
+                        if (null != ja)
+                        {
+                            return ja.ToObject<IEnumerable<BlobBlockJsonWrappedEvent>>();
+                        }
                     }
                 }
             }

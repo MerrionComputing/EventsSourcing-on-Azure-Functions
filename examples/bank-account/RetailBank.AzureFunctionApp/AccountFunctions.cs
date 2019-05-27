@@ -90,10 +90,17 @@ namespace RetailBank.AzureFunctionApp
 
             if (null != prjBankAccountBalance)
             {
-                Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(); 
-                if (null != projectedBalance )
+                if (await prjBankAccountBalance.Exists())
                 {
-                    result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} (As at record {projectedBalance.CurrentSequenceNumber}) ";
+                    Balance projectedBalance = await prjBankAccountBalance.Process<Balance>();
+                    if (null != projectedBalance)
+                    {
+                        result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} (As at record {projectedBalance.CurrentSequenceNumber}) ";
+                    }
+                }
+                else
+                {
+                    result = $"Account {accountnumber} is not yet created - cannot retrieve a balance for it";
                 }
             }
 
