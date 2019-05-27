@@ -94,6 +94,7 @@ namespace EventSourcingOnAzureFunctions.Common
               .BindToInput<Projection>(BuildProjectionFromAttribute)
               ;
 
+            
         }
 
 
