@@ -29,7 +29,7 @@ namespace RetailBank.AzureFunctionApp
         {
             if (await bankAccountEvents.Exists())
             {
-                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden , $"Account {accountnumber} already exists");
+                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} already exists");
             }
             else
             {
@@ -39,32 +39,33 @@ namespace RetailBank.AzureFunctionApp
                 // Append a "created" event
                 DateTime dateCreated = DateTime.UtcNow;
                 Account.Events.Opened evtOpened = new Account.Events.Opened() { LoggedOpeningDate = dateCreated };
-                if (! string.IsNullOrWhiteSpace( data.Commentary))
+                if (!string.IsNullOrWhiteSpace(data.Commentary))
                 {
                     evtOpened.Commentary = data.Commentary;
                 }
                 await bankAccountEvents.AppendEvent(evtOpened);
 
                 // If there is an initial deposit in the account opening data, append a "deposit" event
-                if (data.OpeningBalance.HasValue  )
+                if (data.OpeningBalance.HasValue)
                 {
-                    Account.Events.MoneyDeposited evtInitialDeposit = new Account.Events.MoneyDeposited() {
+                    Account.Events.MoneyDeposited evtInitialDeposit = new Account.Events.MoneyDeposited()
+                    {
                         AmountDeposited = data.OpeningBalance.Value,
                         LoggedDepositDate = dateCreated,
                         Commentary = "Opening deposit"
                     };
                     await bankAccountEvents.AppendEvent(evtInitialDeposit);
                 }
-                
+
                 // If there is a beneficiary in the account opening data append a "beneficiary set" event
-                if (! string.IsNullOrEmpty(data.ClientName ) )
+                if (!string.IsNullOrEmpty(data.ClientName))
                 {
                     Account.Events.BeneficiarySet evtBeneficiary = new Account.Events.BeneficiarySet()
-                    {  BeneficiaryName = data.ClientName   };
-                    await bankAccountEvents.AppendEvent(evtBeneficiary); 
+                    { BeneficiaryName = data.ClientName };
+                    await bankAccountEvents.AppendEvent(evtBeneficiary);
                 }
 
-                return req.CreateResponse(System.Net.HttpStatusCode.Created , $"Account {accountnumber} created");
+                return req.CreateResponse(System.Net.HttpStatusCode.Created, $"Account {accountnumber} created");
             }
         }
 
@@ -104,7 +105,93 @@ namespace RetailBank.AzureFunctionApp
                 }
             }
 
-            return req.CreateResponse(System.Net.HttpStatusCode.OK, result); 
+            return req.CreateResponse(System.Net.HttpStatusCode.OK, result);
+        }
+
+
+        [FunctionName("DepositMoney")]
+        public static async Task<HttpResponseMessage> DepositMoneyRun(
+              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = "DepositMoney/{accountnumber}")]HttpRequestMessage req,
+              string accountnumber,
+              [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
+        {
+            if (!await bankAccountEvents.Exists())
+            {
+                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+            }
+            else
+            {
+                // get the request body...
+                MoneyDepositData data = await req.Content.ReadAsAsync<MoneyDepositData>();
+
+                // create a deposited event
+                DateTime dateDeposited = DateTime.UtcNow;
+                Account.Events.MoneyDeposited evDeposited = new Account.Events.MoneyDeposited()
+                {
+                    LoggedDepositDate = dateDeposited,
+                    AmountDeposited = data.DepositAmount,
+                    Commentary = data.Commentary,
+                    Source = data.Source
+                };
+
+                await bankAccountEvents.AppendEvent(evDeposited);
+
+                return req.CreateResponse(System.Net.HttpStatusCode.OK, $"{data.DepositAmount} deposited to account {accountnumber} ");
+            }
+        }
+
+
+        // WithdrawMoney
+        [FunctionName("WithdrawMoney")]
+        public static async Task<HttpResponseMessage> WithdrawMoneyRun(
+              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = "WithdrawMoney/{accountnumber}")]HttpRequestMessage req,
+              string accountnumber,
+              [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
+              [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
+        {
+            if (!await bankAccountEvents.Exists())
+            {
+                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+            }
+            else
+            {
+                // get the request body...
+                MoneyWithdrawnData  data = await req.Content.ReadAsAsync<MoneyWithdrawnData>();
+
+                // get the current account balance
+                Balance projectedBalance = await prjBankAccountBalance.Process<Balance>();
+                if (null != projectedBalance)
+                {
+                    if (projectedBalance.CurrentBalance >= data.AmountWithdrawn)
+                    {
+                        // attempt the withdrawal
+                        DateTime dateWithdrawn = DateTime.UtcNow;
+                        Account.Events.MoneyWithdrawn evWithdrawn = new Account.Events.MoneyWithdrawn()
+                        {
+                            LoggedWithdrawalDate = dateWithdrawn,
+                            AmountWithdrawn = data.AmountWithdrawn ,
+                            Commentary = data.Commentary 
+                        };
+                        try
+                        {
+                            await bankAccountEvents.AppendEvent(evWithdrawn, projectedBalance.CurrentSequenceNumber);
+                        }
+                        catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException exWrite  )
+                        {
+                            return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Failed to write withdrawal event {exWrite.Message}");
+                        }
+                        return req.CreateResponse(System.Net.HttpStatusCode.OK, $"{data.AmountWithdrawn } withdrawn from account {accountnumber} ");
+                    }
+                    else
+                    {
+                        return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not have sufficent funds for the withdrawal of {data.AmountWithdrawn} (Current balance: {projectedBalance.CurrentBalance} )");
+                    }
+                }
+                else
+                {
+                    return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Unable to get current balance for account {accountnumber}");
+                }
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace RetailBank.AzureFunctionApp
     {
 
         /// <summary>
-        /// The text commengtary provided when opening the new bank account
+        /// The text commentary provided when opening the new bank account
         /// </summary>
         public string Commentary { get; set; }
 
