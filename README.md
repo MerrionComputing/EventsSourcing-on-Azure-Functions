@@ -22,48 +22,56 @@ The goal is to be able to interact with the event streams for entities without a
 To add events to an event stream you would use an *Event stream* attribute and class thus:-
 
 ```csharp
-[FunctionName("DepositMoney")]
-public static async Task<HttpResponseMessage> DepositMoneyRun(
-      [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequestMessage req,
-      [EventStream("Bank", "Account", "A-1234-IE-299")] EventStream esBankAccount)
-      {
-      if (null != esBankAccount)
-         {
-         if (esBankAccount.Exists)
-           {
-             // add a deposit event
-             await esBankAccount.AppendEvent(new MoneyDeposited("USD",
-                    1000.00,
-                    "Interbank transfer"
-                    ));
-            }
-         }
-     }
+[FunctionName("OpenAccount")]
+public static async Task<HttpResponseMessage> OpenAccountRun(
+              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = "OpenAccount/{accountnumber}")]HttpRequestMessage req,
+              string accountnumber,
+              [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
+{
+    if (await bankAccountEvents.Exists())
+    {
+        return req.CreateResponse(System.Net.HttpStatusCode.Forbidden , $"Account {accountnumber} already exists");
+    }
+    else
+    {
+        // Get request body
+        AccountOpeningData data = await req.Content.ReadAsAsync<AccountOpeningData>();
+
+        // Append a "created" event
+        DateTime dateCreated = DateTime.UtcNow;
+        Account.Events.Opened evtOpened = new Account.Events.Opened() { LoggedOpeningDate = dateCreated };
+        if (! string.IsNullOrWhiteSpace( data.Commentary))
+        {
+            evtOpened.Commentary = data.Commentary;
+        }
+        await bankAccountEvents.AppendEvent(evtOpened);
+                
+        return req.CreateResponse(System.Net.HttpStatusCode.Created , $"Account {accountnumber} created");
+    }
+}
 ```
 
 To get the values out of an event stream you would use a *Projection* attribute and class thus:-
 
 ```csharp
-        [FunctionName("GetBalance")]
-        public static async Task<HttpResponseMessage> GetBalanceRun(
-          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = "GetBalance/{accountnumber}")]HttpRequestMessage req,
-          string accountnumber,
-          [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
-        {
+   [FunctionName("GetBalance")]
+   public static async Task<HttpResponseMessage> GetBalanceRun(
+     [HttpTrigger(AuthorizationLevel.Function, "GET", Route = "GetBalance/{accountnumber}")]HttpRequestMessage req,
+     string accountnumber,
+     [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
+   {
+       string result = $"No balance found for account {accountnumber}";
 
-            string result = $"No balance found for account {accountnumber}";
-
-            if (null != prjBankAccountBalance)
-            {
-                Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(); 
-                if (null != projectedBalance )
-                {
-                    result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} (As at record {projectedBalance.CurrentSequenceNumber}) ";
-                }
-            }
-
-            return req.CreateResponse(System.Net.HttpStatusCode.OK, result); 
-        }
+       if (null != prjBankAccountBalance)
+       {
+           Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(); 
+           if (null != projectedBalance )
+           {
+               result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} (As at  {projectedBalance.CurrentSequenceNumber}) ";
+           }
+       }
+       return req.CreateResponse(System.Net.HttpStatusCode.OK, result); 
+   }
 ```
 All of the properties of these two attributes are set to *AutoResolve* so they can be set at run time.
 
