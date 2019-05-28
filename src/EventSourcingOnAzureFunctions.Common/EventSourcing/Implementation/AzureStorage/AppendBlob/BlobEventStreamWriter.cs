@@ -26,13 +26,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// <param name="eventVersionNumber">
         /// The version number to add to the event wrapper
         /// </param>
+        /// <param name="streamConstraint">
+        /// An additional constrain that must be satisfied by the event stream in order to persist the event
+        /// </param>
         /// <returns></returns>
         public async Task AppendEvent(IEvent eventInstance,
             int expectedTopSequenceNumber = 0, 
-            int eventVersionNumber = 1)
+            int eventVersionNumber = 1,
+            EventStreamExistenceConstraint streamConstraint = EventStreamExistenceConstraint.Loose )
         {
             if (base.EventStreamBlob != null)
             {
+                // acquire a lease for the blob..
+                string writeStreamLeaseId = await base.EventStreamBlob.AcquireLeaseAsync(TimeSpan.FromSeconds(15));  
+
                 int nextSequence = await base.GetSequenceNumber() + 1;
 
                 if (expectedTopSequenceNumber > 0)
@@ -53,6 +60,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     eventName = EventNameAttribute.GetEventName(eventInstance.GetType());
                 }
 
+                // create an access condition
+                AccessCondition condition = AccessCondition.GenerateEmptyCondition();
+                if (streamConstraint== EventStreamExistenceConstraint.MustBeNew )
+                {
+                    condition = AccessCondition.GenerateIfNotExistsCondition();
+                }
+                if (streamConstraint== EventStreamExistenceConstraint.MustExist )
+                {
+                    condition = AccessCondition.GenerateIfExistsCondition(); 
+                }
+                condition.LeaseId = writeStreamLeaseId;
+
                 BlobBlockJsonWrappedEvent evtToWrite = BlobBlockJsonWrappedEvent.Create(eventName,
                     nextSequence,
                     eventVersionNumber,
@@ -64,7 +83,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     // Create it if it doesn't exist and initialsie the metadata
                     await base.Refresh();
-                    await EventStreamBlob.AppendBlockAsync(new System.IO.MemoryStream(Encoding.UTF8.GetBytes(evtToWrite.ToJSonText())));
+
+
+                    OperationContext context = new OperationContext()
+                    {  };
+
+                    await EventStreamBlob.AppendBlockAsync(new System.IO.MemoryStream(Encoding.UTF8.GetBytes(evtToWrite.ToJSonText())),
+                        "", 
+                        condition,
+                        null , // use the default blob request options
+                        context 
+                        );
                 }
                 catch (StorageException exBlob)
                 {
@@ -75,8 +104,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                             innerException: exBlob );
                 }
 
-                await IncrementSequence();
+                await IncrementSequence(writeStreamLeaseId);
 
+                // and release the lease
+                await base.EventStreamBlob.ReleaseLeaseAsync(condition ); 
             }
             
         }
@@ -84,7 +115,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// <summary>
         /// Increment the sequence number of the event stream
         /// </summary>
-        private async Task IncrementSequence()
+        private async Task IncrementSequence(string writeStreamLeaseId = "")
         {
 
             if (null != EventStreamBlob)
@@ -99,7 +130,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                         sequenceNumber += 1;
                         EventStreamBlob.Metadata[METADATA_SEQUENCE] = $"{sequenceNumber }";
                         // and commit it back
-                        await EventStreamBlob.SetMetadataAsync();
+                        AccessCondition condition = AccessCondition.GenerateEmptyCondition();
+                        condition.LeaseId = writeStreamLeaseId;
+                        await EventStreamBlob.SetMetadataAsync(condition, null, new OperationContext() );
+
                     }
                 }
             }

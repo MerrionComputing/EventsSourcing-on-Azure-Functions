@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using static EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.EventStreamBase;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
 {
@@ -24,7 +25,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </param>
         Task AppendEvent(IEvent eventInstance,
             int expectedTopSequenceNumber = 0,
-            int eventVersionNumber = 1);
+            int eventVersionNumber = 1,
+            EventStreamExistenceConstraint streamConstraint = EventStreamExistenceConstraint.Loose);
 
 
         /// <summary>

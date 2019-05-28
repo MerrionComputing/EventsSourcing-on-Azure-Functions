@@ -10,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
     ///  Common functionality that both reader and writer use to access any event store based on Azure storage
     /// </summary>
     public class AzureStorageEventStreamBase
+        : EventStreamBase
     {
 
         private readonly string _domainName;

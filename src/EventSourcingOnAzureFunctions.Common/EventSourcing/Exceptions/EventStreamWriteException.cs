@@ -6,7 +6,7 @@ using System.Text;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions
 {
     public class EventStreamWriteException
-: EventStreamExceptionBase
+        : EventStreamExceptionBase
     {
 
 

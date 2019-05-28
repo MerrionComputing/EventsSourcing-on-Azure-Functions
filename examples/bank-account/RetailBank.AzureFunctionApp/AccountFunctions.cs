@@ -8,6 +8,8 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing;
 
 using RetailBank.AzureFunctionApp.Account.Projections;
 using System;
+using static EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.EventStreamBase;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 
 namespace RetailBank.AzureFunctionApp
 {
@@ -43,7 +45,16 @@ namespace RetailBank.AzureFunctionApp
                 {
                     evtOpened.Commentary = data.Commentary;
                 }
-                await bankAccountEvents.AppendEvent(evtOpened);
+                try
+                {
+                    await bankAccountEvents.AppendEvent(evtOpened,
+                        streamConstraint: EventStreamExistenceConstraint.MustBeNew
+                        );
+                }
+                catch (EventStreamWriteException exWrite)
+                {
+                    return req.CreateResponse(System.Net.HttpStatusCode.Conflict, $"Account {accountnumber} had a conflict error on creation {exWrite.Message }");
+                }
 
                 // If there is an initial deposit in the account opening data, append a "deposit" event
                 if (data.OpeningBalance.HasValue)

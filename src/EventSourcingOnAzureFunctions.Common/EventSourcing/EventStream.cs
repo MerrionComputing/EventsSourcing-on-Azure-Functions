@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using static EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.EventStreamBase;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
@@ -72,12 +73,25 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
-        public async Task AppendEvent(object eventToAppend, int? expectedTopSequence = null)
+        /// <summary>
+        /// Append an event onto the event stream 
+        /// </summary>
+        /// <param name="eventToAppend">
+        /// The event we want to write to the event stream
+        /// </param>
+        /// <param name="expectedTopSequence">
+        /// The sequence number we expect to be the last in the event stream - if events have been added since this then a 
+        /// concurrency error is thrown
+        /// </param>
+        public async Task AppendEvent(object eventToAppend, 
+            int? expectedTopSequence = null,
+            EventStreamExistenceConstraint streamConstraint = EventStreamExistenceConstraint.Loose)
         {
             if (null != _writer )
             {
                 // make an event instance of this event and append it to the event stream
-                await _writer.AppendEvent(EventInstance.Wrap(eventToAppend), expectedTopSequence.GetValueOrDefault(0)); 
+                await _writer.AppendEvent(EventInstance.Wrap(eventToAppend), expectedTopSequence.GetValueOrDefault(0), 
+                    streamConstraint:streamConstraint ); 
             }
         }
 
