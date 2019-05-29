@@ -38,7 +38,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             if (base.EventStreamBlob != null)
             {
                 // acquire a lease for the blob..
-                string writeStreamLeaseId = await base.EventStreamBlob.AcquireLeaseAsync(TimeSpan.FromSeconds(15));  
+                string writeStreamLeaseId = null;
+                if (await Exists())
+                {
+                     writeStreamLeaseId = await base.EventStreamBlob.AcquireLeaseAsync(TimeSpan.FromSeconds(15));
+                }
 
                 int nextSequence = await base.GetSequenceNumber() + 1;
 
@@ -70,7 +74,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     condition = AccessCondition.GenerateIfExistsCondition(); 
                 }
-                condition.LeaseId = writeStreamLeaseId;
+                if (!string.IsNullOrWhiteSpace(writeStreamLeaseId))
+                {
+                    condition.LeaseId = writeStreamLeaseId;
+                }
 
                 BlobBlockJsonWrappedEvent evtToWrite = BlobBlockJsonWrappedEvent.Create(eventName,
                     nextSequence,
@@ -106,8 +113,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 await IncrementSequence(writeStreamLeaseId);
 
-                // and release the lease
-                await base.EventStreamBlob.ReleaseLeaseAsync(condition ); 
+                if (!string.IsNullOrWhiteSpace(writeStreamLeaseId))
+                {
+                    // and release the lease
+                    await base.EventStreamBlob.ReleaseLeaseAsync(condition);
+                }
             }
             
         }
@@ -131,7 +141,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                         EventStreamBlob.Metadata[METADATA_SEQUENCE] = $"{sequenceNumber }";
                         // and commit it back
                         AccessCondition condition = AccessCondition.GenerateEmptyCondition();
-                        condition.LeaseId = writeStreamLeaseId;
+                        if (!string.IsNullOrWhiteSpace(writeStreamLeaseId))
+                        {
+                            condition.LeaseId = writeStreamLeaseId;
+                        }
                         await EventStreamBlob.SetMetadataAsync(condition, null, new OperationContext() );
 
                     }
