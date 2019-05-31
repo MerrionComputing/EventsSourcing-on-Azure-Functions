@@ -79,6 +79,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     condition.LeaseId = writeStreamLeaseId;
                 }
 
+                // default the writer context if it is not already set
+                if (null == _writerContext)
+                {
+                    _writerContext = WriteContext.DefaultWriterContext();
+                }
+
                 BlobBlockJsonWrappedEvent evtToWrite = BlobBlockJsonWrappedEvent.Create(eventName,
                     nextSequence,
                     eventVersionNumber,
@@ -121,6 +127,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
             
         }
+
+
 
         /// <summary>
         /// Increment the sequence number of the event stream

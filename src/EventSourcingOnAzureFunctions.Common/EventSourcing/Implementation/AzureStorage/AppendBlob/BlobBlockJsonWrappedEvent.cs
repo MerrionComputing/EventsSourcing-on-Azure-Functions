@@ -151,6 +151,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 VersionNumber = versionNumber
             };
 
+            ret.WriteTime = writeTime.Value ;
+
             if (null != eventInstance )
             {
                 ret.EventInstanceAsJson = JObject.FromObject(eventInstance);

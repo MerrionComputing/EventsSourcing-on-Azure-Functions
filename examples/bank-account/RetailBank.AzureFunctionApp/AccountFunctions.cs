@@ -204,5 +204,34 @@ namespace RetailBank.AzureFunctionApp
                 }
             }
         }
+
+
+        /// <summary>
+        /// Set or change who is the beneficial owner of this account
+        /// </summary>
+        /// <returns></returns>
+        [FunctionName("SetBeneficialOwner") ]
+        public static async Task<HttpResponseMessage> SetBeneficialOwnerRun(
+              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = "SetBeneficialOwner/{accountnumber}/{ownername}")]HttpRequestMessage req,
+              string accountnumber,
+              string ownername,
+              [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
+        {
+            if (await bankAccountEvents.Exists())
+            {
+                if (!string.IsNullOrEmpty(ownername))
+                {
+                    Account.Events.BeneficiarySet evtBeneficiary = new Account.Events.BeneficiarySet()
+                    { BeneficiaryName = ownername };
+                    await bankAccountEvents.AppendEvent(evtBeneficiary);
+                }
+
+                return req.CreateResponse(System.Net.HttpStatusCode.Created, $"Beneficial owner of account {accountnumber} set");
+            }
+            else
+            {
+                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+            }
+        }
     }
 }
