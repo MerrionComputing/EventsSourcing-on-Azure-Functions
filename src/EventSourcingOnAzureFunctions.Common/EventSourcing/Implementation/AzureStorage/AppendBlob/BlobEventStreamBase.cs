@@ -179,7 +179,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 }
             }
 
-            _entityTypeName = identity.InstanceKey;
+            _entityTypeName = identity.EntityTypeName ;
             _instanceKey = identity.InstanceKey;
 
             // make the blob reference that will hold the events
@@ -263,7 +263,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         public static string GetEventStreamStorageFolderPath( string entityType)
         {
-            return MakeValidStorageFolderName(entityType) + '/' + EVENTSTREAM_FOLDER;
+            return  EVENTSTREAM_FOLDER;
         }
     }
 }
