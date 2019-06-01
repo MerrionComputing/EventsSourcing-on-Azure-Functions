@@ -37,7 +37,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                             {
                                 if (record.SequenceNumber >= StartingSequenceNumber)
                                 {
-                                    ret.Add(record.EventInstance);
+                                    if ((!effectiveDateTime.HasValue) || (record.WriteTime <= effectiveDateTime.Value ))
+                                    {
+                                        ret.Add(record.EventInstance);
+                                    }
                                 }
                             }
                         }
@@ -69,7 +72,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                                 {
                                     if (record.SequenceNumber >= StartingSequenceNumber)
                                     {
-                                        ret.Add(record);
+                                        if ((!effectiveDateTime.HasValue) || (record.WriteTime <= effectiveDateTime.Value))
+                                        {
+                                            ret.Add(record);
+                                        }
                                     }
                                 }
                             }
