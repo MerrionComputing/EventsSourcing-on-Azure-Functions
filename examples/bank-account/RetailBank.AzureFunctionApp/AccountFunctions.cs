@@ -104,7 +104,18 @@ namespace RetailBank.AzureFunctionApp
             {
                 if (await prjBankAccountBalance.Exists())
                 {
-                    Balance projectedBalance = await prjBankAccountBalance.Process<Balance>();
+                    // Get request body
+                    Nullable<DateTime> asOfDate = null;
+                    if (null != req.Content)
+                    {
+                        dynamic data = await req.Content.ReadAsAsync<object>();
+                        if (null != data)
+                        {
+                            asOfDate = data.AsOfDate;
+                        }
+                    }
+                    
+                    Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(asOfDate );
                     if (null != projectedBalance)
                     {
                         result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} (As at record {projectedBalance.CurrentSequenceNumber}) ";

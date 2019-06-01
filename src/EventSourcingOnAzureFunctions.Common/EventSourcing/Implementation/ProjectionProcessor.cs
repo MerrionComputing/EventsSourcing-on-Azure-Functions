@@ -13,18 +13,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
 
         private readonly IEventStreamReader eventStreamReader = null;
 
-        public async Task<TProjection> Process<TProjection>() where TProjection : IProjection, new()
+        public async Task<TProjection> Process<TProjection>(DateTime? asOfDate = null) where TProjection : IProjection, new()
         {
             TProjection ret = new TProjection();
 
             if (null != eventStreamReader)
             {
-                foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext())
+                foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext(effectiveDateTime: asOfDate ))
                 {
-                    // TODO: get as-of date from the event
+                  
                     ret.OnEventRead(wrappedEvent.SequenceNumber, null);
 
-                    if (ret.HandlesEventType(wrappedEvent.EventInstance.EventTypeName  ) )
+
+                    if (ret.HandlesEventType(wrappedEvent.EventInstance.EventTypeName))
                     {
                         ret.HandleEvent(wrappedEvent.EventInstance.EventTypeName, wrappedEvent.EventInstance.EventPayload);
                     }

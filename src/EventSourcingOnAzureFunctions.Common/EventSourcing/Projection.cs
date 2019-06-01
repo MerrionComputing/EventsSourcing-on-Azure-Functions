@@ -66,11 +66,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         }
 
 
-        public async Task<TProjection> Process<TProjection>() where TProjection : IProjection, new()
+        public async Task<TProjection> Process<TProjection>(Nullable<DateTime> asOfDate = null) where TProjection : IProjection, new()
         {
             if (null != _projectionProcessor )
             {
-                return await _projectionProcessor.Process<TProjection>(); 
+                return await _projectionProcessor.Process<TProjection>(asOfDate); 
             }
             else
             {

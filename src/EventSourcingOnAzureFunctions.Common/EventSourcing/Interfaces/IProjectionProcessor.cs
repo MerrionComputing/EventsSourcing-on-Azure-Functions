@@ -20,6 +20,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <typeparam name="TProjection">
         /// The type of projection to run
         /// </typeparam>
-        Task<TProjection> Process<TProjection>() where TProjection : IProjection, new();
+        /// <param name="asOfDate">
+        /// If set, only run the projection up until this date/time
+        /// </param>
+        Task<TProjection> Process<TProjection>(DateTime? asOfDate = null) where TProjection : IProjection, new();
     }
 }
