@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob
 {
-    public class BlobEventStreamBase
+    public abstract class BlobEventStreamBase
         : AzureStorageEventStreamBase, 
         IEventStreamIdentity
     {
