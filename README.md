@@ -9,14 +9,6 @@ When a query or business process needs to use the current state of the entity it
 
 There is a 50 minute talk that covers this on [YouTube](https://www.youtube.com/watch?v=kpM5gCLF1Zc), or if you already have an understanding of event sourcing you can go straight to the [Getting started](https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions/wiki/Getting-started) wiki page
 
-## Chosen technologies
-
-Because an event stream is an inherently append only system the storage technology underlying it is [AppendBlob](https://docs.microsoft.com/en-us/rest/api/storageservices/append-block) - a special type of Blob storage which only allows for blocks to be appended to the end of the blob.  Each blob can store up to 50,000 events and the container path can be nested in the same way as any other Azure Blob storage.
-
-For higher volume streams there will be an Azure [Tables](https://docs.microsoft.com/en-us/rest/api/storageservices/summary-of-table-service-functionality) back end that can be used instead of AppendBlob.
-
-The [azure functions](https://azure.microsoft.com/en-us/services/functions/) code is based on version 2.0 of the azure functions SDK and is written in C#.
-
 ## End goal
 
 The goal is to be able to interact with the event streams for entities without an extra plumbing in the azure function itself - with both access to event streams and to run projections being via bound variables that are instantiated when the azure function is executed.
@@ -76,6 +68,14 @@ To get the values out of an event stream you would use a *Projection* attribute 
    }
 ```
 All of the properties of these two attributes are set to *AutoResolve* so they can be set at run time.
+
+## Chosen technologies
+
+Because an event stream is an inherently append only system the storage technology underlying it is [AppendBlob](https://docs.microsoft.com/en-us/rest/api/storageservices/append-block) - a special type of Blob storage which only allows for blocks to be appended to the end of the blob.  Each blob can store up to 50,000 events and the container path can be nested in the same way as any other Azure Blob storage.
+
+For higher volume streams there will be an Azure [Tables](https://docs.microsoft.com/en-us/rest/api/storageservices/summary-of-table-service-functionality) back end that can be used instead of AppendBlob.
+
+The [azure functions](https://azure.microsoft.com/en-us/services/functions/) code is based on version 2.0 of the azure functions SDK and is written in C#.
 
 ## Comparison to other event sourcing technologies
 
