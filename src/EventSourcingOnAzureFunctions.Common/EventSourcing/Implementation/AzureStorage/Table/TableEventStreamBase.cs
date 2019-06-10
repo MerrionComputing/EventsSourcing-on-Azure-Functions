@@ -22,6 +22,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public const string ORPHANS_TABLE = "Uncategorised";
 
         private readonly CloudTableClient _cloudTableClient;
+        
+        public CloudTable Table
+        {
+            get
+            {
+                if (null != _cloudTableClient )
+                {
+                    return _cloudTableClient.GetTableReference(this.TableName); 
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
 
         private readonly string _entityTypeName;
         /// <summary>
@@ -47,7 +62,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
-
+        public string TableName
+        {
+            get
+            {
+                return MakeValidStorageTableName(_entityTypeName + @"00" + base.DomainName);
+            }
+        }
 
         public TableEventStreamBase(IEventStreamIdentity identity,
             bool writeAccess = false,
