@@ -1,6 +1,9 @@
-﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.CosmosDB.Table;
 using System;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table
 {
@@ -18,8 +21,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         #endregion
 
 
+        public const string RECORDID_SEQUENCE = "0000000000"; // To fint maxint32 = 2147483647
+
+
         public const int MAX_FREE_DATA_FIELDS = 248;
         public const string ORPHANS_TABLE = "Uncategorised";
+
+        public const int MAX_BATCH_SIZE = 100;
 
         private readonly CloudTableClient _cloudTableClient;
         
@@ -35,6 +43,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     return null;
                 }
+            }
+        }
+
+        private readonly string _domainName;
+        /// <summary>
+        /// The domain in which this event stream is set
+        /// </summary>
+        public string DomainName
+        {
+            get
+            {
+                return _domainName;
             }
         }
 
@@ -70,12 +90,27 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
+        public Task<bool> Exists()
+        {
+            if (Table != null)
+            {
+                // TODO: Get zero-eth entry...
+                throw new NotImplementedException();
+            }
+            else
+            {
+                // If the table doesn't exist then the event cannot possibly exist
+                return Task.FromResult<bool>(false);
+            }
+        }
+
         public TableEventStreamBase(IEventStreamIdentity identity,
             bool writeAccess = false,
             string connectionStringName = @"")
             : base(identity.DomainName, writeAccess, connectionStringName)
         {
 
+            _domainName = identity.DomainName;
             _entityTypeName = identity.EntityTypeName;
             _instanceKey = identity.InstanceKey;
 
@@ -116,6 +151,87 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
             return cleanName;
+        }
+
+
+        /// <summary>
+        /// Return the sequence number as a string for storing in the RowKey field of an Azure table
+        /// </summary>
+        /// <param name="startingSequence">
+        /// The given sequence number
+        /// </param>
+        /// <returns></returns>
+        public static string SequenceNumberAsString(int startingSequence)
+        {
+            return startingSequence.ToString(RECORDID_SEQUENCE);
+        }
+
+        /// <summary>
+        /// Generate a query to get the event rows for an individual event stream between two sequence numbers (inclusive)
+        /// </summary>
+        /// <param name="identity">
+        /// The unique identifier of the event stream to read
+        /// </param>
+        /// <param name="startingSequence">
+        /// The starting sequence to read from
+        /// </param>
+        /// <param name="upToSequence">
+        /// (Optional) The end sequence to read up to (inclusive)
+        /// </param>
+        public static TableQuery<DynamicTableEntity> ProjectionQuery(IEventStreamIdentity identity,
+            int startingSequence = 1,
+            int upToSequence = 0)
+        {
+
+            if (upToSequence > 0)
+            {
+                if (startingSequence >= upToSequence)
+                {
+                    throw new EventStreamReadException(identity,
+                        startingSequence,
+                        $"Requested end sequence {upToSequence} is less than or equal to start sequence {startingSequence}");
+                }
+            }
+
+            TableQuery<DynamicTableEntity> ret = InstanceQuery(identity).Where(TableQuery.GenerateFilterCondition("RowKey",
+                    QueryComparisons.GreaterThanOrEqual, SequenceNumberAsString(startingSequence)));
+
+            if (upToSequence > 0)
+            {
+                ret = ret.Where(TableQuery.GenerateFilterCondition("RowKey",
+                    QueryComparisons.LessThanOrEqual, SequenceNumberAsString(upToSequence)));
+            }
+
+            return ret;
+        }
+
+
+
+        /// <summary>
+        /// Generate a query definition for the given entity instance
+        /// </summary>
+        /// <param name="identity">
+        /// The domain/entity type/unique identifier insatnec of the event stream to get
+        /// </param>
+        /// <returns></returns>
+        private static TableQuery<DynamicTableEntity> InstanceQuery(IEventStreamIdentity identity)
+        {
+            return new TableQuery<DynamicTableEntity>()
+                .Where(TableQuery.GenerateFilterCondition("PartitionKey",
+                    QueryComparisons.Equal, identity.InstanceKey));
+        }
+
+        public static bool IsPropertyEmpty(PropertyInfo pi, object eventInstance)
+        {
+            if (null == pi.GetValue(eventInstance))
+            {
+                return true;
+            }
+
+            // special case - dates before 1601
+
+
+            return false;
         }
     }
 }

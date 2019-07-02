@@ -50,6 +50,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
+
+
         private readonly string _entityTypeName;
         /// <summary>
         /// The type of entity for which this event stream pertains

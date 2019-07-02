@@ -30,8 +30,6 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
             }
         }
 
-
-
         public void HandleEventInstance(MoneyDeposited eventInstance)
         {
             if (null != eventInstance )

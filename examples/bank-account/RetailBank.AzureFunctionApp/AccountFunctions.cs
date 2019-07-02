@@ -25,7 +25,7 @@ namespace RetailBank.AzureFunctionApp
         /// <returns></returns>
         [FunctionName("OpenAccount")]
         public static async Task<HttpResponseMessage> OpenAccountRun(
-                      [HttpTrigger(AuthorizationLevel.Function, "POST", Route = "OpenAccount/{accountnumber}")]HttpRequestMessage req,
+                      [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"OpenAccount/{accountnumber}")]HttpRequestMessage req,
                       string accountnumber,
                       [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
         {
@@ -93,7 +93,7 @@ namespace RetailBank.AzureFunctionApp
         /// <returns></returns>
         [FunctionName("GetBalance")]
         public static async Task<HttpResponseMessage> GetBalanceRun(
-          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = "GetBalance/{accountnumber}")]HttpRequestMessage req,
+          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetBalance/{accountnumber}" )]HttpRequestMessage req,
           string accountnumber,
           [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
         {
@@ -133,7 +133,7 @@ namespace RetailBank.AzureFunctionApp
 
         [FunctionName("DepositMoney")]
         public static async Task<HttpResponseMessage> DepositMoneyRun(
-              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = "DepositMoney/{accountnumber}")]HttpRequestMessage req,
+              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"DepositMoney/{accountnumber}")]HttpRequestMessage req,
               string accountnumber,
               [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
         {
@@ -166,7 +166,7 @@ namespace RetailBank.AzureFunctionApp
         // WithdrawMoney
         [FunctionName("WithdrawMoney")]
         public static async Task<HttpResponseMessage> WithdrawMoneyRun(
-              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = "WithdrawMoney/{accountnumber}")]HttpRequestMessage req,
+              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"WithdrawMoney/{accountnumber}")]HttpRequestMessage req,
               string accountnumber,
               [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
               [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
