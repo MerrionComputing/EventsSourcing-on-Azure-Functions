@@ -1,6 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.CosmosDB.Table;
+using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -23,7 +23,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             int nextSequence = 0;
 
             // Read and update the [RECORDID_SEQUENCE] row in a transaction..
-            nextSequence = await IncrementSequenceNumber();
+            nextSequence =  IncrementSequenceNumber();
 
             if (expectedTopSequenceNumber > 0)
             {
@@ -37,6 +37,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 }
             }
 
+
+            var dteEvent = MakeDynamicTableEntity(eventInstance, nextSequence);
+            if (null != dteEvent )
+            {
+                await base.Table.ExecuteAsync(TableOperation.Insert(dteEvent));
+            }
+
         }
 
 
@@ -48,9 +55,60 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// This is done before the event itself is written so that a partial failure leaves a gap in the event stream which is
         /// less harmful than an overwritten event record
         /// </remarks>
-        private async Task<int> IncrementSequenceNumber()
+        private int IncrementSequenceNumber()
         {
-            throw new NotImplementedException();
+            bool recordUpdated = false;
+            int tries = 0;
+
+            TableEntityKeyRecord streamFooter = null;
+
+            while (!recordUpdated)
+            {
+                tries += 1;
+                // read in the a [TableEntityKeyRecord]
+                
+                streamFooter = (TableEntityKeyRecord)Table.Execute(TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0))).Result;
+                if (null == streamFooter)
+                {
+                    streamFooter = new TableEntityKeyRecord(this);
+                }
+                streamFooter.LastSequence += 1;
+
+                string lastETag = streamFooter.ETag;
+
+
+                TableResult tres = Table.Execute(TableOperation.InsertOrReplace(streamFooter),
+                      null,
+                      new OperationContext
+                      {
+                          UserHeaders = new Dictionary<String, String>
+                          {
+                              { "If-Match", lastETag }
+                          }
+                      });
+
+                if (tres.HttpStatusCode == 204)
+                {
+                    recordUpdated = true;
+                }
+
+                if (tries > 200)
+                {
+                    // catastrophic deadlock
+                    throw new EventStreamWriteException(this, streamFooter.LastSequence,
+                        message: "Unable to increment the stream sequence number due to deadlock",
+                        source: "Table Event Stream Writer"); 
+                }
+            }
+
+            if (null != streamFooter)
+            {
+                return streamFooter.LastSequence;
+            }
+            else
+            {
+                return 1;
+            }
         }
 
         private IWriteContext _writerContext;

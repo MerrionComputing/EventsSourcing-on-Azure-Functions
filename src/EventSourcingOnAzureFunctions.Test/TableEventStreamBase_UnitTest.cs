@@ -1,5 +1,7 @@
-﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
+﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mocking;
 using System;
@@ -75,9 +77,9 @@ namespace EventSourcingOnAzureFunctions.Test
             bool expected = true;
             bool actual = false;
 
-            MockEventOne testObj = new MockEventOne();
+            MockEventOnePayload testObj = new MockEventOnePayload();
 
-            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.objectProperty)), testObj);
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOnePayload).GetProperty(nameof(MockEventOnePayload.objectProperty)), testObj);
 
             Assert.AreEqual(expected, actual);
 
@@ -89,9 +91,9 @@ namespace EventSourcingOnAzureFunctions.Test
             bool expected = true;
             bool actual = false;
 
-            MockEventOne testObj = new MockEventOne();
+            MockEventOnePayload testObj = new MockEventOnePayload();
 
-            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.dateTimeProperty)), testObj);
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOnePayload).GetProperty(nameof(MockEventOnePayload.dateTimeProperty)), testObj);
 
             Assert.AreEqual(expected, actual);
 
@@ -103,9 +105,9 @@ namespace EventSourcingOnAzureFunctions.Test
             bool expected = true;
             bool actual = false;
 
-            MockEventOne testObj = new MockEventOne();
+            MockEventOnePayload testObj = new MockEventOnePayload();
 
-            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.DateTimeOffsetProperty)), testObj);
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOnePayload).GetProperty(nameof(MockEventOnePayload.DateTimeOffsetProperty)), testObj);
 
             Assert.AreEqual(expected, actual);
 
@@ -117,10 +119,10 @@ namespace EventSourcingOnAzureFunctions.Test
             bool expected = true;
             bool actual = false;
 
-            MockEventOne testObj = new MockEventOne();
+            MockEventOnePayload testObj = new MockEventOnePayload();
             testObj.dateTimeProperty = new DateTime(1290, 1, 1);
 
-            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.dateTimeProperty)), testObj);
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOnePayload).GetProperty(nameof(MockEventOnePayload.dateTimeProperty)), testObj);
 
             Assert.AreEqual(expected, actual);
 
@@ -132,9 +134,9 @@ namespace EventSourcingOnAzureFunctions.Test
             bool expected = true;
             bool actual = false;
 
-            MockEventOne testObj = new MockEventOne();
+            MockEventOnePayload testObj = new MockEventOnePayload();
             testObj.DateTimeOffsetProperty = new DateTimeOffset(new DateTime(1588, 12, 1));
-            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.DateTimeOffsetProperty)), testObj);
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOnePayload).GetProperty(nameof(MockEventOnePayload.DateTimeOffsetProperty)), testObj);
 
             Assert.AreEqual(expected, actual);
 
@@ -146,11 +148,25 @@ namespace EventSourcingOnAzureFunctions.Test
             bool expected = false ;
             bool actual = true;
 
-            MockEventOne testObj = new MockEventOne();
+            MockEventOnePayload testObj = new MockEventOnePayload();
             testObj.DateTimeOffsetProperty = new DateTimeOffset(new DateTime(1988, 12, 1));
-            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.DateTimeOffsetProperty)), testObj);
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOnePayload).GetProperty(nameof(MockEventOnePayload.DateTimeOffsetProperty)), testObj);
 
             Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void MakeDynamicTableEntity_Valid_TestMethod()
+        {
+
+            MockEventOne testEvent = new MockEventOne() { EventTypeName = "Tested Event" };
+            testEvent.EventPayload = new MockEventOnePayload() { StringProperty = "This is a test", dateTimeProperty = DateTime.Now };
+
+            TableEventStreamWriter tsw = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"), "Fakeconnectionstring");
+            var testObj = tsw.MakeDynamicTableEntity(testEvent, 123);
+
+            Assert.IsNotNull(testObj); 
 
         }
     }
@@ -159,9 +175,8 @@ namespace EventSourcingOnAzureFunctions.Test
 
 namespace Mocking
 {
-    public class MockEventOne
+    public class MockEventOnePayload
     {
-
         public int IntegerProperty { get; set; }
 
         public string StringProperty { get; set; }
@@ -171,5 +186,16 @@ namespace Mocking
         public object objectProperty { get; set; }
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
+    }
+
+    public class MockEventOne
+        : IEvent
+    {
+
+
+
+        public string EventTypeName { get; set; }
+
+        public object EventPayload { get; set; }
     }
 }

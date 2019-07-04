@@ -1,7 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.CosmosDB.Table;
-using Microsoft.Azure.Storage;
+using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Collections.Generic;
 using System.Text;

@@ -1,0 +1,5 @@
+﻿{
+  "ConnectionStrings": {
+    "Fakeconnectionstring": "UseDevelopmentStorage=true"
+  }
+}

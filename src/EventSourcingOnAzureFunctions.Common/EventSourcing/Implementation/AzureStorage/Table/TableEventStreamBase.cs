@@ -1,6 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.CosmosDB.Table;
+using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -118,7 +118,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             if (base._storageAccount != null)
             {
-                _cloudTableClient = base._storageAccount.CreateCloudTableClient();
+                Microsoft.Azure.Storage.SharedAccessAccountPolicy accessPolicy = new Microsoft.Azure.Storage.SharedAccessAccountPolicy()
+                { Permissions = Microsoft.Azure.Storage.SharedAccessAccountPermissions.Read | Microsoft.Azure.Storage.SharedAccessAccountPermissions.List  };
+
+                if (writeAccess)
+                {
+                    // Allow records to be added and the 000 record to be updated
+                    accessPolicy.Permissions |= Microsoft.Azure.Storage.SharedAccessAccountPermissions.Add;
+                    accessPolicy.Permissions |= Microsoft.Azure.Storage.SharedAccessAccountPermissions.Update;
+                }
+
+                _cloudTableClient = new CloudTableClient(_storageAccount.TableStorageUri.PrimaryUri,
+                   new StorageCredentials( _storageAccount.GetSharedAccessSignature(accessPolicy)));
             }
 
 
