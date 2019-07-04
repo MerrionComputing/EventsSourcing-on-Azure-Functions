@@ -104,6 +104,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
+
+
         public TableEventStreamBase(IEventStreamIdentity identity,
             bool writeAccess = false,
             string connectionStringName = @"")
@@ -229,9 +231,68 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
             // special case - dates before 1601
-
+            if (pi.PropertyType == typeof(DateTime ))
+            {
+                DateTime val = (DateTime)pi.GetValue(eventInstance, null);
+                if (val.Year < 1601)
+                {
+                    return true;
+                }
+            }
+            if (pi.PropertyType == typeof(DateTimeOffset))
+            {
+                DateTimeOffset val = (DateTimeOffset)pi.GetValue(eventInstance, null);
+                if (val.Year < 1601)
+                {
+                    return true;
+                }
+            }
 
             return false;
         }
+
+
+        /// <summary>
+        /// Returns true if a property belongs to the event context rather thab the event data
+        /// </summary>
+        /// <param name="propertyName">
+        /// The name of the property from the table
+        /// </param>
+        public static bool IsContextProperty(string propertyName)
+        {
+
+            if (propertyName.Equals(FIELDNAME_EVENTTYPE, StringComparison.OrdinalIgnoreCase   ))
+            {
+                return true;
+            }
+
+            if (propertyName.Equals(FIELDNAME_CORRELATION_IDENTIFIER, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (propertyName.Equals(FIELDNAME_COMMENTS, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (propertyName.Equals(FIELDNAME_SOURCE, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (propertyName.Equals(FIELDNAME_VERSION, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (propertyName.Equals(FIELDNAME_WHO, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }

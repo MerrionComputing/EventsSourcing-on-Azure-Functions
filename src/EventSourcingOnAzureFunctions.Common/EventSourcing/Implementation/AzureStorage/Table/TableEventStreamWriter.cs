@@ -3,6 +3,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.CosmosDB.Table;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -58,6 +59,131 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             _writerContext = writerContext;
         }
 
+        public DynamicTableEntity MakeDynamicTableEntity(IEvent eventToPersist,
+    int sequenceNumber)
+        {
+
+            DynamicTableEntity ret = new DynamicTableEntity(this.InstanceKey,
+                SequenceNumberAsString(sequenceNumber));
+
+            // Add the event type
+            ret.Properties.Add(FIELDNAME_EVENTTYPE,
+                  new EntityProperty(EventNameAttribute.GetEventName(eventToPersist.GetType())));
+
+            if (null != _writerContext )
+            {
+                if (! string.IsNullOrWhiteSpace(_writerContext.Commentary ) )
+                {
+                    ret.Properties.Add(FIELDNAME_COMMENTS,
+                        new EntityProperty(_writerContext.Commentary));
+                }
+                if (! string.IsNullOrWhiteSpace(_writerContext.CorrelationIdentifier ) )
+                {
+                    ret.Properties.Add(FIELDNAME_CORRELATION_IDENTIFIER,
+                        new EntityProperty(_writerContext.CorrelationIdentifier ));
+                }
+                if (! string.IsNullOrWhiteSpace(_writerContext.Source ) )
+                {
+                    ret.Properties.Add(FIELDNAME_SOURCE,
+                        new EntityProperty(_writerContext.Source ));
+                }
+                if (! string.IsNullOrWhiteSpace(_writerContext.Who ) )
+                {
+                    ret.Properties.Add(FIELDNAME_WHO,
+                        new EntityProperty(_writerContext.Who ));
+                } 
+            }
+
+            if (null != eventToPersist.EventPayload )
+            {
+                // save the payload properties 
+                int propertiesCount = 0;
+                foreach (System.Reflection.PropertyInfo pi in eventToPersist.EventPayload.GetType().GetProperties())
+                {
+                    if (pi.CanRead )
+                    {
+                        if (! IsContextProperty(pi.Name) )
+                        {
+                            if (propertiesCount > MAX_FREE_DATA_FIELDS)
+                            {
+                                throw new EventStreamWriteException(this,
+                                    sequenceNumber,
+                                    $"Event has too many fields to store in an Azure table"); 
+                            }
+                            else
+                            {
+                                if (!IsPropertyEmpty(pi, eventToPersist.EventPayload))
+                                {
+                                    ret.Properties.Add(pi.Name, MakeEntityProperty(pi, eventToPersist.EventPayload));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ret;
+
+        }
+
+        public static  EntityProperty MakeEntityProperty(PropertyInfo pi, 
+            object eventPayload)
+        {
+            
+            if (null == eventPayload )
+            {
+                return new EntityProperty(string.Empty);
+            }
+
+            //cast it to the correct type?
+            if (pi.PropertyType == typeof(bool))
+            {
+                return new EntityProperty((bool)pi.GetValue(eventPayload, null));
+            }
+
+            if (pi.PropertyType == typeof(double))
+            {
+                return new EntityProperty((double)pi.GetValue(eventPayload, null));
+            }
+
+            if (pi.PropertyType == typeof(int))
+            {
+                return new EntityProperty((int)pi.GetValue(eventPayload, null));
+            }
+
+            if (pi.PropertyType == typeof(long))
+            {
+                return new EntityProperty((long)pi.GetValue(eventPayload, null));
+            }
+
+            if (pi.PropertyType == typeof(DateTimeOffset ))
+            {
+                return new EntityProperty((DateTimeOffset )pi.GetValue(eventPayload, null));
+            }
+
+            if (pi.PropertyType == typeof(Guid))
+            {
+                return new EntityProperty((Guid)pi.GetValue(eventPayload, null));
+            }
+
+            if (pi.PropertyType == typeof(DateTime))
+            {
+                return new EntityProperty((DateTime )pi.GetValue(eventPayload, null));
+            }
+
+            if (pi.PropertyType == typeof(byte[]))
+            {
+                return new EntityProperty((byte[])pi.GetValue(eventPayload, null));
+            }
+
+            if (pi.PropertyType == typeof(decimal))
+            {
+                decimal oVal = (decimal)pi.GetValue(eventPayload, null);
+                return new EntityProperty((double)oVal);
+            }
+
+            return new EntityProperty(pi.GetValue(eventPayload, null).ToString());
+        }
 
         public TableEventStreamWriter(IEventStreamIdentity identity,
             string connectionStringName = @"")

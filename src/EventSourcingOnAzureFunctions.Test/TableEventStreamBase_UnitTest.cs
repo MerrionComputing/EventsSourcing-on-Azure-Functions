@@ -82,6 +82,77 @@ namespace EventSourcingOnAzureFunctions.Test
             Assert.AreEqual(expected, actual);
 
         }
+
+        [TestMethod]
+        public void IsPropertyEmpty_EmptyDate_TestMethod()
+        {
+            bool expected = true;
+            bool actual = false;
+
+            MockEventOne testObj = new MockEventOne();
+
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.dateTimeProperty)), testObj);
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void IsPropertyEmpty_EmptyDateTimeOffset_TestMethod()
+        {
+            bool expected = true;
+            bool actual = false;
+
+            MockEventOne testObj = new MockEventOne();
+
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.DateTimeOffsetProperty)), testObj);
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void IsPropertyEmpty_EarlyDate_TestMethod()
+        {
+            bool expected = true;
+            bool actual = false;
+
+            MockEventOne testObj = new MockEventOne();
+            testObj.dateTimeProperty = new DateTime(1290, 1, 1);
+
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.dateTimeProperty)), testObj);
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void IsPropertyEmpty_EarlyDateTimeOffset_TestMethod()
+        {
+            bool expected = true;
+            bool actual = false;
+
+            MockEventOne testObj = new MockEventOne();
+            testObj.DateTimeOffsetProperty = new DateTimeOffset(new DateTime(1588, 12, 1));
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.DateTimeOffsetProperty)), testObj);
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void IsPropertyEmpty_LaterDateTimeOffset_TestMethod()
+        {
+            bool expected = false ;
+            bool actual = true;
+
+            MockEventOne testObj = new MockEventOne();
+            testObj.DateTimeOffsetProperty = new DateTimeOffset(new DateTime(1988, 12, 1));
+            actual = TableEventStreamBase.IsPropertyEmpty(typeof(MockEventOne).GetProperty(nameof(MockEventOne.DateTimeOffsetProperty)), testObj);
+
+            Assert.AreEqual(expected, actual);
+
+        }
     }
 
 }
