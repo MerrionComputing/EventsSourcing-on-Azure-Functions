@@ -1,0 +1,44 @@
+﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mocking;
+using System;
+using System.Threading.Tasks;
+
+namespace EventSourcingOnAzureFunctions.Test
+{
+    [TestClass]
+    public class TableEventStreamWriter_UnitTest
+    {
+
+        [TestMethod]
+        public void Constructor_TestMethod()
+        {
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                "RetailBank");
+
+            Assert.IsNotNull(testObj); 
+
+        }
+
+        [TestMethod]
+        public async Task AppendEvent_Unconstrained_TestMethod()
+        {
+
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                "RetailBank");
+
+            MockEventOne testEvent = new MockEventOne() { EventTypeName = "Test Event Happened" };
+            testEvent.EventPayload = new MockEventOnePayload() { StringProperty = "This is some data", IntegerProperty = 123 };
+
+           await testObj.AppendEvent(eventInstance: testEvent );
+
+            Assert.IsNotNull(testObj); 
+        }
+
+
+
+    }
+}

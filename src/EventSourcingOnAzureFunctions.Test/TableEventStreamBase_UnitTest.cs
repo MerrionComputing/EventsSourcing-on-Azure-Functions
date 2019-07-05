@@ -163,7 +163,9 @@ namespace EventSourcingOnAzureFunctions.Test
             MockEventOne testEvent = new MockEventOne() { EventTypeName = "Tested Event" };
             testEvent.EventPayload = new MockEventOnePayload() { StringProperty = "This is a test", dateTimeProperty = DateTime.Now };
 
-            TableEventStreamWriter tsw = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"), "Fakeconnectionstring");
+            TableEventStreamWriter tsw = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"), 
+                "RetailBank");
+
             var testObj = tsw.MakeDynamicTableEntity(testEvent, 123);
 
             Assert.IsNotNull(testObj); 

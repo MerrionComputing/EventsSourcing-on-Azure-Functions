@@ -1,14 +1,16 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Extensions.Configuration;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table
 {
     public abstract class TableEventStreamBase
-        : AzureStorageEventStreamBase, IEventStreamIdentity
+        : EventStreamBase, IEventStreamIdentity
     {
 
         #region Field names
@@ -29,6 +31,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         public const int MAX_BATCH_SIZE = 100;
 
+        protected internal CloudStorageAccount _storageAccount;
         private readonly CloudTableClient _cloudTableClient;
         
         public CloudTable Table
@@ -37,7 +40,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 if (null != _cloudTableClient )
                 {
-                    return _cloudTableClient.GetTableReference(this.TableName); 
+                    CloudTable ret = _cloudTableClient.GetTableReference(this.TableName);
+                    return ret;
                 }
                 else
                 {
@@ -86,7 +90,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             get
             {
-                return MakeValidStorageTableName(_entityTypeName + @"00" + base.DomainName);
+                return MakeValidStorageTableName(_entityTypeName + @"00" + DomainName);
             }
         }
 
@@ -94,8 +98,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             if (Table != null)
             {
-                // TODO: Get zero-eth entry...
-                throw new NotImplementedException();
+                if (Table.Exists())
+                {
+                    throw new NotImplementedException(); 
+                }
+                return Task.FromResult<bool>(false);
             }
             else
             {
@@ -104,35 +111,90 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
-
+        /// <summary>
+        /// The name of the default connection string to use for the domain
+        /// </summary>
+        protected internal string StorageConnectionStringSettingName
+        {
+            get
+            {
+                char[] invalidCharacters = @" _!,.;':@£$%^&*()+=/\#~{}[]?<>".ToCharArray();
+                return string.Join("", DomainName.Split(invalidCharacters)).Trim() + "TableStorageConnectionString";
+            }
+        }
 
         public TableEventStreamBase(IEventStreamIdentity identity,
             bool writeAccess = false,
             string connectionStringName = @"")
-            : base(identity.DomainName, writeAccess, connectionStringName)
         {
 
             _domainName = identity.DomainName;
             _entityTypeName = identity.EntityTypeName;
             _instanceKey = identity.InstanceKey;
 
-            if (base._storageAccount != null)
+
+            // Set the connection string to use
+            if (string.IsNullOrWhiteSpace(connectionStringName))
             {
-                Microsoft.Azure.Storage.SharedAccessAccountPolicy accessPolicy = new Microsoft.Azure.Storage.SharedAccessAccountPolicy()
-                { Permissions = Microsoft.Azure.Storage.SharedAccessAccountPermissions.Read | Microsoft.Azure.Storage.SharedAccessAccountPermissions.List  };
+                connectionStringName = StorageConnectionStringSettingName;
+            }
 
-                if (writeAccess)
+            // Create a connection to the cloud storage account to use
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", true)
+                .AddJsonFile("config.local.json", true)
+                .AddJsonFile("config.json", true)
+                .AddJsonFile("connectionstrings.json", true)
+                .AddEnvironmentVariables();
+
+            IConfigurationRoot config = builder.Build();
+
+            if (null != config)
+            {
+                if (!string.IsNullOrWhiteSpace(connectionStringName))
                 {
-                    // Allow records to be added and the 000 record to be updated
-                    accessPolicy.Permissions |= Microsoft.Azure.Storage.SharedAccessAccountPermissions.Add;
-                    accessPolicy.Permissions |= Microsoft.Azure.Storage.SharedAccessAccountPermissions.Update;
+                    _storageAccount = CloudStorageAccount.Parse(config.GetConnectionString(connectionStringName));
                 }
+            }
 
-                _cloudTableClient = new CloudTableClient(_storageAccount.TableStorageUri.PrimaryUri,
-                   new StorageCredentials( _storageAccount.GetSharedAccessSignature(accessPolicy)));
+            if (_storageAccount != null)
+            {
+
+                string sasToken = _storageAccount.GetSharedAccessSignature(DefaultSharedAccessAccountPolicy);
+
+                _cloudTableClient = new CloudTableClient(_storageAccount.TableStorageUri.PrimaryUri ,
+                    new StorageCredentials(sasToken ));
+
+                if (null != _cloudTableClient )
+                {
+                    if (! Table.Exists())
+                    {
+                        Table.Create();
+                    }
+                }
             }
 
 
+        }
+
+
+        public static SharedAccessAccountPolicy DefaultSharedAccessAccountPolicy
+        {
+            get
+            {
+                // Make a standard shared access policy to use 
+                return new SharedAccessAccountPolicy()
+                {
+                    Permissions = SharedAccessAccountPermissions.Add 
+                    | SharedAccessAccountPermissions.Create 
+                    | SharedAccessAccountPermissions.Read 
+                    | SharedAccessAccountPermissions.Update 
+                    | SharedAccessAccountPermissions.Write
+
+                   , ResourceTypes = SharedAccessAccountResourceTypes.Object 
+                };
+            }
         }
 
         /// <summary>
