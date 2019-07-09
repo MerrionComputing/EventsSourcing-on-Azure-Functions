@@ -23,7 +23,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             int nextSequence = 0;
 
             // Read and update the [RECORDID_SEQUENCE] row in a transaction..
-            nextSequence =  IncrementSequenceNumber();
+            nextSequence = IncrementSequenceNumber();
 
             if (expectedTopSequenceNumber > 0)
             {
@@ -39,14 +39,23 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
 
             var dteEvent = MakeDynamicTableEntity(eventInstance, nextSequence);
-            if (null != dteEvent )
+            if (null != dteEvent)
             {
                 await base.Table.ExecuteAsync(TableOperation.Insert(dteEvent));
             }
 
         }
 
-
+        public override OperationContext GetDefaultOperationContext()
+        {
+            OperationContext ret = base.GetDefaultOperationContext();
+            if (null != _writerContext)
+            {
+                // Add in the correlation identifier for tracing any storage issues
+                ret.ClientRequestID = _writerContext.CorrelationIdentifier;
+            }
+            return ret;
+        }
 
         /// <summary>
         /// Increment the sequence number for this event stream and return the new number
@@ -66,8 +75,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 tries += 1;
                 // read in the a [TableEntityKeyRecord]
-                
-                streamFooter = (TableEntityKeyRecord)Table.Execute(TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0))).Result;
+
+                streamFooter = (TableEntityKeyRecord)Table.Execute(
+                    TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0)),
+                    operationContext: GetDefaultOperationContext()).Result;
+
                 if (null == streamFooter)
                 {
                     streamFooter = new TableEntityKeyRecord(this);
@@ -97,7 +109,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     // catastrophic deadlock
                     throw new EventStreamWriteException(this, streamFooter.LastSequence,
                         message: "Unable to increment the stream sequence number due to deadlock",
-                        source: "Table Event Stream Writer"); 
+                        source: "Table Event Stream Writer");
                 }
             }
 
@@ -128,45 +140,45 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             ret.Properties.Add(FIELDNAME_EVENTTYPE,
                   new EntityProperty(EventNameAttribute.GetEventName(eventToPersist.GetType())));
 
-            if (null != _writerContext )
+            if (null != _writerContext)
             {
-                if (! string.IsNullOrWhiteSpace(_writerContext.Commentary ) )
+                if (!string.IsNullOrWhiteSpace(_writerContext.Commentary))
                 {
                     ret.Properties.Add(FIELDNAME_COMMENTS,
                         new EntityProperty(_writerContext.Commentary));
                 }
-                if (! string.IsNullOrWhiteSpace(_writerContext.CorrelationIdentifier ) )
+                if (!string.IsNullOrWhiteSpace(_writerContext.CorrelationIdentifier))
                 {
                     ret.Properties.Add(FIELDNAME_CORRELATION_IDENTIFIER,
-                        new EntityProperty(_writerContext.CorrelationIdentifier ));
+                        new EntityProperty(_writerContext.CorrelationIdentifier));
                 }
-                if (! string.IsNullOrWhiteSpace(_writerContext.Source ) )
+                if (!string.IsNullOrWhiteSpace(_writerContext.Source))
                 {
                     ret.Properties.Add(FIELDNAME_SOURCE,
-                        new EntityProperty(_writerContext.Source ));
+                        new EntityProperty(_writerContext.Source));
                 }
-                if (! string.IsNullOrWhiteSpace(_writerContext.Who ) )
+                if (!string.IsNullOrWhiteSpace(_writerContext.Who))
                 {
                     ret.Properties.Add(FIELDNAME_WHO,
-                        new EntityProperty(_writerContext.Who ));
-                } 
+                        new EntityProperty(_writerContext.Who));
+                }
             }
 
-            if (null != eventToPersist.EventPayload )
+            if (null != eventToPersist.EventPayload)
             {
                 // save the payload properties 
                 int propertiesCount = 0;
                 foreach (System.Reflection.PropertyInfo pi in eventToPersist.EventPayload.GetType().GetProperties())
                 {
-                    if (pi.CanRead )
+                    if (pi.CanRead)
                     {
-                        if (! IsContextProperty(pi.Name) )
+                        if (!IsContextProperty(pi.Name))
                         {
                             if (propertiesCount > MAX_FREE_DATA_FIELDS)
                             {
                                 throw new EventStreamWriteException(this,
                                     sequenceNumber,
-                                    $"Event has too many fields to store in an Azure table"); 
+                                    $"Event has too many fields to store in an Azure table");
                             }
                             else
                             {
@@ -184,11 +196,65 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         }
 
-        public static  EntityProperty MakeEntityProperty(PropertyInfo pi, 
+        public SharedAccessTablePolicy DefaultSharedAccessTablePolicy
+        {
+            get
+            {
+                return new SharedAccessTablePolicy()
+                {
+                    Permissions =
+                    SharedAccessTablePermissions.Add |
+                    SharedAccessTablePermissions.Query |
+                    SharedAccessTablePermissions.Update
+                };
+            }
+        }
+
+        /// <summary>
+        /// Policy to allow read/writer access to the storage account the table(s) are in
+        /// </summary>
+        public SharedAccessAccountPolicy DefaultSharedAccessAccountPolicy
+        {
+            get
+            {
+                // Make a standard shared access policy to use 
+                return new SharedAccessAccountPolicy()
+                {
+                    Permissions = SharedAccessAccountPermissions.Create
+                    | SharedAccessAccountPermissions.Read
+                    | SharedAccessAccountPermissions.Update
+                    | SharedAccessAccountPermissions.Write
+                    | SharedAccessAccountPermissions.List
+
+                    ,
+                    ResourceTypes = SharedAccessAccountResourceTypes.Object,
+                    Services = SharedAccessAccountServices.Table,
+                    Protocols = SharedAccessProtocol.HttpsOnly
+                };
+            }
+        }
+
+        /// <summary>
+        /// Constructor to create a table backed writer for a given event stream
+        /// </summary>
+        /// <param name="identity">
+        /// The identity of the entity for which to create an event stream writer
+        /// </param>
+        /// <param name="connectionStringName">
+        /// (Optional) The name of the connection string to use to access the azure storage
+        /// </param>
+        public TableEventStreamWriter(IEventStreamIdentity identity,
+    string connectionStringName = @"")
+    : base(identity, true, connectionStringName)
+        {
+
+        }
+
+        public static EntityProperty MakeEntityProperty(PropertyInfo pi,
             object eventPayload)
         {
-            
-            if (null == eventPayload )
+
+            if (null == eventPayload)
             {
                 return new EntityProperty(string.Empty);
             }
@@ -214,9 +280,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 return new EntityProperty((long)pi.GetValue(eventPayload, null));
             }
 
-            if (pi.PropertyType == typeof(DateTimeOffset ))
+            if (pi.PropertyType == typeof(DateTimeOffset))
             {
-                return new EntityProperty((DateTimeOffset )pi.GetValue(eventPayload, null));
+                return new EntityProperty((DateTimeOffset)pi.GetValue(eventPayload, null));
             }
 
             if (pi.PropertyType == typeof(Guid))
@@ -226,7 +292,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             if (pi.PropertyType == typeof(DateTime))
             {
-                return new EntityProperty((DateTime )pi.GetValue(eventPayload, null));
+                return new EntityProperty((DateTime)pi.GetValue(eventPayload, null));
             }
 
             if (pi.PropertyType == typeof(byte[]))
@@ -243,12 +309,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             return new EntityProperty(pi.GetValue(eventPayload, null).ToString());
         }
 
-        public TableEventStreamWriter(IEventStreamIdentity identity,
-            string connectionStringName = @"")
-            : base(identity, true, connectionStringName)
-        {
 
-        }
 
 
 

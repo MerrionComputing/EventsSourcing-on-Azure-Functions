@@ -1,5 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -38,6 +39,56 @@ namespace EventSourcingOnAzureFunctions.Test
             Assert.IsNotNull(testObj); 
         }
 
+        [TestMethod]
+        public async Task AppendEvent_MustExist_TestMethod()
+        {
+
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                "RetailBank");
+
+            MockEventOne testEvent = new MockEventOne() { EventTypeName = "Test Event Happened" };
+            testEvent.EventPayload = new MockEventOnePayload() { StringProperty = "This is some data", IntegerProperty = 123 };
+
+            await testObj.AppendEvent(eventInstance: testEvent, 
+                streamConstraint: Common.EventSourcing.Implementation.EventStreamBase.EventStreamExistenceConstraint.MustExist);
+
+            Assert.IsNotNull(testObj);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(EventStreamWriteException))]
+        public async Task AppendEvent_MustExist_Fail_TestMethod()
+        {
+
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance does not exists"),
+                "RetailBank");
+
+            MockEventOne testEvent = new MockEventOne() { EventTypeName = "Test Event Happened" };
+            testEvent.EventPayload = new MockEventOnePayload() { StringProperty = "This is some data", IntegerProperty = 123 };
+
+            await testObj.AppendEvent(eventInstance: testEvent,
+                streamConstraint: Common.EventSourcing.Implementation.EventStreamBase.EventStreamExistenceConstraint.MustExist);
+
+            Assert.IsNotNull(testObj);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(EventStreamWriteException))]
+        public async Task AppendEvent_Constrained_TestMethod()
+        {
+
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                "RetailBank");
+
+            MockEventOne testEvent = new MockEventOne() { EventTypeName = "Failing event" };
+            testEvent.EventPayload = new MockEventOnePayload() { StringProperty = "This is some more data", IntegerProperty = 123 };
+
+            // This is meant to fail as there are more than 1 events in this stream
+            await testObj.AppendEvent(eventInstance: testEvent, 
+                expectedTopSequenceNumber: 1);
+
+            Assert.IsNotNull(testObj);
+        }
 
 
     }

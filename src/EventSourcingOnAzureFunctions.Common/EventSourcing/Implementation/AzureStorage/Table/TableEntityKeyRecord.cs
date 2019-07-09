@@ -115,7 +115,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             if (null != properties )
             {
-                if (properties.ContainsKey(nameof(SequencePosition)) )
+                if (properties.ContainsKey(nameof(LastSequence)) )
                 {
                     LastSequence = properties[nameof(LastSequence)].Int32Value.GetValueOrDefault(0);
                 }
@@ -123,7 +123,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     Context = properties[nameof(Context)].StringValue;
                 }
-                if (properties.ContainsKey(DomainName) )
+                if (properties.ContainsKey(nameof(DomainName) ))
                 {
                     DomainName = properties[nameof(DomainName)].StringValue;
                 }

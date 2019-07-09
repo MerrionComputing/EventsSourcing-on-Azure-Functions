@@ -160,15 +160,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             if (_storageAccount != null)
             {
-
-                string sasToken = _storageAccount.GetSharedAccessSignature(DefaultSharedAccessAccountPolicy);
-
-                _cloudTableClient = new CloudTableClient(_storageAccount.TableStorageUri.PrimaryUri ,
-                    new StorageCredentials(sasToken ));
+                _cloudTableClient = _storageAccount.CreateCloudTableClient();
 
                 if (null != _cloudTableClient )
                 {
-                    if (! Table.Exists())
+                    if (! Table.Exists( operationContext: GetDefaultOperationContext()))
                     {
                         Table.Create();
                     }
@@ -178,24 +174,27 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         }
 
-
-        public static SharedAccessAccountPolicy DefaultSharedAccessAccountPolicy
+        public static TableRequestOptions DefaultTableRequestOptions(string sasToken)
         {
-            get
+            return new TableRequestOptions()
             {
-                // Make a standard shared access policy to use 
-                return new SharedAccessAccountPolicy()
-                {
-                    Permissions = SharedAccessAccountPermissions.Add 
-                    | SharedAccessAccountPermissions.Create 
-                    | SharedAccessAccountPermissions.Read 
-                    | SharedAccessAccountPermissions.Update 
-                    | SharedAccessAccountPermissions.Write
-
-                   , ResourceTypes = SharedAccessAccountResourceTypes.Object 
-                };
-            }
+                SessionToken = sasToken
+            };
         }
+
+        public virtual OperationContext GetDefaultOperationContext()
+        {
+            OperationContext ret = new OperationContext();
+            // Debugging requests sent
+            ret.SendingRequest += DebugSendingRequest;
+            return ret;
+        }
+
+        private void DebugSendingRequest(object sender, RequestEventArgs e)
+        {
+            string debugMessage = $"{e.Request.RequestUri}";
+        }
+
 
         /// <summary>
         /// Make a valid Azure table name for the raw name of the entity type passed in

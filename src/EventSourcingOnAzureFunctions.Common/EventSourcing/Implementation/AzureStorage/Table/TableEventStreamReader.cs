@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,6 +29,37 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             throw new NotImplementedException();
         }
 
+
+        /// <summary>
+        /// Policy to allow read-access to the tables
+        /// </summary>
+        public SharedAccessAccountPolicy DefaultSharedAccessAccountPolicy
+        {
+            get
+            {
+                // Make a standard shared access policy to use 
+                return new SharedAccessAccountPolicy()
+                {
+                    Permissions =  SharedAccessAccountPermissions.Read
+                    | SharedAccessAccountPermissions.List
+                    ,
+                    ResourceTypes = SharedAccessAccountResourceTypes.Object,
+                    Services = SharedAccessAccountServices.Table,
+                    Protocols = SharedAccessProtocol.HttpsOnly
+                };
+            }
+        }
+
+        public SharedAccessTablePolicy DefaultSharedAccessTablePolicy
+        {
+            get
+            {
+                return new SharedAccessTablePolicy()
+                {
+                    Permissions = SharedAccessTablePermissions.Query 
+                };
+            }
+        }
 
         public TableEventStreamReader(IEventStreamIdentity identity,
             string connectionStringName = @"")
