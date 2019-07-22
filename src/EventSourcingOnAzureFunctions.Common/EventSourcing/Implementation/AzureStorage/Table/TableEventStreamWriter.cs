@@ -22,6 +22,33 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             int nextSequence = 0;
 
+            // check stream constraints
+            if (streamConstraint != EventStreamExistenceConstraint.Loose )
+            {
+                // find out if the stream exists
+                bool exists = StreamAlreadyExists();
+                if (streamConstraint== EventStreamExistenceConstraint.MustExist )
+                {
+                    if (! exists )
+                    {
+                        throw new EventStreamWriteException(this,
+                     0,
+                    message: $"Stream is constrained to MustExist but has not been created",
+                    source: "Table Event Stream Writer");
+                    }
+                }
+                if (streamConstraint == EventStreamExistenceConstraint.MustBeNew )
+                {
+                    if (exists)
+                    {
+                        throw new EventStreamWriteException(this,
+                     0,
+                    message: $"Stream is constrained to be new but has already been created",
+                    source: "Table Event Stream Writer");
+                    }
+                }
+            }
+
             // Read and update the [RECORDID_SEQUENCE] row in a transaction..
             nextSequence = IncrementSequenceNumber();
 
@@ -45,6 +72,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
         }
+
+
 
         public override OperationContext GetDefaultOperationContext()
         {

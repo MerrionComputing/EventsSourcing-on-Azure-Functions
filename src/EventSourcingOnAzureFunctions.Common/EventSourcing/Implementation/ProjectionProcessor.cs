@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -54,6 +55,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
         {
             // Initialise the reader to use to read the events to be processed
             this.eventStreamReader = blobEventStreamReader;
+        }
+
+        public ProjectionProcessor(TableEventStreamReader tableEventStreamReader)
+        {
+            // Initialise the reader to use to read the events to be processed
+            this.eventStreamReader = tableEventStreamReader;
         }
     }
 }

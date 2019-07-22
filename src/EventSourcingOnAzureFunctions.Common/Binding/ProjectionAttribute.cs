@@ -11,7 +11,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
     [Binding]
-    public class ProjectionAttribute
+    public sealed class ProjectionAttribute
         : Attribute, IEventStreamIdentity
     {
 

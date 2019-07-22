@@ -1,5 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,5 +25,110 @@ namespace EventSourcingOnAzureFunctions.Test
 
         }
 
+
+        [TestMethod]
+        public void Projection_Constructor_TestMethod()
+        {
+
+            TableEventStreamReader testReader = new TableEventStreamReader(
+                new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                "RetailBank");
+
+            ProjectionProcessor testObj = new ProjectionProcessor(testReader);
+
+            Assert.IsNotNull(testReader); 
+
+        }
+
+        [TestMethod]
+        public async Task Projection_Exists_TestMethod()
+        {
+            bool expected = true;
+            bool actual = false;
+
+            TableEventStreamReader testReader = new TableEventStreamReader(
+                new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                "RetailBank");
+
+            ProjectionProcessor testObj = new ProjectionProcessor(testReader);
+
+            actual = await testObj.Exists();
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public async Task Projection_NotExists_TestMethod()
+        {
+            bool expected = false ;
+            bool actual = true ;
+
+            TableEventStreamReader testReader = new TableEventStreamReader(
+                new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance not existing abc.def"),
+                "RetailBank");
+
+            ProjectionProcessor testObj = new ProjectionProcessor(testReader);
+
+            actual = await testObj.Exists();
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void Projection_MockProjectionOne_TestMethod()
+        {
+
+            int notexpected = 0;
+            int actual = 0;
+
+            TableEventStreamReader testReader = new TableEventStreamReader(
+                new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                "RetailBank");
+
+            ProjectionProcessor testObj = new ProjectionProcessor(testReader);
+
+            var result =  testObj.Process<MockProjectionOne>() ;
+            actual = result.Result.TotalCount;
+
+            Assert.AreNotEqual (notexpected, actual);
+
+        }
+
     }
+}
+
+namespace Mocking
+{
+
+    public class MockProjectionOne
+        : ProjectionBase,
+        IHandleEventType<MockEventOne>
+    {
+
+        private string lastMessage;
+        private int intCount;
+
+        public void HandleEventInstance(MockEventOne eventInstance)
+        {
+            if (null != eventInstance )
+            {
+                if (null != eventInstance.EventPayload )
+                {
+                    lastMessage = ((MockEventOnePayload)eventInstance.EventPayload).StringProperty;
+                    intCount += ((MockEventOnePayload)eventInstance.EventPayload).IntegerProperty;
+                }
+            }
+        }
+
+        public int TotalCount
+        {
+            get
+            {
+                return intCount;
+            }
+        }
+    }
+
 }

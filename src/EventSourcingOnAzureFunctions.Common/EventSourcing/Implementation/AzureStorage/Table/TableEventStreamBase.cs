@@ -94,21 +94,50 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
-        public Task<bool> Exists()
+        public async Task<bool> Exists()
         {
             if (Table != null)
             {
                 if (Table.Exists())
                 {
-                    throw new NotImplementedException(); 
+                    TableResult ret = await Table.ExecuteAsync(
+                        TableOperation.Retrieve(this.InstanceKey, SequenceNumberAsString(0)),
+                           requestOptions: null,
+                           operationContext: GetDefaultOperationContext());
+
+                    return (null != ret.Result);
                 }
-                return Task.FromResult<bool>(false);
+                return await Task.FromResult<bool>(false);
             }
             else
             {
                 // If the table doesn't exist then the event cannot possibly exist
-                return Task.FromResult<bool>(false);
+                return await Task.FromResult<bool>(false);
             }
+
+        }
+
+        /// <summary>
+        /// Does a stream already exist for this event stream identity
+        /// </summary>
+        /// <remarks>
+        /// We use the existence of the stream footer record as proof of stream existence
+        /// </remarks>
+        protected internal bool StreamAlreadyExists()
+        {
+            TableEntityKeyRecord streamFooter = null;
+
+            streamFooter = (TableEntityKeyRecord)Table.Execute(
+                   TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0)),
+                   requestOptions: null,
+                   operationContext: GetDefaultOperationContext()).Result;
+
+            if (null != streamFooter)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
     /// If not set a default one is used based on the domain name and aggregate type
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-    public class ConnectionStringNameAttribute
+    public sealed class ConnectionStringNameAttribute
         : Attribute 
     {
 

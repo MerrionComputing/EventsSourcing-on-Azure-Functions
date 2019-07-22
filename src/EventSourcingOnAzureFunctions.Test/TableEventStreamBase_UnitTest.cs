@@ -190,6 +190,7 @@ namespace Mocking
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
     }
 
+    [EventName("Mock Event One")]
     public class MockEventOne
         : IEvent
     {
