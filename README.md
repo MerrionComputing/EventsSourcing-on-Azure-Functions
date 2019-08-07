@@ -3,7 +3,7 @@ A library to demonstrate doing Event Sourcing as a data persistence mechanism fo
 
 ## Introduction to event sourcing
 
-At its very simplest, event sourcing is a way of storing state (for an entity) which works by storing the sequential history of all the events that have occured to that entity.  Changes to the entity are written as new events appended to the end of the event stream for the entity. 
+At its very simplest, event sourcing is a way of storing state (for an entity) which works by storing the sequential history of all the events that have occurred to that entity.  Changes to the entity are written as new events appended to the end of the event stream for the entity. 
 
 When a query or business process needs to use the current state of the entity it gets this by running a projection over the event stream which is a very simple piece of code which, for each event, decides (a) do I care about this type of event and (b) if so what do I do when I receive it.
 
