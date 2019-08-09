@@ -40,6 +40,21 @@ namespace EventSourcingOnAzureFunctions.Test
         }
 
         [TestMethod]
+        public async Task AppendEvent__Instance2_Unconstrained_TestMethod()
+        {
+
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 456"),
+                "RetailBank");
+
+            MockEventOne testEvent = new MockEventOne() { EventTypeName = "Testing Event" };
+            testEvent.EventPayload = new MockEventOnePayload() { StringProperty = "This is some data for the new instance", IntegerProperty = 234 , dateTimeProperty = DateTime.UtcNow  };
+
+            await testObj.AppendEvent(eventInstance: testEvent);
+
+            Assert.IsNotNull(testObj);
+        }
+
+        [TestMethod]
         public async Task AppendEvent_MustExist_TestMethod()
         {
 
@@ -60,7 +75,7 @@ namespace EventSourcingOnAzureFunctions.Test
         public async Task AppendEvent_MustExist_Fail_TestMethod()
         {
 
-            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance does not exist 123.456"),
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance does not exist 123.456.998"),
                 "RetailBank");
 
             MockEventOne testEvent = new MockEventOne() { EventTypeName = "Test Event Happened" };
@@ -68,6 +83,23 @@ namespace EventSourcingOnAzureFunctions.Test
 
             await testObj.AppendEvent(eventInstance: testEvent,
                 streamConstraint: Common.EventSourcing.Implementation.EventStreamBase.EventStreamExistenceConstraint.MustExist);
+
+            Assert.IsNotNull(testObj);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(EventStreamWriteException))]
+        public async Task AppendEvent_ConcurrencyCrocodile_Fail_TestMethod()
+        {
+
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                "RetailBank");
+
+            MockEventOne testEvent = new MockEventOne() { EventTypeName = "Test Event Happened" };
+            testEvent.EventPayload = new MockEventOnePayload() { StringProperty = "This is some data", IntegerProperty = 123 };
+
+            await testObj.AppendEvent(eventInstance: testEvent, 
+                expectedTopSequenceNumber: 2);
 
             Assert.IsNotNull(testObj);
         }

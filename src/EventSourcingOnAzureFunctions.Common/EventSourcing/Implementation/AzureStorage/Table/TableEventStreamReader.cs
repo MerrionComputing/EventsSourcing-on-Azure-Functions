@@ -9,10 +9,12 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table
 {
     public sealed class TableEventStreamReader
-        : TableEventStreamBase, IEventStreamReader
+        : TableEventStreamBase, 
+        IEventStreamReader
     {
 
-
+        private readonly IEventMaps _eventMaps = null;
+        
         public async Task<IEnumerable<IEvent>> GetAllEvents()
         {
             // Get all the events starting from the start of the stream
@@ -27,7 +29,51 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 StartingSequenceNumber = 1;
             }
 
-            throw new NotImplementedException();
+            if (Table != null)
+            {
+                List<IEvent> ret = new List<IEvent>();
+
+                TableContinuationToken token = new TableContinuationToken();
+
+                TableQuery getEventsQuery = CreateQuery(StartingSequenceNumber);
+
+                do
+                {
+                    // create the query to be executed..
+                    var segment = await Table.ExecuteQuerySegmentedAsync(getEventsQuery,
+                         token,
+                         requestOptions: GetDefaultRequestOptions(),
+                         operationContext: GetDefaultOperationContext());
+
+                    foreach (DynamicTableEntity dteRow in segment)
+                    {
+                        // Process this one row as an event...
+                        // Get the event data
+                        IEvent eventPayload = GetEventFromDynamicTableEntity(dteRow);
+                        if (null != eventPayload)
+                        {
+                            // Add it to the end of the list
+                            ret.Add(eventPayload );
+                        }
+                    }
+
+                    // update the continuation token to get the next chunk of records
+                    token = segment.ContinuationToken;
+
+                } while (null != token);
+
+
+                // return the resultant list
+                return ret;
+            }
+            else
+            {
+                // Initialisation error with the event stream
+                throw new Exceptions.EventStreamReadException(this,
+                    0,
+                    "Event stream initialisation error",
+                    source: "Azure Tables event stream reader");
+            }
         }
 
 
@@ -119,26 +165,39 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 if (!string.IsNullOrWhiteSpace(eventName))
                 {
-                    IEvent eventPayload = CreateEventClass(eventName);
-                    if (null != eventPayload )
+                    IEvent eventWrapper = CreateEventClass(eventName);
+                    if (null != eventWrapper)
                     {
-                        // Populate the properties from the table row
-                        foreach (var  entityProperty in dteRow.Properties )
+                        // Create the event payload
+                        if (! string.IsNullOrWhiteSpace(eventName) )
                         {
-                            if (! IsContextProperty(entityProperty.Key ))
+                            // Get the event type from the map
+                            if (null != _eventMaps )
                             {
-                                PropertyInfo pi = eventPayload.GetType().GetProperty(entityProperty.Key); 
-                                if (null != pi)
+                                eventWrapper = _eventMaps.CreateEventClass(eventName);  
+                            }
+                        }
+                        if (null != eventWrapper.EventPayload)
+                        {
+                            // Populate the properties from the table row
+                            foreach (var entityProperty in dteRow.Properties)
+                            {
+                                if (!IsContextProperty(entityProperty.Key))
                                 {
-                                    if (pi.CanWrite )
+
+                                    PropertyInfo pi = eventWrapper.EventPayload.GetType().GetProperty(entityProperty.Key);
+                                    if (null != pi)
                                     {
-                                        pi.SetValue(eventPayload, entityProperty.Value);
+                                        if (pi.CanWrite)
+                                        {
+                                            pi.SetValue(eventWrapper.EventPayload, entityProperty.Value.PropertyAsObject );
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        return eventPayload;
+                        return eventWrapper;
                     }
                 }
             }
@@ -155,7 +214,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </param>
         private IEvent CreateEventClass(string eventName)
         {
-            throw new NotImplementedException();
+            return _eventMaps.CreateEventClass( eventName);
         }
 
         /// <summary>
@@ -224,10 +283,43 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         }
 
         public TableEventStreamReader(IEventStreamIdentity identity,
-            string connectionStringName = @"")
+            string connectionStringName = @"",
+            IEventMaps eventMaps = null)
             : base(identity, false, connectionStringName )
         {
 
+
+            // if event maps not passed in you have to create a default
+            if (null == eventMaps)
+            {
+                _eventMaps = EventMaps.CreateDefaultEventMaps();
+            }
+            else
+            {
+                _eventMaps = eventMaps;
+            }
+        }
+
+
+        /// <summary>
+        /// Creates an azure table storage based event stream reader for the given aggregate
+        /// </summary>
+        /// <param name="identity">
+        /// The unique identifier of the event stream to read
+        /// </param>
+        /// <param name="connectionStringName">
+        /// The name of the connection string to use to do the reading from the table
+        /// </param>
+        public static TableEventStreamReader Create(IEventStreamIdentity identity,
+            string connectionStringName = @"")
+        {
+            return new TableEventStreamReader(identity, connectionStringName);
+        }
+        
+        public static ProjectionProcessor CreateProjectionProcessor(IEventStreamIdentity identity,
+            string connectionStringName = @"")
+        {
+            return new ProjectionProcessor(Create(identity, connectionStringName));
         }
     }
 }

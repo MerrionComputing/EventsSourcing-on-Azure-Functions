@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,16 +46,7 @@ namespace EventSourcingOnAzureFunctions.Common
             /// ConnectionStringName="LeaguesConnectionString" 
             /// SequenceNumberFormat="00000000"
             /// </remarks>
-            Table = 1,
-            /// <summary>
-            /// Store the event streams in an Azure file
-            /// </summary>
-            /// <remarks>
-            /// ImplementationType="AzureFile"
-            /// ConnectionStringName="LeaguesConnectionString" 
-            /// InitialSize="20000" 
-            /// </remarks>
-            File = 2
+            Table = 1
         }
 
         /// <summary>
@@ -69,6 +61,10 @@ namespace EventSourcingOnAzureFunctions.Common
             // Add logging services 
             services.AddLogging();
 
+            // Create the event maps singleton
+            services.AddSingleton<IEventMaps, EventMaps >();
+
+            // and the Event Stream Settings singleton
 
         }
 
@@ -94,7 +90,10 @@ namespace EventSourcingOnAzureFunctions.Common
               .BindToInput<Projection>(BuildProjectionFromAttribute)
               ;
 
-            
+            //3: EventTrigger 
+            // TODO..
+
+ 
         }
 
 
@@ -195,44 +194,6 @@ namespace EventSourcingOnAzureFunctions.Common
             {
 
             }
-        }
-
-
-        /// <summary>
-        /// Settings that can be set for a file backed event stream
-        /// </summary>
-        /// <remarks>
-        /// ImplementationType=AzureFile;ConnectionStringName=LeaguesConnectionString;InitialSize=20000 
-        /// </remarks>
-        public class FileConnectionSettings
-        {
-
-            private const int DEFAULT_INITIAL_SIZE = 20000;
-
-            /// <summary>
-            /// The initial size to create the event stream file
-            /// </summary>
-            private string _initialSize;
-            public int InitialSize
-            {
-                get
-                {
-                    if (!string.IsNullOrWhiteSpace(_initialSize))
-                    {
-                        int ret;
-                        if (int.TryParse(_initialSize, out ret))
-                        {
-                            if (ret > 0)
-                            {
-                                return ret;
-                            }
-                        }
-                    }
-                    return DEFAULT_INITIAL_SIZE;
-                }
-            }
-
-
         }
     }
 

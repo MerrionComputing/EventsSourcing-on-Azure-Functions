@@ -104,21 +104,18 @@ namespace Mocking
 
     public class MockProjectionOne
         : ProjectionBase,
-        IHandleEventType<MockEventOne>
+        IHandleEventType<MockEventOnePayload>
     {
 
         private string lastMessage;
         private int intCount;
 
-        public void HandleEventInstance(MockEventOne eventInstance)
+        public void HandleEventInstance(MockEventOnePayload eventInstance)
         {
-            if (null != eventInstance )
+            if (null != eventInstance)
             {
-                if (null != eventInstance.EventPayload )
-                {
-                    lastMessage = ((MockEventOnePayload)eventInstance.EventPayload).StringProperty;
-                    intCount += ((MockEventOnePayload)eventInstance.EventPayload).IntegerProperty;
-                }
+                lastMessage = eventInstance.StringProperty;
+                intCount += eventInstance.IntegerProperty;
             }
         }
 

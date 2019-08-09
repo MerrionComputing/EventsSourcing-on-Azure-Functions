@@ -177,6 +177,7 @@ namespace EventSourcingOnAzureFunctions.Test
 
 namespace Mocking
 {
+    [EventName("Test Event Happened") ]
     public class MockEventOnePayload
     {
         public int IntegerProperty { get; set; }
@@ -196,9 +197,14 @@ namespace Mocking
     {
 
 
-
+        /// <summary>
+        /// The name of the specific event type
+        /// </summary>
         public string EventTypeName { get; set; }
 
+        /// <summary>
+        /// The business-meaningful content of the event
+        /// </summary>
         public object EventPayload { get; set; }
     }
 }

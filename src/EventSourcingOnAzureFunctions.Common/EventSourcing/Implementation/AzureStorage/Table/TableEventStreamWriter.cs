@@ -166,8 +166,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 SequenceNumberAsString(sequenceNumber));
 
             // Add the event type
-            ret.Properties.Add(FIELDNAME_EVENTTYPE,
-                  new EntityProperty(EventNameAttribute.GetEventName(eventToPersist.GetType())));
+            if (!string.IsNullOrWhiteSpace(eventToPersist.EventTypeName))
+            {
+                // Use the event type name given 
+                ret.Properties.Add(FIELDNAME_EVENTTYPE,
+                      new EntityProperty(eventToPersist.EventTypeName)); 
+            }
+            else
+            {
+                // fall back on the .NET name of the payload class
+                ret.Properties.Add(FIELDNAME_EVENTTYPE,
+                      new EntityProperty(EventNameAttribute.GetEventName(eventToPersist.GetType())));
+            }
 
             if (null != _writerContext)
             {

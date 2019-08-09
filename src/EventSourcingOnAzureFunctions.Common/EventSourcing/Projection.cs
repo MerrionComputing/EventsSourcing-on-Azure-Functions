@@ -12,6 +12,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
          : IEventStreamIdentity
     {
 
+        private readonly IEventStreamSettings _settings = null;
         private readonly IProjectionProcessor _projectionProcessor = null;
 
 
@@ -95,7 +96,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// The attribute describing which projection to run
         /// </param>
         public Projection(ProjectionAttribute attribute,
-            string connectionStringName = "")
+            IEventStreamSettings settings = null)
         {
 
             _domainName = attribute.DomainName;
@@ -104,19 +105,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             _projectionTypeName = attribute.ProjectionTypeName;
 
 
-            if (string.IsNullOrWhiteSpace(connectionStringName))
+            if (null == settings)
             {
-                _connectionStringName = ConnectionStringNameAttribute.DefaultConnectionStringName(attribute);
+                _settings = new EventStreamSettings();
+                _settings.LoadFromConfig();
             }
             else
             {
-                _connectionStringName = connectionStringName;
+                _settings = settings;
             }
+
+            _connectionStringName = settings.GetConnectionStringName(attribute);
 
             if (null == _projectionProcessor)
             {
-                // TODO : Allow for different backing technologies... currently just AppendBlob
-                _projectionProcessor = BlobEventStreamReader.CreateProjectionProcessor(attribute, _connectionStringName);
+                _projectionProcessor = _settings.CreateProjectionProcessorForEventStream(attribute);
             }
 
         }

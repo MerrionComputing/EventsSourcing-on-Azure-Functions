@@ -29,19 +29,27 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             if (typedEventHandlers.ContainsKey(eventTypeName ))
             {
                 var eventPayloadAsJson = eventToHandle as Newtonsoft.Json.Linq.JObject;
+                object[] invocationParameters = null;
                 if (null != eventPayloadAsJson )
                 {
-                    object[] invocationParameters = { eventPayloadAsJson.ToObject(typedEventHandlers[eventTypeName].Item1 ) };
-                    typedEventHandlers[eventTypeName].Item2.Invoke(this, invocationParameters);
+                     invocationParameters = new object[]  { eventPayloadAsJson.ToObject(typedEventHandlers[eventTypeName].Item1 ) }; 
                 }
+                else
+                {
+                    invocationParameters = new object[] { eventToHandle };
+                }
+                typedEventHandlers[eventTypeName].Item2.Invoke(this, invocationParameters);
             }
         }
 
         public  bool HandlesEventType(string eventTypeName)
         {
-            if (typedEventHandlers.ContainsKey(eventTypeName))
+            if (!string.IsNullOrWhiteSpace(eventTypeName))
             {
-                return true;
+                if (typedEventHandlers.ContainsKey(eventTypeName))
+                {
+                    return true;
+                }
             }
             return false;
         }

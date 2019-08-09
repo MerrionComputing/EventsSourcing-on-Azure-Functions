@@ -1,0 +1,27 @@
+﻿{
+  "EventMaps": [
+    {
+      "EventName": "Designated Benificiary Set",
+      "EventImplementationClassName": "RetailBank.AzureFunctionApp.Account.Events.BeneficiarySet"
+    },
+    {
+      "EventName": "Money Deposited",
+      "EventImplementationClassName": "RetailBank.AzureFunctionApp.Account.Events.MoneyDeposited"
+    },
+    {
+      "EventName": "Money Withdrawn",
+      "EventImplementationClassName": "RetailBank.AzureFunctionApp.Account.Events.MoneyWithdrawn"
+    },
+    {
+      "EventName": "Account Opened",
+      "EventImplementationClassName": "RetailBank.AzureFunctionApp.Account.Events.AccountOpened"
+    }
+  ],
+  "EventStreamSettings": [
+    {
+      "DomainQualifiedEntityTypeName": "Bank.Account",
+      "Storage": "Table",
+      "ConnectionStringName": "Bank.Account.StorageConnectionString"
+    }
+  ]
+}

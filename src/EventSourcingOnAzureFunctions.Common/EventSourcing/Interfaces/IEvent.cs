@@ -17,7 +17,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
          /// <summary>
          /// The underlying business data of the object
          /// </summary>
-        object EventPayload { get; }
+        object EventPayload { get; set; }
 
     }
 }

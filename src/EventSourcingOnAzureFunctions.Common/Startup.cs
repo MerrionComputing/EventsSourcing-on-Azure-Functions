@@ -21,6 +21,7 @@ namespace EventSourcingOnAzureFunctions.Common
             //Register any extensions for bindings
             builder.AddExtension<InjectConfiguration>();
 
+
         }
     }
 
@@ -40,7 +41,7 @@ namespace EventSourcingOnAzureFunctions.Common
         public void Initialize(ExtensionConfigContext context)
         {
             // Add any custom bindings for this domain
-            // and then add any core ones from TheLongRun.Common
+            // and then add any core ones from CQRSAzureBindings.Common
             CQRSAzureBindings.InitializeInjectionConfiguration(context);
 
 

@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Extensions.Configuration;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
@@ -8,7 +13,124 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
     /// Settings in the [EventStreamSettings] section of the JSON settings file(s)
     /// </summary>
     public sealed class EventStreamSettings
+        : IEventStreamSettings
     {
+
+        private Dictionary<string, EventStreamSetting> AllSettings = new Dictionary<string, EventStreamSetting>();
+
+
+        public void LoadFromConfig()
+        {
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", true)
+                .AddJsonFile("config.local.json", true)
+                .AddJsonFile("config.json", true)
+                .AddJsonFile("connectionstrings.json", true)
+                .AddEnvironmentVariables();
+
+            IConfigurationRoot config = builder.Build();
+
+            // Get the [EventStreamSettings] section
+            IConfigurationSection eventStreamSettingSection = config.GetSection("EventStreamSettings");
+            if (null != eventStreamSettingSection)
+            {
+                var configStreamSettings = eventStreamSettingSection.Get<List<EventStreamSetting>>(c => c.BindNonPublicProperties = true);
+
+                if (null != configStreamSettings)
+                {
+                    foreach (EventStreamSetting setting in configStreamSettings)
+                    {
+                        if (null != setting)
+                        {
+                            if (!AllSettings.ContainsKey(setting.DomainQualifiedEntityTypeName))
+                            {
+                                AllSettings.Add(setting.DomainQualifiedEntityTypeName, setting);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The default settings to use if no settings are specified in the application configuration
+        /// </summary>
+        /// <param name="domainQualifiedEntityTypeName">
+        /// The name of the type of entity that this event stream setting is for
+        /// </param>
+        public EventStreamSetting DefaultEventStreamSetting(string domainQualifiedEntityTypeName)
+        {
+            if (AllSettings.ContainsKey(domainQualifiedEntityTypeName ) )
+            {
+                return AllSettings[domainQualifiedEntityTypeName]; 
+            }
+            return new EventStreamSetting(domainQualifiedEntityTypeName);
+        }
+
+        public string GetBackingImplementationType(IEventStreamIdentity attribute)
+        {
+            return DefaultEventStreamSetting(EventStreamSetting.MakeDomainQualifiedEntityName(attribute)).Storage.ToUpperInvariant() ; 
+        }
+
+        public string GetConnectionStringName(IEventStreamIdentity attribute)
+        {
+            if (AllSettings.ContainsKey(EventStreamSetting.MakeDomainQualifiedEntityName(attribute)))
+            {
+                return AllSettings[EventStreamSetting.MakeDomainQualifiedEntityName(attribute)].ConnectionStringName ;
+            }
+            else
+            {
+                return ConnectionStringNameAttribute.DefaultConnectionStringName(attribute);
+            }
+        }
+
+        /// <summary>
+        /// Create an instance of the appropriate event stream writer to use for the given event stream
+        /// </summary>
+        /// <param name="attribute">
+        /// The attribute defining the Domain,Entity Type and Instance Key of the event stream
+        /// </param>
+        /// <remarks>
+        /// This is to allow different event streams to be held in different backing technologies
+        /// </remarks>
+        public IEventStreamWriter CreateWriterForEventStream(IEventStreamIdentity attribute)
+        {
+            string connectionStringName = GetConnectionStringName(attribute); 
+
+            if (GetBackingImplementationType(attribute ).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATIOIN_TABLE , StringComparison.OrdinalIgnoreCase  )  )
+            {
+                return new TableEventStreamWriter(attribute, connectionStringName: connectionStringName);
+            }
+
+            // Default to an appendblob writer AppendBlob
+            return new BlobEventStreamWriter(attribute, connectionStringName: connectionStringName);
+        }
+
+        /// <summary>
+        /// Create a projection processor to run over the given event stream's backing store
+        /// </summary>
+        /// <param name="attribute">
+        /// </param>
+        /// <param name="connectionStringName">
+        /// </param>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        public  IProjectionProcessor CreateProjectionProcessorForEventStream(ProjectionAttribute attribute)
+        {
+            string connectionStringName = GetConnectionStringName(attribute);
+
+            if (GetBackingImplementationType(attribute).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATIOIN_TABLE, StringComparison.OrdinalIgnoreCase))
+            {
+                return TableEventStreamReader.CreateProjectionProcessor(attribute, connectionStringName: connectionStringName);
+            }
+
+            // Default to AppendBlob
+            return BlobEventStreamReader.CreateProjectionProcessor(attribute, connectionStringName);
+        }
+
+
     }
 
 
@@ -31,17 +153,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// <remarks>
         /// This is in the form of a dot-separated name
         /// </remarks>
-        public string DomainQualifiedEntityTypeName { get; }
+        public string DomainQualifiedEntityTypeName { get; internal set; }
 
         /// <summary>
         /// The type of storage implementation this event stream is based on
         /// </summary>
-        public string Storage { get; }
+        public string Storage { get; internal set; }
 
         /// <summary>
         /// The connection string to use to access the underlying storage mechanism
         /// </summary>
-        public string ConnectionStringName { get; }
+        public string ConnectionStringName { get; internal set; }
 
         public EventStreamSetting(string domainQualifiedEntityTypeName,
             string storageType = @"",
@@ -50,15 +172,28 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         }
 
-        /// <summary>
-        /// The default settings to use if no settings are specified in the application configuration
-        /// </summary>
-        /// <param name="domainQualifiedEntityTypeName">
-        /// The name of the type of entity that this event stream setting is for
-        /// </param>
-        public static EventStreamSetting DefaultEventStreamSetting(string domainQualifiedEntityTypeName)
+        public EventStreamSetting()
         {
-            return new EventStreamSetting(domainQualifiedEntityTypeName);
+
+        }
+
+
+
+
+
+        /// <summary>
+        /// Get the domain qualified entity name for an event stream
+        /// </summary>
+        /// <param name="eventStreamIdentity">
+        /// The unique identity of the event stream
+        /// </param>
+        public static string MakeDomainQualifiedEntityName(IEventStreamIdentity eventStreamIdentity)
+        {
+            if (null != eventStreamIdentity)
+            {
+                return $"{eventStreamIdentity.DomainName}.{eventStreamIdentity.EntityTypeName}";
+            }
+            return @"";
         }
     }
 }

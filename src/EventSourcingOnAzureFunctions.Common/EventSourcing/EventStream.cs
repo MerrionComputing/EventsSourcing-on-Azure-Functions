@@ -17,6 +17,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         : IEventStreamIdentity
     {
 
+        private readonly IEventStreamSettings _settings = null;
         private readonly IEventStreamWriter _writer = null;
         private string _connectionStringName;
 
@@ -133,25 +134,28 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
 
         public EventStream(EventStreamAttribute attribute,
-            string connectionStringName = "",
-            IWriteContext context = null)
+            IWriteContext context = null,
+            IEventStreamSettings settings = null)
         {
             _domainName = attribute.DomainName;
             _entityTypeName  = attribute.EntityTypeName ;
             _instanceKey  = attribute.InstanceKey;
 
-            if (string.IsNullOrWhiteSpace(connectionStringName))
+
+            if (null == settings)
             {
-                _connectionStringName = ConnectionStringNameAttribute.DefaultConnectionStringName(attribute);
+                _settings = new EventStreamSettings();
+                _settings.LoadFromConfig(); 
             }
             else
             {
-                _connectionStringName = connectionStringName;
+                _settings = settings;
             }
 
+            _connectionStringName = settings.GetConnectionStringName(attribute);  
+
             // wire up the event stream writer 
-            // TODO : Cater for different backing technologies... currently just AppendBlob
-            _writer = new BlobEventStreamWriter(attribute,  connectionStringName:_connectionStringName);
+            _writer = _settings.CreateWriterForEventStream(attribute);
 
             if (null != context)
             {

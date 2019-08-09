@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
 {
-    interface IProjectionProcessor
+    public interface IProjectionProcessor
     {
 
 
