@@ -169,12 +169,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             string storageType = @"",
             string connectionStringName = @"")
         {
-
+            Storage = storageType;
+            ConnectionStringName = connectionStringName;
         }
 
         public EventStreamSetting()
         {
-
+            // Default storage to append blob
+            Storage = EVENTSTREAMIMPLEMENTATION_APPENDBLOB;
         }
 
 

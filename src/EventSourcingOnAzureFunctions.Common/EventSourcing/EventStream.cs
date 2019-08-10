@@ -152,7 +152,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 _settings = settings;
             }
 
-            _connectionStringName = settings.GetConnectionStringName(attribute);  
+            _connectionStringName = _settings.GetConnectionStringName(attribute);  
 
             // wire up the event stream writer 
             _writer = _settings.CreateWriterForEventStream(attribute);

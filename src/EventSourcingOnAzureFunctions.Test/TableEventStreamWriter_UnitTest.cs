@@ -20,7 +20,7 @@ namespace EventSourcingOnAzureFunctions.Test
             TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
                 "RetailBank");
 
-            Assert.IsNotNull(testObj); 
+            Assert.IsNotNull(testObj);
 
         }
 
