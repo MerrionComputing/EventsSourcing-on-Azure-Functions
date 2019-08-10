@@ -190,7 +190,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                                     {
                                         if (pi.CanWrite)
                                         {
-                                            pi.SetValue(eventWrapper.EventPayload, entityProperty.Value.PropertyAsObject );
+                                            if (!IsPropertyValueEmpty(pi, entityProperty.Value.PropertyAsObject ))
+                                            {
+                                                pi.SetValue(eventWrapper.EventPayload,
+                                                    GetEntityPropertyValue(pi, entityProperty.Value.PropertyAsObject));
+                                            }
                                         }
                                     }
                                 }

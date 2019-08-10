@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table
@@ -324,6 +325,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     QueryComparisons.Equal, identity.InstanceKey));
         }
 
+        /// <summary>
+        /// Is the property empty so not to be persisted to the backing store
+        /// </summary>
         public static bool IsPropertyEmpty(PropertyInfo pi, object eventInstance)
         {
             if (null == pi.GetValue(eventInstance))
@@ -331,10 +335,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 return true;
             }
 
-            // special case - dates before 1601
-            if (pi.PropertyType == typeof(DateTime ))
+            return IsPropertyValueEmpty(pi, pi.GetValue(eventInstance, null));
+        }
+
+        public static bool IsPropertyValueEmpty(PropertyInfo pi, object propertyValue)
+        {
+            if (null == propertyValue)
             {
-                DateTime val = (DateTime)pi.GetValue(eventInstance, null);
+                return true;
+            }
+
+            // special case - dates before 1601
+            if (pi.PropertyType == typeof(DateTime))
+            {
+                DateTime val = (DateTime)propertyValue;
                 if (val.Year < 1601)
                 {
                     return true;
@@ -342,7 +356,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
             if (pi.PropertyType == typeof(DateTimeOffset))
             {
-                DateTimeOffset val = (DateTimeOffset)pi.GetValue(eventInstance, null);
+                DateTimeOffset val = (DateTimeOffset)propertyValue;
                 if (val.Year < 1601)
                 {
                     return true;
@@ -393,6 +407,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
             return false;
+        }
+
+
+        public static object GetEntityPropertyValue(PropertyInfo pi, object propertyAsObject)
+        {
+            if (pi.PropertyType == typeof(Decimal))
+            {
+                double dblValue = (double)propertyAsObject;
+                return new decimal(dblValue);
+            }
+            else
+            {
+                return propertyAsObject;
+            }
         }
 
     }
