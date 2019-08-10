@@ -12,19 +12,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
     public class TableContextWrappedEvent
         : IEventContext
     {
-        public int VersionNumber { get; }
+        public int VersionNumber { get; private set; }
 
-        public int SequenceNumber { get; }
+        public int SequenceNumber { get; private set; }
 
-        public IEvent EventInstance { get; }
+        public IEvent EventInstance { get; private set; }
 
-        public string Who { get; }
+        public string Who { get; private set; }
 
-        public string Source { get; }
+        public string Source { get; private set; }
 
-        public string Commentary { get; }
+        public string Commentary { get; private set; }
 
-        public string CorrelationIdentifier { get; }
+        public string CorrelationIdentifier { get; private set; }
 
         public TableContextWrappedEvent(IEvent eventToWrap, 
             DynamicTableEntity dteRow)
@@ -53,6 +53,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_WHO  ))
                 {
                     Who = dteRow.Properties[TableEventStreamBase.FIELDNAME_WHO].StringValue; 
+                }
+                string sequenceNumberAsString = dteRow.RowKey;
+                if (! string.IsNullOrWhiteSpace(sequenceNumberAsString ) )
+                {
+                    SequenceNumber = TableEventStreamBase.SequenceNumberFromString(sequenceNumberAsString);
                 }
             }
         }

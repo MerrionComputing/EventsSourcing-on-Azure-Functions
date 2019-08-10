@@ -270,6 +270,23 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             return startingSequence.ToString(RECORDID_SEQUENCE);
         }
 
+        public static int SequenceNumberFromString(string sequenceNumberAsString)
+        {
+            if (string.IsNullOrWhiteSpace(sequenceNumberAsString ) )
+            {
+                return 0;
+            }
+            else
+            {
+                int seqRet;
+                if (int.TryParse(sequenceNumberAsString.TrimStart('0') , out seqRet ) )
+                {
+                    return seqRet;
+                }
+            }
+            return 0;
+        }
+
         /// <summary>
         /// Generate a query to get the event rows for an individual event stream between two sequence numbers (inclusive)
         /// </summary>
