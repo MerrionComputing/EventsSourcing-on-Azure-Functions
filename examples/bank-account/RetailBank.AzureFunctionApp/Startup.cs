@@ -1,14 +1,16 @@
 ﻿using EventSourcingOnAzureFunctions.Common;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Azure.WebJobs.Hosting;
+using Microsoft.Extensions.Hosting;
+using RetailBank.AzureFunctionApp;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 
-[assembly: WebJobsStartup(typeof(RetailBank.AzureFunctionApp.AzureFunctionAppStartup),
-    "Retail Bank CQRS on Azure Demo")]
+[assembly: FunctionsStartup(typeof(AzureFunctionAppStartup))]
 namespace RetailBank.AzureFunctionApp
 {
 
@@ -26,6 +28,7 @@ namespace RetailBank.AzureFunctionApp
             base.Configure(builder);
 
         }
+
     }
 
 }

@@ -11,7 +11,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <summary>
         /// Load the settings from the application configuration
         /// </summary>
-        void LoadFromConfig();
+        void LoadFromConfig(string basePath = null);
 
         /// <summary>
         /// Returns the name of the type of backing store used to store this event stream instance

@@ -6,48 +6,17 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Extensions.DependencyInjection;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection;
 
 namespace EventSourcingOnAzureFunctions.Common
 {
 
     /// <summary>
-    /// Hard coded bindings to use for the different event sourcing domains
+    /// Bindings to use for the different event sourcing extensions
     /// </summary>
-    /// <remarks>
-    /// This could be set to use a config file in a production system that we wanted to have
-    /// [Dev|QA|UAT|Prod] environments
-    /// </remarks>
     public static class CQRSAzureBindings
     {
 
-        /// <summary>
-        /// The backing store types that are supported by the CQRS on EventGrid framework
-        /// </summary>
-        /// <remarks>
-        /// This is a subset of the CQRSAzure library methods as some don't fit well with the
-        /// EventGrid architecture
-        /// </remarks>
-        public enum BackingStoreType
-        {
-            /// <summary>
-            /// (Default) Store the event streams in an AppendBlob 
-            /// </summary>
-            /// <remarks>
-            /// ImplementationType="AzureBlob"
-            /// ConnectionStringName="LeaguesConnectionString" 
-            /// DomainName="Leagues"
-            /// </remarks>
-            AppendBlob = 0,
-            /// <summary>
-            /// Store the event streams in Azure table storage
-            /// </summary>
-            /// <remarks>
-            /// ImplementationType="AzureTable"
-            /// ConnectionStringName="LeaguesConnectionString" 
-            /// SequenceNumberFormat="00000000"
-            /// </remarks>
-            Table = 1
-        }
 
         /// <summary>
         /// Initialise any common services for dependency injection
@@ -60,12 +29,12 @@ namespace EventSourcingOnAzureFunctions.Common
 
             // Add logging services 
             services.AddLogging();
+            
+            // Add the defined event stream settings
+            services.AddEventStreamSettings();
 
-            // Create the event maps singleton
-            services.AddSingleton<IEventMaps, EventMaps >();
-
-            // and the Event Stream Settings singleton
-
+            // Add the event maps
+            services.AddEventMaps(); 
         }
 
         /// <summary>
@@ -93,7 +62,6 @@ namespace EventSourcingOnAzureFunctions.Common
             //3: EventTrigger 
             // TODO..
 
- 
         }
 
 

@@ -135,7 +135,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         public EventStream(EventStreamAttribute attribute,
             IWriteContext context = null,
-            IEventStreamSettings settings = null)
+            IEventStreamSettings settings = null
+            )
         {
             _domainName = attribute.DomainName;
             _entityTypeName  = attribute.EntityTypeName ;

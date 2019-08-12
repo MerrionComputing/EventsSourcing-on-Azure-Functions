@@ -19,10 +19,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         private Dictionary<string, EventStreamSetting> AllSettings = new Dictionary<string, EventStreamSetting>();
 
 
-        public void LoadFromConfig()
+        public void LoadFromConfig(string basePath = null)
         {
+
+            if (string.IsNullOrWhiteSpace(basePath))
+            {
+                basePath = Environment.GetEnvironmentVariable(@"AzureWebJobsScriptRoot");
+                if (string.IsNullOrWhiteSpace(basePath))
+                {
+                    basePath = Directory.GetCurrentDirectory();
+                } 
+            }
+
+
             ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.SetBasePath(Directory.GetCurrentDirectory())
+            builder.SetBasePath(basePath)
                 .AddJsonFile("appsettings.json", true)
                 .AddJsonFile("config.local.json", true)
                 .AddJsonFile("config.json", true)
@@ -52,6 +63,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 }
             }
         }
+
 
         /// <summary>
         /// The default settings to use if no settings are specified in the application configuration

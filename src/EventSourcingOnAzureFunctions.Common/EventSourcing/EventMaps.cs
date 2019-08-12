@@ -23,10 +23,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// <summary>
         /// Load the event maps as stored in any configuration files
         /// </summary>
-        public  void LoadFromConfig()
+        public void LoadFromConfig(string basePath = null)
         {
+
+            if (string.IsNullOrWhiteSpace(basePath ) )
+            {
+                basePath = Environment.GetEnvironmentVariable(@"AzureWebJobsScriptRoot");
+                if (string.IsNullOrWhiteSpace(basePath))
+                {
+                    basePath = Directory.GetCurrentDirectory();
+                }
+            }
+
             ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.SetBasePath(Directory.GetCurrentDirectory())
+            builder.SetBasePath(basePath)
                 .AddJsonFile("appsettings.json", true)
                 .AddJsonFile("config.local.json", true)
                 .AddJsonFile("config.json", true)
