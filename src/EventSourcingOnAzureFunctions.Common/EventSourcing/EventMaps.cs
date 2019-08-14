@@ -28,16 +28,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
             if (string.IsNullOrWhiteSpace(basePath ) )
             {
-                basePath = Environment.GetEnvironmentVariable(@"AzureWebJobsScriptRoot");
-                if (string.IsNullOrWhiteSpace(basePath))
-                {
-                    basePath = Directory.GetCurrentDirectory();
-                }
+                basePath = Environment.GetEnvironmentVariable("AzureWebJobsScriptRoot")  // local_root
+                    ?? (Environment.GetEnvironmentVariable("HOME") == null
+                        ? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                        : $"{Environment.GetEnvironmentVariable("HOME")}/site/wwwroot"); // azure_root
             }
 
             ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.SetBasePath(basePath)
-                .AddJsonFile("appsettings.json", true)
+            if (!string.IsNullOrWhiteSpace(basePath))
+            {
+                builder.SetBasePath(basePath);
+            }
+
+            builder.AddJsonFile("appsettings.json", true)
                 .AddJsonFile("config.local.json", true)
                 .AddJsonFile("config.json", true)
                 .AddJsonFile("connectionstrings.json", true)

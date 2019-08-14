@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using System;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
     {
 
         private readonly ParameterInfo _parameter;
+        private readonly IEventStreamSettings _eventStreamSettings;
 
         public Type Type
         {
@@ -45,7 +47,8 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
                 ProjectionAttribute attribute = _parameter.GetCustomAttribute<ProjectionAttribute>(inherit: false);
                 if (null != attribute)
                 {
-                    item = new Projection(attribute);
+                    item = new Projection(attribute, 
+                        settings: _eventStreamSettings );
                 }
             }
 
@@ -65,9 +68,11 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
             return Task.CompletedTask;
         }
 
-        public ProjectionValueBinder(ParameterInfo parameter)
+        public ProjectionValueBinder(ParameterInfo parameter,
+            IEventStreamSettings eventStreamSettings)
         {
             _parameter = parameter;
+            _eventStreamSettings = eventStreamSettings;
         }
     }
 }

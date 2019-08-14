@@ -1,12 +1,8 @@
-﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Azure.WebJobs.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using System;
 
 [assembly: FunctionsStartup(typeof(EventSourcingOnAzureFunctions.Common.Startup))]
@@ -18,6 +14,9 @@ namespace EventSourcingOnAzureFunctions.Common
 
         public void Configure(IFunctionsHostBuilder builder)
         {
+
+            builder.AddAppSettingsToConfiguration();
+
             // Initialise any common services
             CQRSAzureBindings.InitializeServices(builder.Services);
 
@@ -27,6 +26,9 @@ namespace EventSourcingOnAzureFunctions.Common
         {
             // Add the standard (built-in) bindings 
             builder.AddBuiltInBindings();
+
+            // Allow the execution context to be accessed by DI
+            builder.AddExecutionContextBinding();
 
             //Register any extensions for bindings
             builder.AddExtension<InjectConfiguration>();

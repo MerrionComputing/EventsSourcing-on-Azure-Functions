@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,8 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
     public sealed class ProjectionAttributeBindingProvider
         : IBindingProvider
     {
+
+        private readonly IEventStreamSettings _eventStreamSettings;
 
         public Task<IBinding> TryCreateAsync(BindingProviderContext context)
         {
@@ -40,8 +43,13 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
                     $"Can't bind ProjectionAttribute to type '{parameter.ParameterType}'.");
             }
 
-            return Task.FromResult<IBinding>(new ProjectionAttributeBinding(parameter));
+            return Task.FromResult<IBinding>(new ProjectionAttributeBinding(parameter, _eventStreamSettings ));
 
+        }
+
+        public ProjectionAttributeBindingProvider(IEventStreamSettings eventStreamSettings)
+        {
+            _eventStreamSettings = eventStreamSettings;
         }
     }
 }

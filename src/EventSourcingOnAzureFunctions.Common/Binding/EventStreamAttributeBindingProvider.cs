@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         : IBindingProvider
     {
 
+        private readonly IEventStreamSettings _eventStreamSettings;
 
         public Task<IBinding> TryCreateAsync(BindingProviderContext context)
         {
@@ -42,8 +44,13 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
                         $"Can't bind EventStreamAttribute to type '{parameter.ParameterType}'.");
             }
 
-            return Task.FromResult<IBinding>(new EventStreamAttributeBinding(parameter));
+            return Task.FromResult<IBinding>(new EventStreamAttributeBinding(parameter, _eventStreamSettings ));
 
+        }
+
+        public EventStreamAttributeBindingProvider(IEventStreamSettings eventStreamSettings)
+        {
+            _eventStreamSettings = eventStreamSettings;
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.WebJobs.Host.Bindings;
+﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Protocols;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
     {
 
         private readonly ParameterInfo _parameter;
+        private readonly IEventStreamSettings _eventStreamSettings;
 
         /// <summary>
         /// This binding gets its properties from the Attribute 
@@ -23,13 +25,13 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
         public Task<IValueProvider> BindAsync(BindingContext context)
         {
-            return Task.FromResult<IValueProvider>(new EventStreamValueBinder(_parameter));
+            return Task.FromResult<IValueProvider>(new EventStreamValueBinder(_parameter, _eventStreamSettings ));
         }
 
         public Task<IValueProvider> BindAsync(object value, ValueBindingContext context)
         {
             // TODO: Perform any conversions on the incoming value
-            return Task.FromResult<IValueProvider>(new EventStreamValueBinder(_parameter));
+            return Task.FromResult<IValueProvider>(new EventStreamValueBinder(_parameter, _eventStreamSettings ));
         }
 
 
@@ -54,9 +56,11 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         /// <param name="parameter">
         /// Details of the attribute and parameter to be bound to
         /// </param>
-        public EventStreamAttributeBinding(ParameterInfo parameter)
+        public EventStreamAttributeBinding(ParameterInfo parameter,
+            IEventStreamSettings eventStreamSettings)
         {
             _parameter = parameter;
+            _eventStreamSettings = eventStreamSettings;
         }
     }
 }

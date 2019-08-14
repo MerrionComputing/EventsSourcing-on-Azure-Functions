@@ -2,11 +2,14 @@
 using System.Threading.Tasks;
 using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
-using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Extensions.DependencyInjection;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace EventSourcingOnAzureFunctions.Common
 {
@@ -29,6 +32,7 @@ namespace EventSourcingOnAzureFunctions.Common
 
             // Add logging services 
             services.AddLogging();
+ 
             
             // Add the defined event stream settings
             services.AddEventStreamSettings();
@@ -83,8 +87,8 @@ namespace EventSourcingOnAzureFunctions.Common
             ValueBindingContext context)
         {
 
-            // If possible get the connection string to use
-
+            // If possible get the event stream settings to use
+             
             // If possible, get the write context to use
 
             // Use this and the attribute to create a new event stream instance
@@ -100,6 +104,41 @@ namespace EventSourcingOnAzureFunctions.Common
 
             // Use this and the attribute to create a new classifier instance
             return Task<Projection>.FromResult(new Projection(attribute));
+        }
+
+        public static IFunctionsHostBuilder AddAppSettingsToConfiguration(this IFunctionsHostBuilder builder)
+        {
+            var currentDirectory = "/home/site/wwwroot";
+            bool isLocal = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
+            if (isLocal)
+            {
+                currentDirectory = Environment.CurrentDirectory;
+            }
+
+            var tmpConfig = new ConfigurationBuilder()
+                .SetBasePath(currentDirectory)
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var environmentName = tmpConfig["Environment"];
+
+            var configurationBuilder = new ConfigurationBuilder();
+
+            var descriptor = builder.Services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+            if (descriptor?.ImplementationInstance is IConfiguration configRoot)
+            {
+                configurationBuilder.AddConfiguration(configRoot);
+            }
+
+            var configuration = configurationBuilder.SetBasePath(currentDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("connectionstrings.json", optional: true)
+                .Build();
+
+            builder.Services.Replace(ServiceDescriptor.Singleton(typeof(IConfiguration), configuration));
+
+            return builder;
         }
 
         /// <summary>

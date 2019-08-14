@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using System;
 using System.Reflection;
@@ -11,6 +12,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
     {
 
         private readonly ParameterInfo _parameter;
+        private readonly IEventStreamSettings _eventStreamSettings;
         private EventStream _item;
 
         public Type Type
@@ -38,7 +40,8 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
                     EventStreamAttribute attribute = _parameter.GetCustomAttribute<EventStreamAttribute>(inherit: false);
                     if (null != attribute)
                     {
-                        _item = new EventStream(attribute);
+                        _item = new EventStream(attribute,
+                            settings:_eventStreamSettings  );
                     }
                 }
             }
@@ -75,9 +78,11 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
             return Task.CompletedTask;
         }
 
-        public EventStreamValueBinder(ParameterInfo parameter)
+        public EventStreamValueBinder(ParameterInfo parameter,
+            IEventStreamSettings eventStreamSettings)
         {
             _parameter = parameter;
+            _eventStreamSettings = eventStreamSettings;
         }
     }
 }

@@ -11,11 +11,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection
     public static partial class LoggingServiceCollectionExtensions
     {
 
+
+
         public static IServiceCollection AddEventStreamSettings(this IServiceCollection services)
         {
 
             // and the Event Stream Settings singleton
-            services.AddSingleton<IEventStreamSettings, EventStreamSettings>();
+            services.AddSingleton<IEventStreamSettings, EventStreamSettings>(settings => {
+                EventStreamSettings ret = new EventStreamSettings();
+                ret.LoadFromConfig(context.FunctionAppDirectory);
+                return ret;
+            });
 
             return services;
         }

@@ -16,8 +16,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection
         public static IServiceCollection AddEventMaps(this IServiceCollection services)
         {
 
+            
+
             // Create the event maps singleton
-            services.AddSingleton<IEventMaps, EventMaps>();
+            services.AddSingleton<IEventMaps, EventMaps>(maps => {
+                EventMaps ret = new EventMaps();
+                ret.LoadFromConfig(context.FunctionAppDirectory);
+                return ret;
+            });
 
             return services;
         }
