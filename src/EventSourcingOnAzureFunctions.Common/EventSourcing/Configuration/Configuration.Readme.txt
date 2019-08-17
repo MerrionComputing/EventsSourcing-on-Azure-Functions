@@ -1,0 +1,16 @@
+﻿Configuration
+=============
+
+There are two aspects of the system configuration that can be changed without recompiling or redeploying the function app. 
+that uses this event sourcing library: [EventStreamSettings] are the settings that describe how the physical data underlying
+an event stream are stored and [EventMaps] which defines how event names (in business terms) are mapped to .NET classes.
+
+In the latter case this can also be set at compile time with the [EventName] attribute.
+
+The run time comfiguration is via environment strings where the key is the identifier of the event 
+stream and the value is the setting in ; separated format.
+
+e.g. "Bank.Account" = "Table;Bank.Account.ConnectionStringName"
+You can replace the domain or entity type names with ALL to apply a global setting e.g.:-
+
+"Bank.ALL" = "Table;RetailBankTableConnectionString"

@@ -108,7 +108,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             if (null == settings)
             {
                 _settings = new EventStreamSettings();
-                _settings.LoadFromConfig();
             }
             else
             {

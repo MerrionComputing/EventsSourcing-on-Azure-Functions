@@ -5,11 +5,15 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="DotNetEnv" Version="1.2.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="3.0.2" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.1.2" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.29" />
   </ItemGroup>
   <ItemGroup>
+    <None Update=".env">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

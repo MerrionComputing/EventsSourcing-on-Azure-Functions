@@ -63,5 +63,120 @@ namespace EventSourcingOnAzureFunctions.Test
             Assert.IsInstanceOfType(writerObj, typeof(TableEventStreamWriter));
         }
 
+        [TestMethod]
+        public void MakeEnvironmentStringKey_Short_TestMethod()
+        {
+
+            string expected = "Bank.Account";
+            string actual = "Not set";
+
+            actual = EventStreamSetting.MakeEnvironmentStringKey(new EventStreamAttribute("Bank", "Account", "A94N6X6"));
+
+            Assert.AreEqual(expected, actual); 
+
+        }
+
+        [TestMethod]
+        public void MakeEnvironmentStringKey_Long_TestMethod()
+        {
+
+            string expected = "Conglomereate.EMEA.France.Paris.Bank.Account";
+            string actual = "Not set";
+
+            actual = EventStreamSetting.MakeEnvironmentStringKey(new EventStreamAttribute("Conglomereate.EMEA.France.Paris.Bank", "Account", "A94N6X6"));
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void MakeEnvironmentStringKey_TooLong_TestMethod()
+        {
+
+            string expected = "ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWX-1946694419";
+            string actual = "Not set";
+
+            actual = EventStreamSetting.MakeEnvironmentStringKey(new EventStreamAttribute("ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz.ABCDEFGHIJKLMNOPQRSTUVWXYZ.abcdefghijklmnopqrstuvwxyz"
+                , "Account", "A94N6X6"));
+
+            Assert.AreEqual(expected, actual);
+
+        }
+
+        [TestMethod]
+        public void SettingsFromEnvironmentStringValue_Table_TestMethod()
+        {
+
+            string expected = @"Table";
+            string actual = "Not set";
+
+            string environmentvarialble = "Table;MarketLibraryConnectionString";
+
+            var setting = EventStreamSetting.SettingsFromEnvironmentStringValue(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                environmentvarialble);
+
+            actual = setting.Storage;
+
+            Assert.AreEqual(actual, expected);
+            
+
+
+        }
+
+        [TestMethod]
+        public void SettingsFromEnvironmentStringValue_MarketLibraryConnectionString_TestMethod()
+        {
+
+            string expected = @"MarketLibraryConnectionString";
+            string actual = "Not set";
+
+            string environmentvarialble = "Table;MarketLibraryConnectionString";
+
+            var setting = EventStreamSetting.SettingsFromEnvironmentStringValue(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                environmentvarialble);
+
+            actual = setting.ConnectionStringName;
+
+            Assert.AreEqual(actual, expected);
+
+
+
+        }
+
+        [TestMethod]
+        public void SettingsFromEnvironmentStringValue_Empty_TestMethod()
+        {
+
+            string expected = @"AppendBlob";
+            string actual = "Not set";
+
+            string environmentvarialble = "";
+
+            var setting = EventStreamSetting.SettingsFromEnvironmentStringValue(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                environmentvarialble);
+
+            actual = setting.Storage;
+
+            Assert.AreEqual(actual, expected);
+
+        }
+
+        [TestMethod]
+        public void SettingsFromEnvironmentStringValue_EmptyConnectionStringName_TestMethod()
+        {
+
+            string expected = @"Domain Test.Entity Type Test.StorageConnectionString";
+            string actual = "Not set";
+
+            string environmentvarialble = "";
+
+            var setting = EventStreamSetting.SettingsFromEnvironmentStringValue(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                environmentvarialble);
+
+            actual = setting.ConnectionStringName ;
+
+            Assert.AreEqual( expected, actual);
+
+        }
     }
 }

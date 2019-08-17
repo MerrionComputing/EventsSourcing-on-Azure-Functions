@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.645
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventSourcingOnAzureFunctions.Common", "EventSourcingOnAzureFunctions.Common\EventSourcingOnAzureFunctions.Common.csproj", "{76E78032-C0B2-4B3F-B02E-6DBC632A3E2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingOnAzureFunctions.Test", "EventSourcingOnAzureFunctions.Test\EventSourcingOnAzureFunctions.Test.csproj", "{82BC910A-E35D-4011-8D5F-79AB27A32C41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventSourcingOnAzureFunctions.Test", "EventSourcingOnAzureFunctions.Test\EventSourcingOnAzureFunctions.Test.csproj", "{82BC910A-E35D-4011-8D5F-79AB27A32C41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RetailBank.AzureFunctionApp", "..\examples\bank-account\RetailBank.AzureFunctionApp\RetailBank.AzureFunctionApp.csproj", "{1677A237-055A-4B84-9CEC-56D4F0775A0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RetailBank.AzureFunctionApp", "..\examples\bank-account\RetailBank.AzureFunctionApp\RetailBank.AzureFunctionApp.csproj", "{1677A237-055A-4B84-9CEC-56D4F0775A0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

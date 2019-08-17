@@ -87,18 +87,56 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         public string GetBackingImplementationType(IEventStreamIdentity attribute)
         {
-            return DefaultEventStreamSetting(EventStreamSetting.MakeDomainQualifiedEntityName(attribute)).Storage.ToUpperInvariant() ; 
+            CreateFronEnvironmentStringIfNotExists(attribute);
+            if (AllSettings.ContainsKey(EventStreamSetting.MakeDomainQualifiedEntityName(attribute)))
+            {
+                return AllSettings[EventStreamSetting.MakeDomainQualifiedEntityName(attribute)].Storage.ToUpperInvariant()  ;
+            }
+            else
+            {
+                return DefaultEventStreamSetting(EventStreamSetting.MakeDomainQualifiedEntityName(attribute)).Storage.ToUpperInvariant();
+            }
         }
 
         public string GetConnectionStringName(IEventStreamIdentity attribute)
         {
+            CreateFronEnvironmentStringIfNotExists(attribute);
             if (AllSettings.ContainsKey(EventStreamSetting.MakeDomainQualifiedEntityName(attribute)))
             {
-                return AllSettings[EventStreamSetting.MakeDomainQualifiedEntityName(attribute)].ConnectionStringName ;
+                return AllSettings[EventStreamSetting.MakeDomainQualifiedEntityName(attribute)].ConnectionStringName;
             }
             else
             {
                 return ConnectionStringNameAttribute.DefaultConnectionStringName(attribute);
+            }
+        }
+
+        private void CreateFronEnvironmentStringIfNotExists(IEventStreamIdentity attribute)
+        {
+            if (!AllSettings.ContainsKey(EventStreamSetting.MakeDomainQualifiedEntityName(attribute)))
+            {
+                string envValue = Environment.GetEnvironmentVariable(EventStreamSetting.MakeEnvironmentStringKey(attribute));
+                if (string.IsNullOrWhiteSpace(envValue ) )
+                {
+                    envValue = Environment.GetEnvironmentVariable(EventStreamSetting.MakeEnvironmentStringKey(attribute, AllEntityTypes: true));
+                }
+                if (string.IsNullOrWhiteSpace(envValue))
+                {
+                    envValue = Environment.GetEnvironmentVariable(EventStreamSetting.MakeEnvironmentStringKey(attribute, AllDomains:  true));
+                }
+                if (string.IsNullOrWhiteSpace(envValue))
+                {
+                    envValue = Environment.GetEnvironmentVariable(EventStreamSetting.MakeEnvironmentStringKey(attribute, AllEntityTypes: true, AllDomains: true));
+                }
+                if (!string.IsNullOrWhiteSpace(envValue))
+                {
+                    EventStreamSetting newSetting = EventStreamSetting.SettingsFromEnvironmentStringValue(attribute, envValue);
+                    if (null != newSetting)
+                    {
+                        AllSettings.Add(EventStreamSetting.MakeDomainQualifiedEntityName(attribute),
+                            newSetting);
+                    }
+                }
             }
         }
 
@@ -206,13 +244,110 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// <param name="eventStreamIdentity">
         /// The unique identity of the event stream
         /// </param>
-        public static string MakeDomainQualifiedEntityName(IEventStreamIdentity eventStreamIdentity)
+        public static string MakeDomainQualifiedEntityName(IEventStreamIdentity eventStreamIdentity,
+            bool AllEntityTypes = false ,
+            bool AllDomains = false )
         {
             if (null != eventStreamIdentity)
             {
-                return $"{eventStreamIdentity.DomainName}.{eventStreamIdentity.EntityTypeName}";
+                if (! (AllEntityTypes || AllEntityTypes))
+                { 
+                    return $"{eventStreamIdentity.DomainName}.{eventStreamIdentity.EntityTypeName}";
+                }
+                if (AllEntityTypes && AllDomains )
+                {
+                    return @"ALL.ALL";
+                }
+                if (AllEntityTypes )
+                {
+                    return $"{eventStreamIdentity.DomainName}.ALL";
+                }
+                if (AllDomains )
+                {
+                    return $"ALL.{eventStreamIdentity.EntityTypeName}";
+                }
             }
             return @"";
+        }
+
+        /// <summary>
+        /// Get the environment string key that can be used to set the event stream settings for the given domain and entity type
+        /// </summary>
+        /// <param name="eventStreamIdentity">
+        /// The identity of the domain and entity type that has its history stored in the given event stream
+        /// </param>
+        public static string MakeEnvironmentStringKey(IEventStreamIdentity eventStreamIdentity,
+            bool AllEntityTypes = false,
+            bool AllDomains = false)
+        {
+            string ret = MakeDomainQualifiedEntityName(eventStreamIdentity,
+                AllEntityTypes ,
+                AllDomains);
+
+            // Make it a valid environment string - must not contain = and max length is 255
+            ret = ret.Replace("=", "_");
+            if (ret.Length > 255)
+            {
+                int magicNumber = GetStableHashCode(ret);
+                ret = ret.Substring(0, 240) + magicNumber.ToString("0000000000");   
+            }
+            return ret;
+        }
+
+        public static EventStreamSetting SettingsFromEnvironmentStringValue(IEventStreamIdentity eventStreamIdentity,
+            string environmentStringValue)
+        {
+            EventStreamSetting ret = new EventStreamSetting(MakeDomainQualifiedEntityName(eventStreamIdentity ));
+            if (! string.IsNullOrWhiteSpace(environmentStringValue ) )
+            {
+                if (environmentStringValue.StartsWith("Table;")  )
+                {
+                    ret.Storage = EVENTSTREAMIMPLEMENTATIOIN_TABLE; 
+                    if (environmentStringValue.Length > @"Table;".Length  )
+                    {
+                        ret.ConnectionStringName = environmentStringValue.Substring(6);  
+                    }
+                }
+                if (environmentStringValue.StartsWith("AppendBlob;"))
+                {
+                    ret.Storage = EVENTSTREAMIMPLEMENTATION_APPENDBLOB ;
+                    if (environmentStringValue.Length > @"AppendBlob;".Length)
+                    {
+                        ret.ConnectionStringName = environmentStringValue.Substring(11);
+                    }
+                }
+            }
+            // If not able to make a setting from the environment string, fall back on the default
+            if (string.IsNullOrWhiteSpace(ret.Storage )  )
+            {
+                // Default  to event blob storage
+                ret.Storage = EVENTSTREAMIMPLEMENTATION_APPENDBLOB;
+            }
+            if (string.IsNullOrWhiteSpace(ret.ConnectionStringName ) )
+            {
+                ret.ConnectionStringName=ConnectionStringNameAttribute.DefaultConnectionStringName(eventStreamIdentity);  
+            }
+
+            return ret;
+        }
+
+        public static int GetStableHashCode( string str)
+        {
+            unchecked
+            {
+                int hash1 = 5381;
+                int hash2 = hash1;
+
+                for (int i = 0; i < str.Length && str[i] != '\0'; i += 2)
+                {
+                    hash1 = ((hash1 << 5) + hash1) ^ str[i];
+                    if (i == str.Length - 1 || str[i + 1] == '\0')
+                        break;
+                    hash2 = ((hash2 << 5) + hash2) ^ str[i + 1];
+                }
+
+                return hash1 + (hash2 * 1566083941);
+            }
         }
     }
 }
