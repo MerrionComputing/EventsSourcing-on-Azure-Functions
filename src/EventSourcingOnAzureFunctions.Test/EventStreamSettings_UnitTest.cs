@@ -19,7 +19,7 @@ namespace EventSourcingOnAzureFunctions.Test
 
         }
 
-
+        [Ignore("Config loaded from environment strings") ]
         [TestMethod]
         public void LoadFrom_Config_TestMethod()
         {
@@ -43,7 +43,7 @@ namespace EventSourcingOnAzureFunctions.Test
             string actual = "Not set";
 
             EventStreamSettings testObj = new EventStreamSettings();
-            testObj.LoadFromConfig();
+            testObj.InitialiseEnvironmentStrings();
 
             actual = testObj.GetBackingImplementationType(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"));
 
@@ -56,11 +56,24 @@ namespace EventSourcingOnAzureFunctions.Test
 
 
             EventStreamSettings testObj = new EventStreamSettings();
-            testObj.LoadFromConfig();
+            testObj.InitialiseEnvironmentStrings();
 
             var writerObj = testObj.CreateWriterForEventStream(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"));
 
             Assert.IsInstanceOfType(writerObj, typeof(TableEventStreamWriter));
+        }
+
+        [TestMethod]
+        public void CreateProjectionProcessor_Table__TestMethod()
+        {
+
+
+            EventStreamSettings testObj = new EventStreamSettings();
+            testObj.InitialiseEnvironmentStrings();
+
+            var readerObj = testObj.CreateProjectionProcessorForEventStream(new ProjectionAttribute("Bank", "Account", "Instance 123", "Balance"));
+
+            Assert.IsNotNull (readerObj);
         }
 
         [TestMethod]

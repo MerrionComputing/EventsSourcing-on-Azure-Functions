@@ -32,7 +32,9 @@ namespace EventSourcingOnAzureFunctions.Common
 
             // Add logging services 
             services.AddLogging();
- 
+
+            // allow .env files to be used
+            DotNetEnv.Env.Load();   
             
             // Add the defined event stream settings
             services.AddEventStreamSettings();

@@ -69,6 +69,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        public void InitialiseEnvironmentStrings()
+        {
+            // Default load the .env files
+            DotNetEnv.Env.Load();   
+        }
+
 
         /// <summary>
         /// The default settings to use if no settings are specified in the application configuration
