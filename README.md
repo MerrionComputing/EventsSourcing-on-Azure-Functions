@@ -11,7 +11,7 @@ There is a 50 minute talk that covers this on [YouTube](https://www.youtube.com/
 
 ## End goal
 
-The goal is to be able to interact with the event streams for entities without an extra plumbing in the azure function itself - with both access to event streams and to run projections being via bound variables that are instantiated when the azure function is executed.
+The goal is to be able to interact with the event streams for entities without any extra plumbing in the azure function itself - with both access to event streams and to run projections being via bound variables that are instantiated when the azure function is executed.
 
 To add events to an event stream you would use an *Event stream* attribute and class thus:-
 
