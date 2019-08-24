@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Azure.WebJobs.Description;
 
 namespace EventSourcingOnAzureFunctions.Common.Binding
 {
@@ -8,6 +8,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
     /// Attribute to be fired whenever a particluar event is written to a domain event stream
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+    [Binding]
     public sealed class EventTriggerAttribute
         : Attribute 
     {

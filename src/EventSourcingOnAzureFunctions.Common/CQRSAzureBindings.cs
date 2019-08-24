@@ -33,8 +33,6 @@ namespace EventSourcingOnAzureFunctions.Common
             // Add logging services 
             services.AddLogging();
 
-            // allow .env files to be used
-            DotNetEnv.Env.Load();   
             
             // Add the defined event stream settings
             services.AddEventStreamSettings();
@@ -110,6 +108,8 @@ namespace EventSourcingOnAzureFunctions.Common
 
         public static IFunctionsHostBuilder AddAppSettingsToConfiguration(this IFunctionsHostBuilder builder)
         {
+  
+
             var currentDirectory = "/home/site/wwwroot";
             bool isLocal = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
             if (isLocal)
@@ -120,6 +120,7 @@ namespace EventSourcingOnAzureFunctions.Common
             var tmpConfig = new ConfigurationBuilder()
                 .SetBasePath(currentDirectory)
                 .AddJsonFile("appsettings.json")
+                .AddEnvironmentVariables() 
                 .Build();
 
             var environmentName = tmpConfig["Environment"];
@@ -136,6 +137,7 @@ namespace EventSourcingOnAzureFunctions.Common
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("connectionstrings.json", optional: true)
+                .AddEnvironmentVariables() 
                 .Build();
 
             builder.Services.Replace(ServiceDescriptor.Singleton(typeof(IConfiguration), configuration));

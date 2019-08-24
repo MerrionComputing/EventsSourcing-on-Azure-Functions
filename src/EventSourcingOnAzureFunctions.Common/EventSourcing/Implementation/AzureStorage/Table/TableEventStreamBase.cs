@@ -17,9 +17,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         #region Field names
         public const string FIELDNAME_EVENTTYPE = "EventType";
         public const string FIELDNAME_VERSION = "Version";
-        public const string FIELDNAME_COMMENTS = "Commentary";
-        public const string FIELDNAME_WHO = "Who";
-        public const string FIELDNAME_SOURCE = "Source";
+        public const string FIELDNAME_COMMENTS = "ContextCommentary";
+        public const string FIELDNAME_WHO = "ContextWho";
+        public const string FIELDNAME_SOURCE = "ContextSource";
         public const string FIELDNAME_CORRELATION_IDENTIFIER = "CorrelationIdentifier";
         #endregion
 
