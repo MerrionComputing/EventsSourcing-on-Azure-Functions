@@ -1,10 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Newtonsoft.Json;
 using RetailBank.AzureFunctionApp.Account.Events;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RetailBank.AzureFunctionApp.Account.Projections
 {

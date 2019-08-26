@@ -169,7 +169,8 @@ namespace RetailBank.AzureFunctionApp
               [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"WithdrawMoney/{accountnumber}")]HttpRequestMessage req,
               string accountnumber,
               [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
-              [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
+              [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance,
+              [Projection("Bank", "Account", "{accountnumber}", nameof(OverdraftLimit))] Projection prjBankAccountOverdraft)
         {
             if (!await bankAccountEvents.Exists())
             {
@@ -184,7 +185,25 @@ namespace RetailBank.AzureFunctionApp
                 Balance projectedBalance = await prjBankAccountBalance.Process<Balance>();
                 if (null != projectedBalance)
                 {
-                    if (projectedBalance.CurrentBalance >= data.AmountWithdrawn)
+                    OverdraftLimit projectedOverdraft = await prjBankAccountOverdraft.Process<OverdraftLimit>();
+
+                    decimal overdraftSet = 0.00M;
+                    if (null != projectedOverdraft )
+                    {
+                        if (projectedOverdraft.CurrentSequenceNumber != projectedBalance.CurrentSequenceNumber   )
+                        {
+                            // The two projectsions are out of synch.  In a real business case we would retry them 
+                            // n times to try and get a match but here we will just throw a consistency error
+                            return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, 
+                                $"Unable to get a matching state for the current balance and overdraft for account {accountnumber}");
+                        }
+                        else
+                        {
+                            overdraftSet = projectedOverdraft.CurrentOverdraftLimit; 
+                        }
+                    }
+
+                    if ((projectedBalance.CurrentBalance + overdraftSet) >= data.AmountWithdrawn)
                     {
                         // attempt the withdrawal
                         DateTime dateWithdrawn = DateTime.UtcNow;
@@ -200,13 +219,16 @@ namespace RetailBank.AzureFunctionApp
                         }
                         catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException exWrite  )
                         {
-                            return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Failed to write withdrawal event {exWrite.Message}");
+                            return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, 
+                                $"Failed to write withdrawal event {exWrite.Message}");
                         }
-                        return req.CreateResponse(System.Net.HttpStatusCode.OK, $"{data.AmountWithdrawn } withdrawn from account {accountnumber} ");
+                        return req.CreateResponse(System.Net.HttpStatusCode.OK, 
+                            $"{data.AmountWithdrawn } withdrawn from account {accountnumber} (New balance: {projectedBalance.CurrentBalance - data.AmountWithdrawn}, overdraft: {overdraftSet} )");
                     }
                     else
                     {
-                        return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not have sufficent funds for the withdrawal of {data.AmountWithdrawn} (Current balance: {projectedBalance.CurrentBalance} )");
+                        return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, 
+                            $"Account {accountnumber} does not have sufficent funds for the withdrawal of {data.AmountWithdrawn} (Current balance: {projectedBalance.CurrentBalance}, overdraft: {overdraftSet} )");
                     }
                 }
                 else
@@ -242,6 +264,61 @@ namespace RetailBank.AzureFunctionApp
             else
             {
                 return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+            }
+        }
+
+
+        /// <summary>
+        /// Set a new overdraft limit for the account
+        /// </summary>
+        [FunctionName("SetOverdraftLimit")]
+        public static async Task<HttpResponseMessage> SetOverdraftLimitRun(
+          [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"SetOverdraftLimit/{accountnumber}")]HttpRequestMessage req,
+          string accountnumber,
+          [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
+        {
+            if (!await bankAccountEvents.Exists())
+            {
+                // You cannot set an overdraft if the account does not exist
+                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+            }
+            else
+            {
+                // get the request body...
+                OverdraftSetData data = await req.Content.ReadAsAsync<OverdraftSetData>();
+
+                // get the current account balance
+                Balance projectedBalance = await prjBankAccountBalance.Process<Balance>();
+                if (null != projectedBalance)
+                {
+                    if (projectedBalance.CurrentBalance >= (0 - data.NewOverdraftLimit) )
+                    {
+                        // attempt to set the new overdraft limit
+                        Account.Events.OverdraftLimitSet evOverdraftSet = new Account.Events.OverdraftLimitSet()
+                        {
+                            OverdraftLimit = data.NewOverdraftLimit ,
+                            Commentary = data.Commentary
+                        };
+                        try
+                        {
+                            await bankAccountEvents.AppendEvent(evOverdraftSet, projectedBalance.CurrentSequenceNumber);
+                        }
+                        catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException exWrite)
+                        {
+                            return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Failed to write overdraft limit event {exWrite.Message}");
+                        }
+                        return req.CreateResponse(System.Net.HttpStatusCode.OK, $"{data.NewOverdraftLimit } set as the new overdraft limit for account {accountnumber} ");
+                    }
+                    else
+                    {
+                        return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} has an outstanding balance greater than the new limit {data.NewOverdraftLimit} (Current balance: {projectedBalance.CurrentBalance} )");
+                    }
+                }
+                else
+                {
+                    return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Unable to get current balance for account {accountnumber}");
+                }
             }
         }
     }
