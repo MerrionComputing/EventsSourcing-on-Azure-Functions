@@ -17,7 +17,9 @@ namespace EventSourcingOnAzureFunctions.Common
             builder.AddExecutionContextBinding();
 
             //Register any extensions for bindings
-            builder.AddExtension<InjectConfiguration>();
+            builder.AddExtension<InjectConfiguration>()
+                .BindOptions<EventSourcingOnAzureOptions>() ;
+
         }
     }
 }

@@ -1,0 +1,6 @@
+﻿Notifications
+=============
+
+The EventSourcingOnAzureFunctions library can be configured to send notifications by way
+of EventGrid messages when a new entity instance (i.e a new event stream) is created or when an 
+event is appended onto an event stream.

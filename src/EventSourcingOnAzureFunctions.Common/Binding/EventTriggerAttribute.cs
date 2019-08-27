@@ -7,6 +7,10 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
     /// <summary>
     /// Attribute to be fired whenever a particluar event is written to a domain event stream
     /// </summary>
+    /// <remarks>
+    /// This will only apply to functions in the same function app - all intra domain communtication
+    /// should be performed by Azure EventGrid
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
     [Binding]
     public sealed class EventTriggerAttribute

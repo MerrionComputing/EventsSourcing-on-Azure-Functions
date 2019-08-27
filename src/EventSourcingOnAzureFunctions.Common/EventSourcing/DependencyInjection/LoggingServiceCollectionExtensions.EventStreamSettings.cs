@@ -10,9 +10,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection
     /// </summary>
     public static partial class LoggingServiceCollectionExtensions
     {
-
-
-
         public static IServiceCollection AddEventStreamSettings(this IServiceCollection services)
         {
 

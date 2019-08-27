@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.WebJobs.Description;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using System;
 
 namespace EventSourcingOnAzureFunctions.Common
@@ -15,12 +16,15 @@ namespace EventSourcingOnAzureFunctions.Common
 
         private readonly IServiceProvider _serviceProvider;
         private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IOptions<EventSourcingOnAzureOptions> _options; 
 
         public InjectConfiguration(IServiceProvider serviceProvider,
-            IHostingEnvironment hostingEnvironment)
+            IHostingEnvironment hostingEnvironment,
+            IOptions<EventSourcingOnAzureOptions> options)
         {
             _serviceProvider = serviceProvider;
             _hostingEnvironment = hostingEnvironment;
+            _options = options;
         }
 
         public void Initialize(ExtensionConfigContext context)
