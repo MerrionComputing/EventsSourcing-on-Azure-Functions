@@ -12,10 +12,16 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     {
 
         /// <summary>
-        /// The notification instance identifier (for idempotency checking)
+        /// The notification instance identifier (for logical idempotency checking)
         /// </summary>
         [JsonProperty(PropertyName = "instanceId")]
         public string InstanceId { get; set; }
+
+        /// <summary>
+        /// The unique identifier of the instance that was created
+        /// </summary>
+        [JsonProperty(PropertyName = "entityUniqueInstanceIdentifier")]
+        public string EntityUniqueInstanceIdentifier { get; set; }
 
 
         public NewEntityEventGridPayload()

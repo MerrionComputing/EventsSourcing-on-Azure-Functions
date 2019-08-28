@@ -17,6 +17,28 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         [JsonProperty(PropertyName = "instanceId")]
         public string InstanceId { get; set; }
 
+
+        /// <summary>
+        /// The unique identifier of the instance that had an event occur to is
+        /// </summary>
+        /// <remarks>
+        /// The domain and entity type will be in the event subject
+        /// </remarks>
+        [JsonProperty(PropertyName = "entityUniqueInstanceIdentifier")]
+        public string EntityUniqueInstanceIdentifier { get; set; }
+
+        /// <summary>
+        /// The type of the event that was appended to the event stream for this entity
+        /// </summary>
+        [JsonProperty(PropertyName = "eventType")]
+        public string EventType { get; set; }
+
+        /// <summary>
+        /// The sequence number of the just-added event
+        /// </summary>
+        [JsonProperty(PropertyName = "sequenceNumber")]
+        public int SequenceNumber { get; set; }
+
         public NewEventEventGridPayload()
         {
         }
