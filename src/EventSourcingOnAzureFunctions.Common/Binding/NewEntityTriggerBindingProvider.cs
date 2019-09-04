@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.Binding
 {
+
+#if TRIGGER_BINDING
     /// <summary>
     /// The provider to bing a NewEntityAttribute to the parameter/function triggered 
     /// when a new entity is created
@@ -38,4 +40,5 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
         }
     }
+#endif
 }
