@@ -12,20 +12,34 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     {
 
         /// <summary>
-        /// The notification instance identifier (for idempotency checking)
+        /// The notification instance identifier (for logical idempotency checking)
         /// </summary>
-        [JsonProperty(PropertyName = "instanceId")]
-        public string InstanceId { get; set; }
-
+        [JsonProperty(PropertyName = "notificationId")]
+        public string NotificationId { get; set; }
 
         /// <summary>
-        /// The unique identifier of the instance that had an event occur to is
+        /// The domain in which the new entity was created
         /// </summary>
-        /// <remarks>
-        /// The domain and entity type will be in the event subject
-        /// </remarks>
-        [JsonProperty(PropertyName = "entityUniqueInstanceIdentifier")]
-        public string EntityUniqueInstanceIdentifier { get; set; }
+        [JsonProperty(PropertyName = "domainName")]
+        public string DomainName { get; set; }
+
+        /// <summary>
+        /// The type of entity that was created 
+        /// </summary>
+        [JsonProperty(PropertyName = "entityTypeName")]
+        public string EntityTypeName { get; set; }
+
+        /// <summary>
+        /// The unique identifier of the new entity instance that was created
+        /// </summary>
+        [JsonProperty(PropertyName = "instanceKey")]
+        public string InstanceKey { get; set; }
+
+        /// <summary>
+        /// Comments that can be passed for logging / diagnostic or other purpose
+        /// </summary>
+        [JsonProperty(PropertyName = "commentary")]
+        public string Commentary { get; set; }
 
         /// <summary>
         /// The type of the event that was appended to the event stream for this entity
