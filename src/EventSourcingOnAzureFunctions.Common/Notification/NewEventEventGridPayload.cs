@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     /// Event Grid message payload for a new event notification
     /// </summary>
     public class NewEventEventGridPayload
+        : IEventStreamIdentity
     {
 
         /// <summary>
@@ -53,8 +55,48 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         [JsonProperty(PropertyName = "sequenceNumber")]
         public int SequenceNumber { get; set; }
 
+        /// <summary>
+        /// Empty constructor for serialisation
+        /// </summary>
         public NewEventEventGridPayload()
         {
+        }
+
+
+        public static NewEventEventGridPayload Create(IEventStreamIdentity newEntity,
+                string eventType,
+                int sequenceNumber,
+                string notificationId = @"",
+                string commentary = @"")
+        {
+
+            if (null == newEntity)
+            {
+                throw new ArgumentNullException(nameof(newEntity));
+            }
+
+            if (string.IsNullOrWhiteSpace(eventType))
+            {
+                throw new ArgumentNullException(nameof(eventType));
+            }
+
+            // Default the notification id if not are provided
+            if (string.IsNullOrEmpty(notificationId))
+            {
+                notificationId = Guid.NewGuid().ToString("N");
+            }
+
+            return new NewEventEventGridPayload()
+            {
+                DomainName = newEntity.DomainName,
+                EntityTypeName = newEntity.EntityTypeName,
+                InstanceKey = newEntity.InstanceKey,
+                NotificationId = notificationId,
+                Commentary = commentary,
+                EventType = eventType,
+                SequenceNumber = sequenceNumber 
+            };
+
         }
     }
 }

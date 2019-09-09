@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="1.2.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.4" />
+    <PackageReference Include="Microsoft.Azure.EventGrid" Version="3.2.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.0.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.11" />

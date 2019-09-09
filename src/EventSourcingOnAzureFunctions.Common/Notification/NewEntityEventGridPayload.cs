@@ -43,8 +43,37 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         [JsonProperty(PropertyName = "commentary")]
         public string Commentary { get; set; }
 
+        /// <summary>
+        /// Empty constructor for serialisation
+        /// </summary>
         public NewEntityEventGridPayload()
         {
+        }
+
+        public static NewEntityEventGridPayload Create(IEventStreamIdentity newEntity,
+            string notificationId = @"",
+            string commentary = @"")
+        {
+
+            if (null == newEntity )
+            {
+                throw new ArgumentNullException(nameof(newEntity)); 
+            }
+
+            // Default the notification id if not are provided
+            if (string.IsNullOrEmpty(notificationId )  )
+            {
+                notificationId = Guid.NewGuid().ToString("N");   
+            }
+
+            return new NewEntityEventGridPayload() {
+                DomainName = newEntity.DomainName ,
+                EntityTypeName = newEntity.EntityTypeName ,
+                InstanceKey = newEntity.InstanceKey ,
+                NotificationId = notificationId ,
+                Commentary = commentary 
+            };
+
         }
     }
 }

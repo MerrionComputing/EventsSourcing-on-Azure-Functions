@@ -9,6 +9,9 @@ using System.Runtime.ExceptionServices;
 using System.Linq;
 using System.Threading;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Azure.EventGrid.Models;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace EventSourcingOnAzureFunctions.Common.Notification
 {
@@ -111,17 +114,29 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <param name="newEntity">
         /// The new entity that has been created
         /// </param>
-        /// <returns></returns>
-        public async Task NewEntityCreated(string hubName,
-            IEventStreamIdentity newEntity)
+        public async Task NewEntityCreated(IEventStreamIdentity newEntity)
         {
 
-            if (this._options.Value.RaiseEntityCreationNotification    )
+            if (this._options.Value.RaiseEntityCreationNotification)
             {
-                // TODO: Create the notification
-                  
-                // TODO: Send it off asynchronously
+                // Create the notification
+                NewEntityEventGridPayload payload = NewEntityEventGridPayload.Create(newEntity);
 
+                // Create an event grid message to send
+                EventGridEvent[] message = new EventGridEvent[]
+                {
+                    new EventGridEvent()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EventType = "eventsourcingNewEntity",
+                        Subject = MakeEventGridSubject(newEntity) ,
+                        DataVersion = "1.0",
+                        Data = payload
+                    }
+                };
+
+                // Send it off asynchronously
+                await SendNotificationAsync(message);
             }
             else
             {
@@ -129,6 +144,94 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 return;
             }
         }
+
+        /// <summary>
+        /// A new event was appended to an event stream - notify the world
+        /// </summary>
+        /// <param name="targetEntity">
+        /// The entity on which event stream the event was appended
+        /// </param>
+        /// <param name="eventType">
+        /// The type of event that occured
+        /// </param>
+        /// <param name="sequenceNumber">
+        /// The sequence number of the new event that was appended
+        /// </param>
+        /// <returns></returns>
+        public async Task NewEntityEvent(IEventStreamIdentity targetEntity,
+            string eventType,
+            int sequenceNumber)
+        {
+
+            if (this._options.Value.RaiseEventNotification)
+            {
+                // Create the notification
+                NewEventEventGridPayload payload = NewEventEventGridPayload.Create(targetEntity,
+                    eventType ,
+                    sequenceNumber );
+
+                // Create an event grid message to send
+                EventGridEvent[] message = new EventGridEvent[]
+                {
+                    new EventGridEvent()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EventType = "eventsourcingNewEvent",
+                        Subject = MakeEventGridSubject(targetEntity) + $"/{eventType}",
+                        DataVersion = "1.0",
+                        Data = payload
+                    }
+                };
+
+                // Send it off asynchronously
+                await SendNotificationAsync(message);
+            }
+            else
+            {
+                // Nothing to do as config doesn't want notifications sent out for new entity creation
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Turn an entity identifier into an eventgrid message subject
+        /// </summary>
+        /// <param name="newEntity">
+        /// The entity the message is being sent about
+        /// </param>
+        private string MakeEventGridSubject(IEventStreamIdentity newEntity)
+        {
+            return $"eventsourcing/{newEntity.DomainName}/{newEntity.EntityTypeName}/{newEntity.InstanceKey}";
+        }
+
+        private async Task SendNotificationAsync(
+                EventGridEvent[] eventGridEventArray)
+        {
+            string json = JsonConvert.SerializeObject(eventGridEventArray);
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage result = null;
+            try
+            {
+                result = await httpClient.PostAsync(this.eventGridTopicEndpoint, content);
+            }
+            catch (Exception e)
+            {
+                // TODO: Work out what to do if the notification sending is failing..
+                return;
+            }
+
+            using (result)
+            {
+                var body = await result.Content.ReadAsStringAsync();
+                if (result.IsSuccessStatusCode)
+                {
+                    // Successfully sent the new entity notification...
+                }
+                else
+                {
+                    // Failed to send the eventgrid notification...
+                }
+            }
     }
 
     internal class HttpRetryMessageHandler : 
