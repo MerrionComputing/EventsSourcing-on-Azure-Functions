@@ -12,6 +12,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.EventGrid.Models;
 using Newtonsoft.Json;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace EventSourcingOnAzureFunctions.Common.Notification
 {
@@ -24,10 +25,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     /// when a new evenmt is appended to an event stream
     /// </remarks>
     public sealed class NotificationHelper
+        : INotificationDispatcher
     {
 
         // Options to control how notifications are sent
         private readonly IOptions<EventSourcingOnAzureOptions> _options;
+        private readonly ILogger _logger;
 
         // Event grid SAS key and topic connection enpoint for sending notifications via
         private readonly string eventGridKeyValue;
@@ -38,7 +41,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         private static HttpMessageHandler httpMessageHandler = null;
 
         public NotificationHelper(IOptions<EventSourcingOnAzureOptions> options,
-            INameResolver nameResolver)
+            INameResolver nameResolver,
+            ILogger logger )
         {
 
             if (options == null)
@@ -53,6 +57,11 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             }
 
             _options = options;
+
+            if (null != logger )
+            {
+                _logger = logger;
+            }
 
             // Get the event grid instance connection details to use
             this.eventGridKeyValue = nameResolver.Resolve(options.Value.EventGridKeyValue);
@@ -158,7 +167,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// The sequence number of the new event that was appended
         /// </param>
         /// <returns></returns>
-        public async Task NewEntityEvent(IEventStreamIdentity targetEntity,
+        public async Task NewEventAppended(IEventStreamIdentity targetEntity,
             string eventType,
             int sequenceNumber)
         {
@@ -167,8 +176,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             {
                 // Create the notification
                 NewEventEventGridPayload payload = NewEventEventGridPayload.Create(targetEntity,
-                    eventType ,
-                    sequenceNumber );
+                    eventType,
+                    sequenceNumber);
 
                 // Create an event grid message to send
                 EventGridEvent[] message = new EventGridEvent[]
@@ -176,7 +185,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     new EventGridEvent()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = "eventsourcingNewEvent",
+                        EventType = "eventsourcingEventAppended",
                         Subject = MakeEventGridSubject(targetEntity) + $"/{eventType}",
                         DataVersion = "1.0",
                         Data = payload
@@ -199,9 +208,28 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <param name="newEntity">
         /// The entity the message is being sent about
         /// </param>
-        private string MakeEventGridSubject(IEventStreamIdentity newEntity)
+        private string MakeEventGridSubject(IEventStreamIdentity newEntity,
+            string eventType = "")
         {
-            return $"eventsourcing/{newEntity.DomainName}/{newEntity.EntityTypeName}/{newEntity.InstanceKey}";
+            if (string.IsNullOrWhiteSpace(eventType ))
+            {
+                return $"eventsourcing/{MakeEventGridSubjectPart(newEntity.DomainName)}/{newEntity.EntityTypeName}/{newEntity.InstanceKey}";
+            }
+            else
+            {
+                return $"eventsourcing/{MakeEventGridSubjectPart(newEntity.DomainName)}/{newEntity.EntityTypeName}/{newEntity.InstanceKey}/{eventType}";
+            }
+        }
+
+        /// <summary>
+        /// Split a multi-part subject part with path separators
+        /// </summary>
+        /// <param name="subjectPart">
+        /// The original subject part with dot separators
+        /// </param>
+        private string MakeEventGridSubjectPart(string subjectPart)
+        {
+            return subjectPart.Replace(".", "/");  
         }
 
         private async Task SendNotificationAsync(
@@ -216,7 +244,10 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             }
             catch (Exception e)
             {
-                // TODO: Work out what to do if the notification sending is failing..
+                if (null != _logger )
+                {
+                    _logger.LogError(e.Message);  
+                }
                 return;
             }
 
@@ -225,77 +256,86 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 var body = await result.Content.ReadAsStringAsync();
                 if (result.IsSuccessStatusCode)
                 {
-                    // Successfully sent the new entity notification...
+                    // Successfully sent the notification...
+                    if (null != _logger)
+                    {
+                        _logger.LogInformation($"Sent notification via {this.eventGridTopicEndpoint}" );
+                    }
                 }
                 else
                 {
                     // Failed to send the eventgrid notification...
+                    if (null != _logger)
+                    {
+                        _logger.LogError($"Failed to send notification - {result.StatusCode} {result.Content}");
+                    }
                 }
             }
-    }
-
-    internal class HttpRetryMessageHandler : 
-        DelegatingHandler
-    {
-        public HttpRetryMessageHandler(HttpMessageHandler messageHandler, 
-            int maxRetryCount, 
-            TimeSpan retryWaitSpan, 
-            HttpStatusCode[] retryTargetStatusCode)
-            : base(messageHandler)
-        {
-            this.MaxRetryCount = maxRetryCount;
-            this.RetryWaitSpan = retryWaitSpan;
-            this.RetryTargetStatus = retryTargetStatusCode;
         }
 
-        public int MaxRetryCount { get; }
-
-        public TimeSpan RetryWaitSpan { get; }
-
-        public HttpStatusCode[] RetryTargetStatus { get; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, 
-            CancellationToken cancellationToken)
+        internal class HttpRetryMessageHandler :
+            DelegatingHandler
         {
-            var tryCount = 0;
-            Exception lastException = null;
-            HttpResponseMessage response = null;
-            do
+            public HttpRetryMessageHandler(HttpMessageHandler messageHandler,
+                int maxRetryCount,
+                TimeSpan retryWaitSpan,
+                HttpStatusCode[] retryTargetStatusCode)
+                : base(messageHandler)
             {
-                try
+                this.MaxRetryCount = maxRetryCount;
+                this.RetryWaitSpan = retryWaitSpan;
+                this.RetryTargetStatus = retryTargetStatusCode;
+            }
+
+            public int MaxRetryCount { get; }
+
+            public TimeSpan RetryWaitSpan { get; }
+
+            public HttpStatusCode[] RetryTargetStatus { get; }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                var tryCount = 0;
+                Exception lastException = null;
+                HttpResponseMessage response = null;
+                do
                 {
-                    response = await base.SendAsync(request, cancellationToken);
-                    if (response.IsSuccessStatusCode)
+                    try
                     {
-                        return response;
-                    }
-                    else if (response.StatusCode != HttpStatusCode.ServiceUnavailable)
-                    {
-                        if (this.RetryTargetStatus.All(x => x != response.StatusCode))
+                        response = await base.SendAsync(request, cancellationToken);
+                        if (response.IsSuccessStatusCode)
                         {
                             return response;
                         }
+                        else if (response.StatusCode != HttpStatusCode.ServiceUnavailable)
+                        {
+                            if (this.RetryTargetStatus.All(x => x != response.StatusCode))
+                            {
+                                return response;
+                            }
+                        }
                     }
+                    catch (HttpRequestException e)
+                    {
+                        lastException = e;
+                    }
+
+                    tryCount++;
+
+                    await Task.Delay(this.RetryWaitSpan, cancellationToken);
                 }
-                catch (HttpRequestException e)
+                while (this.MaxRetryCount >= tryCount);
+
+                if (response != null)
                 {
-                    lastException = e;
+                    return response;
                 }
-
-                tryCount++;
-
-                await Task.Delay(this.RetryWaitSpan, cancellationToken);
-            }
-            while (this.MaxRetryCount >= tryCount);
-
-            if (response != null)
-            {
-                return response;
-            }
-            else
-            {
-                ExceptionDispatchInfo.Capture(lastException).Throw();
-                return null;
+                else
+                {
+                    ExceptionDispatchInfo.Capture(lastException).Throw();
+                    return null;
+                }
             }
         }
     }
