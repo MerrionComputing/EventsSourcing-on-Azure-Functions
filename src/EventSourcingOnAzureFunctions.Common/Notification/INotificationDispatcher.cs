@@ -34,6 +34,6 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// </param>
         Task NewEventAppended(IEventStreamIdentity targetEntity,
             string eventType,
-            int sequenceNumber)
+            int sequenceNumber);
     }
 }

@@ -208,7 +208,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <param name="newEntity">
         /// The entity the message is being sent about
         /// </param>
-        private string MakeEventGridSubject(IEventStreamIdentity newEntity,
+        public static string MakeEventGridSubject(IEventStreamIdentity newEntity,
             string eventType = "")
         {
             if (string.IsNullOrWhiteSpace(eventType ))
@@ -227,7 +227,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <param name="subjectPart">
         /// The original subject part with dot separators
         /// </param>
-        private string MakeEventGridSubjectPart(string subjectPart)
+        public static string MakeEventGridSubjectPart(string subjectPart)
         {
             return subjectPart.Replace(".", "/");  
         }

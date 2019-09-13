@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Azure.WebJobs.Host.Bindings;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,17 +14,31 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
     {
         public string Who { get; }
 
-        public string Source { get; }
+        public string Source { get; internal set; }
 
         public string Commentary { get; }
 
-        public string CorrelationIdentifier { get; }
+        public string CorrelationIdentifier { get; internal set; }
 
 
-        public static IWriteContext DefaultWriterContext()
+        public static WriteContext DefaultWriterContext()
         {
             // todo - set default values... maybe from config or..?
-            return new WriteContext(); 
+            return new WriteContext();
+        }
+
+        internal static IWriteContext CreateFunctionContext(FunctionBindingContext functionContext)
+        {
+            WriteContext ret = DefaultWriterContext();
+            if (null != ret)
+            {
+                if (null != functionContext)
+                {
+                    ret.CorrelationIdentifier = functionContext.FunctionInstanceId.ToString("D");
+                    ret.Source = functionContext.MethodName;
+                }
+            }
+            return ret;
         }
     }
 }

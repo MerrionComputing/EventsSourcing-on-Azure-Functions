@@ -16,6 +16,10 @@ namespace EventSourcingOnAzureFunctions.Common
             // Initialise any common services
             CQRSAzureBindings.InitializeServices(builder.Services);
  
+            // Initialise any outbound notifications
+
+            // Initialise any inbound listeners
+
         }
 
     }

@@ -2,6 +2,7 @@
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using EventSourcingOnAzureFunctions.Common.Notification;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,6 +18,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         : IEventStreamIdentity
     {
 
+        private readonly INotificationDispatcher _notificationDispatcher = null;
         private readonly IEventStreamSettings _settings = null;
         private readonly IEventStreamWriter _writer = null;
         private string _connectionStringName;
@@ -91,8 +93,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             if (null != _writer )
             {
                 // make an event instance of this event and append it to the event stream
-                await _writer.AppendEvent(EventInstance.Wrap(eventToAppend), expectedTopSequence.GetValueOrDefault(0), 
+               IAppendResult result= await _writer.AppendEvent(EventInstance.Wrap(eventToAppend), expectedTopSequence.GetValueOrDefault(0), 
                     streamConstraint:streamConstraint ); 
+
+                if (null != result )
+                {
+                    if (null != this._notificationDispatcher )
+                    {
+                        if (result.NewEventStreamCreated  )
+                        {
+                           await _notificationDispatcher.NewEntityCreated(this); 
+                        }
+                        await _notificationDispatcher.NewEventAppended(this, EventNameAttribute.GetEventName(eventToAppend.GetType()), result.SequenceNumber  ); 
+                    }
+                }
             }
         }
 

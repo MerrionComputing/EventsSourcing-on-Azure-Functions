@@ -14,7 +14,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
     {
 
 
-        public async Task AppendEvent(IEvent eventInstance,
+        public async Task<IAppendResult> AppendEvent(IEvent eventInstance,
             int expectedTopSequenceNumber = 0,
             int eventVersionNumber = 1,
             EventStreamExistenceConstraint streamConstraint = EventStreamExistenceConstraint.Loose)
@@ -70,6 +70,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 await base.Table.ExecuteAsync(TableOperation.Insert(dteEvent));
             }
+
+
+            return new AppendResult((nextSequence == 1), nextSequence);
 
         }
 

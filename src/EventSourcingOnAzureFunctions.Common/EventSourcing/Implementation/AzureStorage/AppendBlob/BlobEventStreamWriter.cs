@@ -30,13 +30,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// An additional constrain that must be satisfied by the event stream in order to persist the event
         /// </param>
         /// <returns></returns>
-        public async Task AppendEvent(IEvent eventInstance,
+        public async Task<IAppendResult> AppendEvent(IEvent eventInstance,
             int expectedTopSequenceNumber = 0, 
             int eventVersionNumber = 1,
             EventStreamExistenceConstraint streamConstraint = EventStreamExistenceConstraint.Loose )
         {
             if (base.EventStreamBlob != null)
             {
+            
                 // acquire a lease for the blob..
                 string writeStreamLeaseId = null;
                 if (await Exists())
@@ -124,7 +125,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     // and release the lease
                     await base.EventStreamBlob.ReleaseLeaseAsync(condition);
                 }
+
+                int sequence = await base.GetSequenceNumber();
+
+                return new AppendResult((sequence == 0), sequence);
             }
+            else
+            {
+                return null;
+            }
+
             
         }
 

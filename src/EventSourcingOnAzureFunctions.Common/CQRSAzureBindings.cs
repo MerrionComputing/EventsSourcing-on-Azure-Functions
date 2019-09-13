@@ -10,6 +10,8 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 
 namespace EventSourcingOnAzureFunctions.Common
 {
@@ -88,11 +90,14 @@ namespace EventSourcingOnAzureFunctions.Common
         {
 
             // If possible get the event stream settings to use
-             
+
             // If possible, get the write context to use
+            IWriteContext writeContext = WriteContext.CreateFunctionContext( context.FunctionContext);
+
+            // If possible, get the notification dipatcher to use
 
             // Use this and the attribute to create a new event stream instance
-            return Task<EventStream>.FromResult(new EventStream(attribute));
+            return Task<EventStream>.FromResult(new EventStream(attribute, context: writeContext ));
         }
 
 

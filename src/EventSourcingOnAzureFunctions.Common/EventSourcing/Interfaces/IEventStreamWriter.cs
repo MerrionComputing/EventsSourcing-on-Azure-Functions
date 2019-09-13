@@ -23,7 +23,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <param name="eventVersionNumber">
         /// The version number of the event being written
         /// </param>
-        Task AppendEvent(IEvent eventInstance,
+        Task<IAppendResult> AppendEvent(IEvent eventInstance,
             int expectedTopSequenceNumber = 0,
             int eventVersionNumber = 1,
             EventStreamExistenceConstraint streamConstraint = EventStreamExistenceConstraint.Loose);
