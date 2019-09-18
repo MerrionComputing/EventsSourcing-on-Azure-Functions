@@ -93,7 +93,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             if (null != _writer )
             {
                 // make an event instance of this event and append it to the event stream
-               IAppendResult result= await _writer.AppendEvent(EventInstance.Wrap(eventToAppend), expectedTopSequence.GetValueOrDefault(0), 
+               IAppendResult result= await _writer.AppendEvent(EventInstance.Wrap(eventToAppend), 
+                   expectedTopSequence.GetValueOrDefault(0), 
                     streamConstraint:streamConstraint ); 
 
                 if (null != result )
@@ -149,7 +150,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         public EventStream(EventStreamAttribute attribute,
             IWriteContext context = null,
-            IEventStreamSettings settings = null
+            IEventStreamSettings settings = null,
+            INotificationDispatcher dispatcher = null
             )
         {
             _domainName = attribute.DomainName;
@@ -178,6 +180,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 {
                     _writer.SetContext(_context);
                 }
+            }
+
+            if (null == dispatcher)
+            {
+                // Create a new dispatcher 
+                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatcher; 
+            }
+            else
+            {
+                _notificationDispatcher = dispatcher;
             }
 
         }

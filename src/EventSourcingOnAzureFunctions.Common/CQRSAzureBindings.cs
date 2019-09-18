@@ -12,6 +12,7 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
+using EventSourcingOnAzureFunctions.Common.Notification;
 
 namespace EventSourcingOnAzureFunctions.Common
 {
@@ -31,16 +32,19 @@ namespace EventSourcingOnAzureFunctions.Common
         /// </param>
         public static void InitializeServices(IServiceCollection services)
         {
-
             // Add logging services 
             services.AddLogging();
-
-            
+  
             // Add the defined event stream settings
             services.AddEventStreamSettings();
 
             // Add the event maps
-            services.AddEventMaps(); 
+            services.AddEventMaps();
+
+            // Add notifications
+            services.AddNotificationDispatch();
+
+            // Add listeners
         }
 
         /// <summary>
@@ -95,9 +99,12 @@ namespace EventSourcingOnAzureFunctions.Common
             IWriteContext writeContext = WriteContext.CreateFunctionContext( context.FunctionContext);
 
             // If possible, get the notification dipatcher to use
+            INotificationDispatcher dispatcher = NotificationDispatcherFactory.NotificationDispatcher;
 
             // Use this and the attribute to create a new event stream instance
-            return Task<EventStream>.FromResult(new EventStream(attribute, context: writeContext ));
+            return Task<EventStream>.FromResult(new EventStream(attribute, 
+                context: writeContext,
+                dispatcher: dispatcher ));
         }
 
 

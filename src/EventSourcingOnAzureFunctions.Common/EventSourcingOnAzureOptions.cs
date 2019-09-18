@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -24,12 +25,17 @@ namespace EventSourcingOnAzureFunctions.Common
         public bool RaiseEventNotification { get; set; } = false;
 
         /// <summary>
+        /// The name of the eventgrid hug to send notifications via
+        /// </summary>
+        public string EventGridHubName { get; set; }
+
+        /// <summary>
         /// The SAS key to use when communicating with event grid
         /// </summary>
         public string EventGridKeyValue { get; set; }
 
         /// <summary>
-        /// The event grid topic endpoint used when communication notificatiosn via event grid
+        /// The event grid topic endpoint used when communication notifications via event grid
         /// </summary>
         public string EventGridTopicEndpoint { get; set; }
 
@@ -53,5 +59,27 @@ namespace EventSourcingOnAzureFunctions.Common
         /// <value>A <see cref="TimeSpan"/> representing the retry interval. 
         /// The default value is 5 minutes.</value>
         public TimeSpan EventGridPublishRetryInterval { get; set; } = TimeSpan.FromMinutes(5);
+
+
+        /// <summary>
+        /// Empty constructor for serialisation
+        /// </summary>
+        public EventSourcingOnAzureOptions()
+        {
+        }
+
+        
+
+    }
+
+    public static class EventSourcingOnAzureOptionsConfigExtensions
+    {
+        public const string DefaultConfigKey = "EventSourcingOnAzure";
+
+        public static EventSourcingOnAzureOptions GetEventSourcingOnAzureOptionsConfig(this IConfiguration configuration)
+        {
+            return configuration.GetSection(DefaultConfigKey).Get<EventSourcingOnAzureOptions>();
+        }
+
     }
 }

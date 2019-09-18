@@ -64,7 +64,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             }
 
             // Get the event grid instance connection details to use
-            this.eventGridKeyValue = nameResolver.Resolve(options.Value.EventGridKeyValue);
+            this.eventGridKeyValue = options.Value.EventGridKeyValue;
             this.eventGridTopicEndpoint = options.Value.EventGridTopicEndpoint;
 
             if (nameResolver.TryResolveWholeString(options.Value.EventGridTopicEndpoint, out var endpoint))
@@ -72,11 +72,13 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 this.eventGridTopicEndpoint = endpoint;
             }
 
+            if (nameResolver.TryResolveWholeString(options.Value.EventGridKeyValue, out var keyvalue))
+            {
+                this.eventGridKeyValue = keyvalue;
+            }
 
             if (!string.IsNullOrEmpty(this.eventGridTopicEndpoint))
             {
-                if (!string.IsNullOrEmpty(options.Value.EventGridKeySettingName))
-                {
                     // The HTTP responses that are not fatal and deserve a retry
                     // (NOT HttpStatusCode.ServiceUnavailable)
                     HttpStatusCode[] retryStatusCode = new HttpStatusCode[]{
@@ -92,8 +94,6 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                         options.Value.EventGridPublishRetryCount,
                         options.Value.EventGridPublishRetryInterval,
                         retryStatusCode);
-
-                }
             }
         }
 
@@ -137,7 +137,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     new EventGridEvent()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = "eventsourcingNewEntity",
+                        EventType = NewEntityEventGridPayload.EVENT_TYPE ,
                         Subject = MakeEventGridSubject(newEntity) ,
                         DataVersion = "1.0",
                         Data = payload
@@ -185,7 +185,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     new EventGridEvent()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = "eventsourcingEventAppended",
+                        EventType = NewEventEventGridPayload.EVENT_TYPE ,
                         Subject = MakeEventGridSubject(targetEntity) + $"/{eventType}",
                         DataVersion = "1.0",
                         Data = payload
@@ -201,6 +201,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 return;
             }
         }
+
 
         /// <summary>
         /// Turn an entity identifier into an eventgrid message subject

@@ -13,7 +13,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 
 namespace RetailBank.AzureFunctionApp
 {
-    public static class AccountFunctions
+    public  class AccountFunctions
     {
 
         /// <summary>

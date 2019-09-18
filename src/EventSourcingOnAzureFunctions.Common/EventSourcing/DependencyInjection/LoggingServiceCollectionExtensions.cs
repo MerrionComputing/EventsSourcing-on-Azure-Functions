@@ -10,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection
     {
         private readonly static ExecutionContext context = new ExecutionContext();
 
+        
 
     }
 }

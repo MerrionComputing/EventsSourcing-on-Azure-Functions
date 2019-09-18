@@ -25,6 +25,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection
                 return ret;
             });
 
+
             return services;
         }
 
