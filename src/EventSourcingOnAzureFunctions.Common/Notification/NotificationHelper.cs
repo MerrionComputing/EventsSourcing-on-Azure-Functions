@@ -139,8 +139,9 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                         Id = Guid.NewGuid().ToString(),
                         EventType = NewEntityEventGridPayload.EVENT_TYPE ,
                         Subject = MakeEventGridSubject(newEntity) ,
-                        DataVersion = "1.0",
-                        Data = payload
+                        DataVersion = NewEntityEventGridPayload.DATA_VERSION,
+                        Data = payload,
+                        EventTime = DateTime.UtcNow  
                     }
                 };
 
@@ -187,8 +188,9 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                         Id = Guid.NewGuid().ToString(),
                         EventType = NewEventEventGridPayload.EVENT_TYPE ,
                         Subject = MakeEventGridSubject(targetEntity) + $"/{eventType}",
-                        DataVersion = "1.0",
-                        Data = payload
+                        DataVersion = NewEventEventGridPayload.DATA_VERSION ,
+                        Data = payload,
+                        EventTime = DateTime.UtcNow
                     }
                 };
 

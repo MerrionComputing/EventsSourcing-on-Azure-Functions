@@ -51,7 +51,6 @@ namespace EventSourcingOnAzureFunctions.Test
             EventSourcingOnAzureOptions optionConfig = new EventSourcingOnAzureOptions()
             {
                 RaiseEntityCreationNotification= true ,
-                EventGridKeyValue = @"set-sas-key",
                 EventGridTopicEndpoint = @"https://eventstream-notifications.northeurope-1.eventgrid.azure.net/api/events"
             };
 
@@ -62,10 +61,42 @@ namespace EventSourcingOnAzureFunctions.Test
 
             NotificationHelper testNotifier = new NotificationHelper(options, nameResolver, null);
 
-            await testNotifier.NewEntityCreated(new EventStreamAttribute("Domain Test", "Entity Type Test Two", "Instance 123"));
+            await testNotifier.NewEntityCreated(new EventStreamAttribute("Domain Test", "Entity Type Test Two", "Instance 1234"));
 
 
             Assert.IsNotNull(testNotifier);  
+        }
+
+        [TestMethod]
+        public async Task NotificationHelper_SendNewEvent_TestMethod()
+        {
+
+            IOptions<EventSourcingOnAzureOptions> options = null;
+            INameResolver nameResolver = null;
+
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("config.local.json")
+                .Build();
+
+            EventSourcingOnAzureOptions optionConfig = new EventSourcingOnAzureOptions()
+            {
+                RaiseEventNotification = true,
+                EventGridTopicEndpoint = @"https://eventstream-notifications.northeurope-1.eventgrid.azure.net/api/events"
+            };
+
+            // make a default name resolver
+            nameResolver = new Microsoft.Azure.WebJobs.DefaultNameResolver(config);
+
+            options = Options.Create<EventSourcingOnAzureOptions>(optionConfig);
+
+            NotificationHelper testNotifier = new NotificationHelper(options, nameResolver, null);
+
+            await testNotifier.NewEventAppended(new EventStreamAttribute("Domain Test", "Entity Type Test Two", "Instance 1234"),
+                "Event Happened",
+                2023);
+
+
+            Assert.IsNotNull(testNotifier);
         }
     }
 }

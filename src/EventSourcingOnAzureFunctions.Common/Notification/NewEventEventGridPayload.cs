@@ -13,7 +13,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         : IEventStreamIdentity
     {
 
-        public const string EVENT_TYPE = @"eventsourcingEventAppended";
+        public const string EVENT_TYPE = @"eventsourcing.EventAppended";
+        public const string DATA_VERSION = "1.0"; // Update if the members change
 
         /// <summary>
         /// The notification instance identifier (for logical idempotency checking)
