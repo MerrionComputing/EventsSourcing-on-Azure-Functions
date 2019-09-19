@@ -73,7 +73,7 @@ All of the properties of these two attributes are set to *AutoResolve* so they c
 
 Because an event stream is an inherently append only system the storage technology underlying it is [AppendBlob](https://docs.microsoft.com/en-us/rest/api/storageservices/append-block) - a special type of Blob storage which only allows for blocks to be appended to the end of the blob.  Each blob can store up to 50,000 events and the container path can be nested in the same way as any other Azure Blob storage.
 
-For higher volume streams there will be an Azure [Tables](https://docs.microsoft.com/en-us/rest/api/storageservices/summary-of-table-service-functionality) back end that can be used instead of AppendBlob.
+For higher volume streams there is an Azure [Tables](https://docs.microsoft.com/en-us/rest/api/storageservices/summary-of-table-service-functionality) back end that can be used instead of AppendBlob.  The choice of storage technology and storage target is switchable by a configuration setting on the application.
 
 The [azure functions](https://azure.microsoft.com/en-us/services/functions/) code is based on version 2.0 of the azure functions SDK and is written in C#.
 
