@@ -84,3 +84,11 @@ In this library the state of an entity has to be retrieved on demand - this is t
 ## Requirements
 
 In order to use this library you will need an Azure account with the ability to create a storage container and to host an [azure functions](https://azure.microsoft.com/en-us/services/functions/) application.
+
+## Roadmap
+
+The current version allows the storing and projection of event stream backed entities in either AppendBlob or (recomended) Azure Tables storage.  This includes the concurrency protection that is needed to do this safely in a many-writers, many-readers scenario.
+
+The next step will be to introduce notificiations - effectively a change feed - that are raised whenerve a new entity is created or when a new event is appended to the event stream of an existing entity.  This will be done via [event grid](https://azure.microsoft.com/en-us/services/event-grid/) to allow massive scale assembly of these event sourcing backed entities into an ecosystem.
+
+
