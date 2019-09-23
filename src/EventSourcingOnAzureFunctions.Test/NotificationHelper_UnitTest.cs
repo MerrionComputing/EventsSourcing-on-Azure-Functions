@@ -6,6 +6,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Test
@@ -13,6 +14,12 @@ namespace EventSourcingOnAzureFunctions.Test
     [TestClass]
     public class NotificationHelper_UnitTest
     {
+
+        [TestInitialize ]
+        public void NotificationHelper_UnitTest_Initialise()
+        {
+            Environment.SetEnvironmentVariable("Bank.Account", "Table;RetailBank"); 
+        }
 
         [TestMethod]
         public void MakeEventGridSubjectPart_Unchanged_TestMethod()
@@ -51,6 +58,7 @@ namespace EventSourcingOnAzureFunctions.Test
             EventSourcingOnAzureOptions optionConfig = new EventSourcingOnAzureOptions()
             {
                 RaiseEntityCreationNotification= true ,
+                EventGridKeyValue = @"",
                 EventGridTopicEndpoint = @"https://eventstream-notifications.northeurope-1.eventgrid.azure.net/api/events"
             };
 
@@ -81,6 +89,7 @@ namespace EventSourcingOnAzureFunctions.Test
             EventSourcingOnAzureOptions optionConfig = new EventSourcingOnAzureOptions()
             {
                 RaiseEventNotification = true,
+                EventGridKeyValue = @"",
                 EventGridTopicEndpoint = @"https://eventstream-notifications.northeurope-1.eventgrid.azure.net/api/events"
             };
 

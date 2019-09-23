@@ -173,6 +173,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             ConfigurationBuilder builder = new ConfigurationBuilder();
             builder.SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true)
+                .AddJsonFile("local.settings.json", true)
                 .AddJsonFile("config.local.json", true)
                 .AddJsonFile("config.json", true)
                 .AddJsonFile("connectionstrings.json", true)
