@@ -82,80 +82,85 @@ namespace EventSourcingOnAzureFunctions.Common
 
         public static EventSourcingOnAzureOptions GetEventSourcingOnAzureOptionsConfig(this IConfiguration configuration)
         {
+
+            EventSourcingOnAzureOptions ret = null;
+
             if (configuration.GetSection(DefaultConfigKey) != null)
             {
-                EventSourcingOnAzureOptions ret = configuration.GetSection(DefaultConfigKey).Get<EventSourcingOnAzureOptions>();
-                if (string.IsNullOrWhiteSpace(ret.EventGridKeyValue  ) )
+               ret  = configuration.GetSection(DefaultConfigKey).Get<EventSourcingOnAzureOptions>();
+                if (null != ret)
                 {
-                    if (! string.IsNullOrWhiteSpace(ret.EventGridKeySettingName ) )
+                    if (string.IsNullOrWhiteSpace(ret.EventGridKeyValue))
                     {
-                        ret.EventGridKeyValue = Environment.GetEnvironmentVariable(ret.EventGridKeySettingName); 
+                        if (!string.IsNullOrWhiteSpace(ret.EventGridKeySettingName))
+                        {
+                            ret.EventGridKeyValue = Environment.GetEnvironmentVariable(ret.EventGridKeySettingName);
+                        }
                     }
+                    return ret;
                 }
-                return ret;
+
             }
-            else
+
+
+            // Get an options class from the environment varialbles
+            ret = new EventSourcingOnAzureOptions();
+
+            ret.EventGridHubName = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridHubName));
+            ret.EventGridKeySettingName = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridKeySettingName));
+            ret.EventGridKeyValue = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridKeyValue));
+            ret.EventGridTopicEndpoint = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridTopicEndpoint));
+
+
+            string envEventGridPublishRetryCount = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridPublishRetryCount));
+            if (!string.IsNullOrWhiteSpace(envEventGridPublishRetryCount))
             {
-                // Get an options class from the environment varialbles
-                EventSourcingOnAzureOptions ret = new EventSourcingOnAzureOptions();
-
-                ret.EventGridHubName = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridHubName));
-                ret.EventGridKeySettingName = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridKeySettingName));
-                ret.EventGridKeyValue = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridKeyValue ));
-                ret.EventGridTopicEndpoint = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridTopicEndpoint ));
-
-                
-                string envEventGridPublishRetryCount = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridPublishRetryCount ));
-                if (! string.IsNullOrWhiteSpace(envEventGridPublishRetryCount ) )
+                int envRetry;
+                if (int.TryParse(envEventGridPublishRetryCount, out envRetry))
                 {
-                    int envRetry;
-                    if (int.TryParse(envEventGridPublishRetryCount , out envRetry ) )
+                    if ((envRetry > 0) && (envRetry <= EventSourcingOnAzureOptions.MAX_RETRIES))
                     {
-                        if ((envRetry > 0 ) && (envRetry <= EventSourcingOnAzureOptions.MAX_RETRIES))
-                        {
-                            ret.EventGridPublishRetryCount = envRetry;
-                        }
+                        ret.EventGridPublishRetryCount = envRetry;
                     }
                 }
-
-                // 
-                string envEventGridPublishRetryInterval = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridPublishRetryInterval));
-                if (! string.IsNullOrWhiteSpace(envEventGridPublishRetryInterval) )
-                {
-                    TimeSpan tsenvEventGridPublishRetryInterval;
-                    if (TimeSpan.TryParse(envEventGridPublishRetryInterval, out tsenvEventGridPublishRetryInterval)  )
-                    {
-                        if (tsenvEventGridPublishRetryInterval.TotalMilliseconds >= EventSourcingOnAzureOptions.MIN_WAIT)
-                        {
-                            ret.EventGridPublishRetryInterval = tsenvEventGridPublishRetryInterval;
-                        }
-                    }
-                }
-
-                // boolean flags
-                string envRaiseEntityCreationNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEntityCreationNotification ));
-                if (! string.IsNullOrWhiteSpace(envRaiseEntityCreationNotification ) )
-                {
-                    bool raiseEntityCreate = false;
-                    if (bool.TryParse(envRaiseEntityCreationNotification, out raiseEntityCreate ))
-                    {
-                        ret.RaiseEntityCreationNotification = raiseEntityCreate;
-                    }
-                }
-
-                string envRaiseEventNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEventNotification));
-                if (! string.IsNullOrWhiteSpace(envRaiseEventNotification) )
-                {
-                    bool raiseEvent = false;
-                    if (bool.TryParse(envRaiseEventNotification , out raiseEvent ) )
-                    {
-                        ret.RaiseEventNotification = raiseEvent;
-                    }
-                }
-
-                return ret;
             }
-        }
 
+            // 
+            string envEventGridPublishRetryInterval = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridPublishRetryInterval));
+            if (!string.IsNullOrWhiteSpace(envEventGridPublishRetryInterval))
+            {
+                TimeSpan tsenvEventGridPublishRetryInterval;
+                if (TimeSpan.TryParse(envEventGridPublishRetryInterval, out tsenvEventGridPublishRetryInterval))
+                {
+                    if (tsenvEventGridPublishRetryInterval.TotalMilliseconds >= EventSourcingOnAzureOptions.MIN_WAIT)
+                    {
+                        ret.EventGridPublishRetryInterval = tsenvEventGridPublishRetryInterval;
+                    }
+                }
+            }
+
+            // boolean flags
+            string envRaiseEntityCreationNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEntityCreationNotification));
+            if (!string.IsNullOrWhiteSpace(envRaiseEntityCreationNotification))
+            {
+                bool raiseEntityCreate = false;
+                if (bool.TryParse(envRaiseEntityCreationNotification, out raiseEntityCreate))
+                {
+                    ret.RaiseEntityCreationNotification = raiseEntityCreate;
+                }
+            }
+
+            string envRaiseEventNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEventNotification));
+            if (!string.IsNullOrWhiteSpace(envRaiseEventNotification))
+            {
+                bool raiseEvent = false;
+                if (bool.TryParse(envRaiseEventNotification, out raiseEvent))
+                {
+                    ret.RaiseEventNotification = raiseEvent;
+                }
+            }
+
+            return ret;
+        }
     }
 }

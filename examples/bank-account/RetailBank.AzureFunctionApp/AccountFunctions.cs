@@ -29,9 +29,17 @@ namespace RetailBank.AzureFunctionApp
                       string accountnumber,
                       [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
         {
+
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow; 
+
             if (await bankAccountEvents.Exists())
             {
-                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} already exists");
+                return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                    FunctionResponse.CreateResponse(startTime, 
+                    true,
+                    $"Account {accountnumber} already exists"),
+                    FunctionResponse.MEDIA_TYPE);
             }
             else
             {
@@ -53,7 +61,11 @@ namespace RetailBank.AzureFunctionApp
                 }
                 catch (EventStreamWriteException exWrite)
                 {
-                    return req.CreateResponse(System.Net.HttpStatusCode.Conflict, $"Account {accountnumber} had a conflict error on creation {exWrite.Message }");
+                    return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.Conflict,
+                        FunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Account {accountnumber} had a conflict error on creation {exWrite.Message }"),
+                        FunctionResponse.MEDIA_TYPE);
                 }
 
                 // If there is an initial deposit in the account opening data, append a "deposit" event
@@ -76,7 +88,12 @@ namespace RetailBank.AzureFunctionApp
                     await bankAccountEvents.AppendEvent(evtBeneficiary);
                 }
 
-                return req.CreateResponse(System.Net.HttpStatusCode.Created, $"Account {accountnumber} created");
+                return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.Created,
+                    FunctionResponse.CreateResponse(startTime,
+                    false,
+                    $"Account { accountnumber} created"),
+                    FunctionResponse.MEDIA_TYPE);
+
             }
         }
 
@@ -93,10 +110,14 @@ namespace RetailBank.AzureFunctionApp
         /// <returns></returns>
         [FunctionName("GetBalance")]
         public static async Task<HttpResponseMessage> GetBalanceRun(
-          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetBalance/{accountnumber}" )]HttpRequestMessage req,
+          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetBalance/{accountnumber}/{asOfDate?}" )]HttpRequestMessage req,
           string accountnumber,
+          string asOfDate,
           [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
         {
+
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
 
             string result = $"No balance found for account {accountnumber}";
 
@@ -105,29 +126,48 @@ namespace RetailBank.AzureFunctionApp
                 if (await prjBankAccountBalance.Exists())
                 {
                     // Get request body
-                    Nullable<DateTime> asOfDate = null;
-                    if (null != req.Content)
+                    Nullable<DateTime> asOfDateValue = null;
+                    if (! string.IsNullOrEmpty(asOfDate) )
                     {
-                        dynamic data = await req.Content.ReadAsAsync<object>();
-                        if (null != data)
+                        DateTime dtTest;
+                        if( DateTime.TryParse(asOfDate, out dtTest ))
                         {
-                            asOfDate = data.AsOfDate;
+                            asOfDateValue = dtTest;
                         }
                     }
                     
-                    Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(asOfDate );
+                    Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(asOfDateValue);
                     if (null != projectedBalance)
                     {
                         result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} (As at record {projectedBalance.CurrentSequenceNumber}) ";
+                        return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
+                                ProjectionFunctionResponse.CreateResponse(startTime,
+                                false,
+                                result,
+                                projectedBalance.CurrentSequenceNumber ),
+                                FunctionResponse.MEDIA_TYPE);
                     }
                 }
                 else
                 {
                     result = $"Account {accountnumber} is not yet created - cannot retrieve a balance for it";
+                    return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.NotFound ,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        true,
+                        result,
+                        0),
+                        FunctionResponse.MEDIA_TYPE);
                 }
             }
 
-            return req.CreateResponse(System.Net.HttpStatusCode.OK, result);
+            // If we got here no balance was found
+            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.NotFound,
+                ProjectionFunctionResponse.CreateResponse(startTime,
+                true,
+                result,
+                0),
+                FunctionResponse.MEDIA_TYPE);
+
         }
 
 
@@ -137,9 +177,17 @@ namespace RetailBank.AzureFunctionApp
               string accountnumber,
               [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
         {
+
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
             if (!await bankAccountEvents.Exists())
             {
-                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+                return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.NotFound ,
+                        FunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Account {accountnumber} does not exist"),
+                        FunctionResponse.MEDIA_TYPE);
             }
             else
             {
@@ -158,7 +206,12 @@ namespace RetailBank.AzureFunctionApp
 
                 await bankAccountEvents.AppendEvent(evDeposited);
 
-                return req.CreateResponse(System.Net.HttpStatusCode.OK, $"{data.DepositAmount} deposited to account {accountnumber} ");
+                return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.OK ,
+                        FunctionResponse.CreateResponse(startTime,
+                        false,
+                        $"{data.DepositAmount} deposited to account {accountnumber} "),
+                        FunctionResponse.MEDIA_TYPE);
+
             }
         }
 
@@ -172,9 +225,18 @@ namespace RetailBank.AzureFunctionApp
               [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance,
               [Projection("Bank", "Account", "{accountnumber}", nameof(OverdraftLimit))] Projection prjBankAccountOverdraft)
         {
+
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
             if (!await bankAccountEvents.Exists())
             {
-                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.NotFound,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Account {accountnumber} does not exist",
+                        0),
+                        FunctionResponse.MEDIA_TYPE);
             }
             else
             {
@@ -194,8 +256,12 @@ namespace RetailBank.AzureFunctionApp
                         {
                             // The two projectsions are out of synch.  In a real business case we would retry them 
                             // n times to try and get a match but here we will just throw a consistency error
-                            return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, 
-                                $"Unable to get a matching state for the current balance and overdraft for account {accountnumber}");
+                            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                                    ProjectionFunctionResponse.CreateResponse(startTime,
+                                    true,
+                                    $"Unable to get a matching state for the current balance and overdraft for account {accountnumber}",
+                                    0),
+                                    FunctionResponse.MEDIA_TYPE);
                         }
                         else
                         {
@@ -219,21 +285,43 @@ namespace RetailBank.AzureFunctionApp
                         }
                         catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException exWrite  )
                         {
-                            return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, 
-                                $"Failed to write withdrawal event {exWrite.Message}");
+                            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                                    ProjectionFunctionResponse.CreateResponse(startTime,
+                                    true,
+                                    $"Failed to write withdrawal event {exWrite.Message}",
+                                    0),
+                                    FunctionResponse.MEDIA_TYPE);
+
                         }
-                        return req.CreateResponse(System.Net.HttpStatusCode.OK, 
-                            $"{data.AmountWithdrawn } withdrawn from account {accountnumber} (New balance: {projectedBalance.CurrentBalance - data.AmountWithdrawn}, overdraft: {overdraftSet} )");
+
+                        return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
+                            ProjectionFunctionResponse.CreateResponse(startTime,
+                            false,
+                            $"{data.AmountWithdrawn } withdrawn from account {accountnumber} (New balance: {projectedBalance.CurrentBalance - data.AmountWithdrawn}, overdraft: {overdraftSet} )",
+                            projectedBalance.CurrentSequenceNumber ),
+                            FunctionResponse.MEDIA_TYPE);
                     }
                     else
                     {
-                        return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, 
-                            $"Account {accountnumber} does not have sufficent funds for the withdrawal of {data.AmountWithdrawn} (Current balance: {projectedBalance.CurrentBalance}, overdraft: {overdraftSet} )");
+
+                        return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                                ProjectionFunctionResponse.CreateResponse(startTime,
+                                true,
+                                $"Account {accountnumber} does not have sufficent funds for the withdrawal of {data.AmountWithdrawn} (Current balance: {projectedBalance.CurrentBalance}, overdraft: {overdraftSet} )",
+                                projectedBalance.CurrentSequenceNumber ),
+                                FunctionResponse.MEDIA_TYPE);
+
+                            
                     }
                 }
                 else
                 {
-                    return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Unable to get current balance for account {accountnumber}");
+                    return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                                ProjectionFunctionResponse.CreateResponse(startTime,
+                                true,   
+                                $"Unable to get current balance for account {accountnumber}", 
+                                projectedBalance.CurrentSequenceNumber),
+                                FunctionResponse.MEDIA_TYPE);
                 }
             }
         }
@@ -250,6 +338,10 @@ namespace RetailBank.AzureFunctionApp
               string ownername,
               [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
         {
+
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
             if (await bankAccountEvents.Exists())
             {
                 if (!string.IsNullOrEmpty(ownername))
@@ -259,11 +351,20 @@ namespace RetailBank.AzureFunctionApp
                     await bankAccountEvents.AppendEvent(evtBeneficiary);
                 }
 
-                return req.CreateResponse(System.Net.HttpStatusCode.Created, $"Beneficial owner of account {accountnumber} set");
+                return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.OK,
+                        FunctionResponse.CreateResponse(startTime,
+                        false,
+                        $"Beneficial owner of account {accountnumber} set"),
+                        FunctionResponse.MEDIA_TYPE);
+
             }
             else
             {
-                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+                return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.OK,
+                    FunctionResponse.CreateResponse(startTime,
+                    true,
+                    $"Account {accountnumber} does not exist"),
+                    FunctionResponse.MEDIA_TYPE);
             }
         }
 
@@ -278,10 +379,18 @@ namespace RetailBank.AzureFunctionApp
           [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
           [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
         {
+
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
             if (!await bankAccountEvents.Exists())
             {
                 // You cannot set an overdraft if the account does not exist
-                return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} does not exist");
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden ,
+                    ProjectionFunctionResponse.CreateResponse(startTime,
+                    true,
+                    $"Account {accountnumber} does not exist",
+                    0));
             }
             else
             {
@@ -306,18 +415,44 @@ namespace RetailBank.AzureFunctionApp
                         }
                         catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException exWrite)
                         {
-                            return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Failed to write overdraft limit event {exWrite.Message}");
+                            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                                ProjectionFunctionResponse.CreateResponse(startTime,
+                                true,
+                                $"Failed to write overdraft limit event {exWrite.Message}",
+                                projectedBalance.CurrentSequenceNumber  ),
+                                FunctionResponse.MEDIA_TYPE);
+
                         }
-                        return req.CreateResponse(System.Net.HttpStatusCode.OK, $"{data.NewOverdraftLimit } set as the new overdraft limit for account {accountnumber} ");
+
+                        return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK ,
+                            ProjectionFunctionResponse.CreateResponse(startTime,
+                            false,
+                            $"{data.NewOverdraftLimit } set as the new overdraft limit for account {accountnumber}",
+                            projectedBalance.CurrentSequenceNumber),
+                            FunctionResponse.MEDIA_TYPE);
+
                     }
                     else
                     {
-                        return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Account {accountnumber} has an outstanding balance greater than the new limit {data.NewOverdraftLimit} (Current balance: {projectedBalance.CurrentBalance} )");
+                        return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden ,
+                            ProjectionFunctionResponse.CreateResponse(startTime,
+                            true,
+                            $"Account {accountnumber} has an outstanding balance greater than the new limit {data.NewOverdraftLimit} (Current balance: {projectedBalance.CurrentBalance} )",
+                            projectedBalance.CurrentSequenceNumber),
+                            FunctionResponse.MEDIA_TYPE
+                            );
+
                     }
                 }
                 else
                 {
-                    return req.CreateResponse(System.Net.HttpStatusCode.Forbidden, $"Unable to get current balance for account {accountnumber}");
+                    return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                            ProjectionFunctionResponse.CreateResponse(startTime,
+                            true,
+                            $"Unable to get current balance for account {accountnumber}",
+                            0),
+                            FunctionResponse.MEDIA_TYPE 
+                            );
                 }
             }
         }

@@ -20,6 +20,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
 
         public string CorrelationIdentifier { get; internal set; }
 
+        public string CausationIdentifier { get; internal set; }
 
         public static WriteContext DefaultWriterContext()
         {
@@ -34,7 +35,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             {
                 if (null != functionContext)
                 {
-                    ret.CorrelationIdentifier = functionContext.FunctionInstanceId.ToString("D");
+                    ret.CausationIdentifier  = functionContext.FunctionInstanceId.ToString("D");
                     ret.Source = functionContext.MethodName;
                 }
             }

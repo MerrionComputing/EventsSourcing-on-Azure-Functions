@@ -38,8 +38,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         string Commentary { get; }
 
         /// <summary>
-        /// An externally provided unique identifier to tie together events comming from the same command instance
+        /// An externally provided unique identifier to tie together events that are linked together
         /// </summary>
         string CorrelationIdentifier { get; }
+
+        /// <summary>
+        /// An externally provided unique identifier to tie together events comming from the same cause
+        /// </summary>
+        string CausationIdentifier { get;}
     }
 }

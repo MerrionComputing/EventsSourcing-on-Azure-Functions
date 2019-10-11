@@ -53,10 +53,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public string Commentary { get; set; }
 
         /// <summary>
-        /// Correlation identifier used to find events that were written by the same thing (command or transaction)
+        /// Correlation identifier used to find events that were written together
         /// </summary>
         public string CorrelationIdentifier { get; set; }
 
+        /// <summary>
+        /// Causation identifier used to find events that were written by the same thing (command or transaction)
+        /// </summary>
+        public string CausationIdentifier { get; set; }
 
         /// <summary>
         /// The date/time the event was written to the event stream
@@ -81,6 +85,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 return _eventInstance;
             }
         }
+
+
 
         internal string ToJSonText()
         {

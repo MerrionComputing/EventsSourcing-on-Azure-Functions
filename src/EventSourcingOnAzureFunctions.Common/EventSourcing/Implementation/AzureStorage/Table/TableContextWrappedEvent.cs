@@ -26,6 +26,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         public string CorrelationIdentifier { get; private set; }
 
+        public string CausationIdentifier { get; private set; }
+
         public TableContextWrappedEvent(IEvent eventToWrap, 
             DynamicTableEntity dteRow)
         {
@@ -41,6 +43,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_CORRELATION_IDENTIFIER ) )
                 {
                     CorrelationIdentifier = dteRow.Properties[TableEventStreamBase.FIELDNAME_CORRELATION_IDENTIFIER].StringValue;
+                }
+                if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_CAUSATION_IDENTIFIER))
+                {
+                    CausationIdentifier = dteRow.Properties[TableEventStreamBase.FIELDNAME_CAUSATION_IDENTIFIER].StringValue;
                 }
                 if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_SOURCE )  )
                 {

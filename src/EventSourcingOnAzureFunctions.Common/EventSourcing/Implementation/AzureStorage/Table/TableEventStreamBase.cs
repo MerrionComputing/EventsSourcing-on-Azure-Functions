@@ -21,6 +21,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public const string FIELDNAME_WHO = "ContextWho";
         public const string FIELDNAME_SOURCE = "ContextSource";
         public const string FIELDNAME_CORRELATION_IDENTIFIER = "CorrelationIdentifier";
+        public const string FIELDNAME_CAUSATION_IDENTIFIER = "CausationIdentifier";
         #endregion
 
 
@@ -400,6 +401,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
             if (propertyName.Equals(FIELDNAME_CORRELATION_IDENTIFIER, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (propertyName.Equals(FIELDNAME_CAUSATION_IDENTIFIER , StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
