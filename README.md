@@ -89,6 +89,7 @@ In order to use this library you will need an Azure account with the ability to 
 
 The current version allows the storing and projection of event stream backed entities in either AppendBlob or (recomended) Azure Tables storage.  This includes the concurrency protection that is needed to do this safely in a many-writers, many-readers scenario.
 
-The next step will be to introduce notificiations - effectively a change feed - that are raised whenerve a new entity is created or when a new event is appended to the event stream of an existing entity.  This will be done via [event grid](https://azure.microsoft.com/en-us/services/event-grid/) to allow massive scale assembly of these event sourcing backed entities into an ecosystem.
+It also has outgoing notificiations - effectively a change feed - that are raised whenerve a new entity is created or when a new event is appended to the event stream of an existing entity.  This is done via [event grid](https://azure.microsoft.com/en-us/services/event-grid/) to allow massive scale assembly of these event sourcing backed entities into an ecosystem.
 
+The next phase is to have notification derived triggers which can listen to these outgoing notifications and trigger serverless functions when they occur.  
 
