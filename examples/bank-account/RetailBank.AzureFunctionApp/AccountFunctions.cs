@@ -139,7 +139,7 @@ namespace RetailBank.AzureFunctionApp
                     Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(asOfDateValue);
                     if (null != projectedBalance)
                     {
-                        result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance}) ";
+                        result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} ";
                         return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
                                 ProjectionFunctionResponse.CreateResponse(startTime,
                                 false,
