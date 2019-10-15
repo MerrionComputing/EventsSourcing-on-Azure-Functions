@@ -139,7 +139,7 @@ namespace RetailBank.AzureFunctionApp
                     Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(asOfDateValue);
                     if (null != projectedBalance)
                     {
-                        result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} (As at record {projectedBalance.CurrentSequenceNumber}) ";
+                        result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance}) ";
                         return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
                                 ProjectionFunctionResponse.CreateResponse(startTime,
                                 false,
@@ -437,7 +437,7 @@ namespace RetailBank.AzureFunctionApp
                         return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden ,
                             ProjectionFunctionResponse.CreateResponse(startTime,
                             true,
-                            $"Account {accountnumber} has an outstanding balance greater than the new limit {data.NewOverdraftLimit} (Current balance: {projectedBalance.CurrentBalance} )",
+                            $"Account {accountnumber} has an outstanding balance beyond the new limit {data.NewOverdraftLimit} (Current balance: {projectedBalance.CurrentBalance} )",
                             projectedBalance.CurrentSequenceNumber),
                             FunctionResponse.MEDIA_TYPE
                             );
