@@ -16,13 +16,17 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     public class NullNotificationDispatcher
         : INotificationDispatcher
     {
-        public Task NewEntityCreated(IEventStreamIdentity newEntity)
+        public Task NewEntityCreated(IEventStreamIdentity newEntity,
+            string commentary=@"")
         {
             // do nothing
             return Task.CompletedTask;
         }
 
-        public Task NewEventAppended(IEventStreamIdentity targetEntity, string eventType, int sequenceNumber)
+        public Task NewEventAppended(IEventStreamIdentity targetEntity, string eventType, 
+            int sequenceNumber,
+            string commentary = @"",
+            object messagePayload = null)
         {
             // do nothing
             return Task.CompletedTask;

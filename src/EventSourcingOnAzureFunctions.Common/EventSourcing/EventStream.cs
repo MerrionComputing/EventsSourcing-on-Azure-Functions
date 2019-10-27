@@ -103,9 +103,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                     {
                         if (result.NewEventStreamCreated  )
                         {
-                           await _notificationDispatcher.NewEntityCreated(this); 
+                           await _notificationDispatcher.NewEntityCreated(this,
+                               commentary: _context?.Commentary); 
                         }
-                        await _notificationDispatcher.NewEventAppended(this, EventNameAttribute.GetEventName(eventToAppend.GetType()), result.SequenceNumber  ); 
+                        await _notificationDispatcher.NewEventAppended(this, 
+                            EventNameAttribute.GetEventName(eventToAppend.GetType()), 
+                            result.SequenceNumber,
+                            commentary: _context?.Commentary,
+                            eventPayload: eventToAppend ); 
                     }
                 }
             }

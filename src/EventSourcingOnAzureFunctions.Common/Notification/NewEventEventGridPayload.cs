@@ -59,6 +59,11 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         public int SequenceNumber { get; set; }
 
         /// <summary>
+        /// The payload of the event appended to the event stream
+        /// </summary>
+        public object EventPayload { get; set; }
+
+        /// <summary>
         /// Empty constructor for serialisation
         /// </summary>
         public NewEventEventGridPayload()
@@ -66,16 +71,17 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         }
 
 
-        public static NewEventEventGridPayload Create(IEventStreamIdentity newEntity,
+        public static NewEventEventGridPayload Create(IEventStreamIdentity entityAffected,
                 string eventType,
                 int sequenceNumber,
                 string notificationId = @"",
-                string commentary = @"")
+                string commentary = @"",
+                object eventPayload = null)
         {
 
-            if (null == newEntity)
+            if (null == entityAffected)
             {
-                throw new ArgumentNullException(nameof(newEntity));
+                throw new ArgumentNullException(nameof(entityAffected));
             }
 
             if (string.IsNullOrWhiteSpace(eventType))
@@ -89,17 +95,23 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 notificationId = Guid.NewGuid().ToString("N");
             }
 
-            return new NewEventEventGridPayload()
+            var ret =  new NewEventEventGridPayload()
             {
-                DomainName = newEntity.DomainName,
-                EntityTypeName = newEntity.EntityTypeName,
-                InstanceKey = newEntity.InstanceKey,
+                DomainName = entityAffected.DomainName,
+                EntityTypeName = entityAffected.EntityTypeName,
+                InstanceKey = entityAffected.InstanceKey,
                 NotificationId = notificationId,
                 Commentary = commentary,
                 EventType = eventType,
                 SequenceNumber = sequenceNumber 
             };
 
+            if (null != eventPayload )
+            {
+                ret.EventPayload = eventPayload;
+            }
+
+            return ret;
         }
     }
 }
