@@ -63,6 +63,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public string CausationIdentifier { get; set; }
 
         /// <summary>
+        /// The name or URN of the schema used to write this event
+        /// </summary>
+        /// <remarks>
+        /// If this is empty then the event type is used instead
+        /// </remarks>
+        public string SchemaName { get; set; }
+
+        /// <summary>
         /// The date/time the event was written to the event stream
         /// </summary>
         public DateTime WriteTime { get; set; }

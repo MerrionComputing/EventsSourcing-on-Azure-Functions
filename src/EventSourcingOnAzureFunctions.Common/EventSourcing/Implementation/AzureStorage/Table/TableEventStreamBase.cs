@@ -20,6 +20,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public const string FIELDNAME_COMMENTS = "ContextCommentary";
         public const string FIELDNAME_WHO = "ContextWho";
         public const string FIELDNAME_SOURCE = "ContextSource";
+        public const string FIELDNAME_SCHEMA = "ContextSchema";
         public const string FIELDNAME_CORRELATION_IDENTIFIER = "CorrelationIdentifier";
         public const string FIELDNAME_CAUSATION_IDENTIFIER = "CausationIdentifier";
         #endregion
@@ -28,7 +29,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public const string RECORDID_SEQUENCE = "0000000000"; // To fint maxint32 = 2147483647
 
 
-        public const int MAX_FREE_DATA_FIELDS = 248;
+        public const int MAX_FREE_DATA_FIELDS = 240;
         public const string ORPHANS_TABLE = "Uncategorised";
 
         public const int MAX_BATCH_SIZE = 100;
@@ -426,6 +427,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
             if (propertyName.Equals(FIELDNAME_WHO, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (propertyName.Equals(FIELDNAME_SCHEMA, StringComparison.OrdinalIgnoreCase )  )
             {
                 return true;
             }

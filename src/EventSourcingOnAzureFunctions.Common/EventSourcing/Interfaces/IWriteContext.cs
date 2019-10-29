@@ -46,5 +46,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// An externally provided unique identifier to tie together events comming from the same cause
         /// </summary>
         string CausationIdentifier { get;}
+
+        /// <summary>
+        /// The name or URN of the schema used to write this event
+        /// </summary>
+        /// <remarks>
+        /// If this is empty then the event type is used instead
+        /// </remarks>
+        string SchemaName { get; }
     }
 }

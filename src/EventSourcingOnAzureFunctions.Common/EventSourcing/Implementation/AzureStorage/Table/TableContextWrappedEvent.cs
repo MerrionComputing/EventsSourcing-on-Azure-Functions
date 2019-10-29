@@ -28,6 +28,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         public string CausationIdentifier { get; private set; }
 
+        /// <summary>
+        /// The name or URN of the schema used to write this event
+        /// </summary>
+        public string SchemaName { get; set; }
+
         public TableContextWrappedEvent(IEvent eventToWrap, 
             DynamicTableEntity dteRow)
         {

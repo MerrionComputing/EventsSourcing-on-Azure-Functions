@@ -204,6 +204,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     ret.Properties.Add(FIELDNAME_WHO,
                         new EntityProperty(_writerContext.Who));
                 }
+                if (! string.IsNullOrWhiteSpace(_writerContext.SchemaName  ) )
+                {
+                    ret.Properties.Add(FIELDNAME_SCHEMA,
+                        new EntityProperty(_writerContext.SchemaName));  
+                }
             }
 
             if (null != eventToPersist.EventPayload)

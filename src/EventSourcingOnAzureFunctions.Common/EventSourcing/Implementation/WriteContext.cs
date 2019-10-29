@@ -22,6 +22,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
 
         public string CausationIdentifier { get; internal set; }
 
+
+        public string SchemaName { get; internal set; }
+
         public static WriteContext DefaultWriterContext()
         {
             // todo - set default values... maybe from config or..?
