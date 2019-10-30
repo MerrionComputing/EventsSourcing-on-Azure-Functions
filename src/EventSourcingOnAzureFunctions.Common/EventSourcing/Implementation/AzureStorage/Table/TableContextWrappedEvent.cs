@@ -33,6 +33,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </summary>
         public string SchemaName { get; set; }
 
+        public DateTimeOffset  EventWrittenDateTime { get; set; }
+
         public TableContextWrappedEvent(IEvent eventToWrap, 
             DynamicTableEntity dteRow)
         {
@@ -70,6 +72,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     SequenceNumber = TableEventStreamBase.SequenceNumberFromString(sequenceNumberAsString);
                 }
+
+                EventWrittenDateTime = dteRow.Timestamp;
             }
         }
     }

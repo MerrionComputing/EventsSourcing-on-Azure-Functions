@@ -112,8 +112,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                             IEventContext wrappedEvent = WrapEventFromDynamicTableEntity(dteRow, eventPayload);
                             if (null != wrappedEvent)
                             {
-                                // Add it to the end of the list
-                                ret.Add(wrappedEvent);
+                                if ((!effectiveDateTime.HasValue) || (wrappedEvent.EventWrittenDateTime <= effectiveDateTime.Value))
+                                {
+                                    // Add it to the end of the list
+                                    ret.Add(wrappedEvent);
+                                }
                             }
                         }
                     }

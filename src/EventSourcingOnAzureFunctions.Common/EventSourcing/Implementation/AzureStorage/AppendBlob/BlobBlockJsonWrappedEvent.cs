@@ -75,6 +75,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </summary>
         public DateTime WriteTime { get; set; }
 
+        /// <summary>
+        /// The date the event was written
+        /// </summary>
+        public DateTimeOffset EventWrittenDateTime { 
+            get
+            { 
+                return WriteTime.ToUniversalTime(); 
+            }
+        }
+
         private IEvent _eventInstance;
         /// <summary>
         /// The evnt instance as an ordinary object

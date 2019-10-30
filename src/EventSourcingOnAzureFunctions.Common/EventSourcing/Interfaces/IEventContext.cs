@@ -26,5 +26,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </summary>
         IEvent EventInstance {get;}
 
+        /// <summary>
+        /// The date and time the event was written
+        /// </summary>
+        DateTimeOffset EventWrittenDateTime { get; }
     }
 }
