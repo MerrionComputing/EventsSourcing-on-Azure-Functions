@@ -195,7 +195,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     {
                         Id = Guid.NewGuid().ToString(),
                         EventType = NewEventEventGridPayload.EVENT_TYPE ,
-                        Subject = MakeEventGridSubject(targetEntity) + $"/{eventType}",
+                        Subject = MakeEventGridSubject(targetEntity, eventType) ,
                         DataVersion = NewEventEventGridPayload.DATA_VERSION ,
                         Data = payload,
                         EventTime = DateTime.UtcNow
@@ -219,6 +219,13 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <param name="newEntity">
         /// The entity the message is being sent about
         /// </param>
+        /// <param name="eventType">
+        /// The name of the event type that we are raising a notification for
+        /// </param>
+        /// <remarks>
+        /// If an event type is specified this will come in front of the instance identifier as that is
+        /// the more useful pattern for filtering
+        /// </remarks>
         public static string MakeEventGridSubject(IEventStreamIdentity newEntity,
             string eventType = "")
         {
@@ -228,7 +235,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             }
             else
             {
-                return $"eventsourcing/{MakeEventGridSubjectPart(newEntity.DomainName)}/{newEntity.EntityTypeName}/{newEntity.InstanceKey}/{eventType}";
+                return $"eventsourcing/{MakeEventGridSubjectPart(newEntity.DomainName)}/{newEntity.EntityTypeName}/{eventType}/{newEntity.InstanceKey}";
             }
         }
 

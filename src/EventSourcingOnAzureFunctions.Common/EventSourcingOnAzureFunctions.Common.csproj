@@ -21,4 +21,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Command\Projections\" />
+    <Folder Include="Query\Events\" />
+    <Folder Include="Query\Projections\" />
+  </ItemGroup>
+
 </Project>

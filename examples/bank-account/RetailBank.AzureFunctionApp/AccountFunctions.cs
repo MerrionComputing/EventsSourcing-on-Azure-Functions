@@ -136,6 +136,7 @@ namespace RetailBank.AzureFunctionApp
                         }
                     }
                     
+                    // Run the "Balance" projection
                     Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(asOfDateValue);
                     if (null != projectedBalance)
                     {
@@ -254,7 +255,7 @@ namespace RetailBank.AzureFunctionApp
                     {
                         if (projectedOverdraft.CurrentSequenceNumber != projectedBalance.CurrentSequenceNumber   )
                         {
-                            // The two projectsions are out of synch.  In a real business case we would retry them 
+                            // The two projections are out of synch.  In a real business case we would retry them 
                             // n times to try and get a match but here we will just throw a consistency error
                             return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
                                     ProjectionFunctionResponse.CreateResponse(startTime,
@@ -456,5 +457,99 @@ namespace RetailBank.AzureFunctionApp
                 }
             }
         }
+
+#if NOTBROKEN
+#region Interest accrual and payment
+
+        /// <summary>
+        /// Calculate the accrued interest and post it to the account
+        /// </summary>
+        [FunctionName("AccrueInterest")]
+        public static async Task<HttpResponseMessage> AccrueInterestRun(
+          [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"AccrueInterest/{accountnumber}")]HttpRequestMessage req,
+          string accountnumber,
+          [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
+        {
+            // Bolierplate: Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
+            if (!await bankAccountEvents.Exists())
+            {
+                // You cannot set an overdraft if the account does not exist
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                    ProjectionFunctionResponse.CreateResponse(startTime,
+                    true,
+                    $"Account {accountnumber} does not exist",
+                    0));
+            }
+
+            // get the request body...
+            InterestAccrualData data = await req.Content.ReadAsAsync<InterestAccrualData>();
+
+            // get the current account balance
+            Balance projectedBalance = await prjBankAccountBalance.Process<Balance>();
+            if (null != projectedBalance)
+            {
+                Account.Events.InterestAccrued evAccrued = new Account.Events.InterestAccrued()
+                {
+                    Commentary = data.Commentary,
+                    AccrualEffectiveDate = DateTime.Today  // set the accrual to midnight today  
+                };
+
+                if (projectedBalance.CurrentBalance >= 0)
+                {
+                    // Using the credit rate
+                    evAccrued.AmountAccrued = data.CreditInterestRate * projectedBalance.CurrentBalance;
+                }
+                else
+                {
+                    // Use the debit rate
+                    evAccrued.AmountAccrued = data.DebitInterestRate * projectedBalance.CurrentBalance;
+                }
+
+                await bankAccountEvents.AppendEvent(evAccrued);
+
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
+    ProjectionFunctionResponse.CreateResponse(startTime,
+    false,
+    $"Interest accrued set as the new overdraft limit for account {accountnumber}",
+    projectedBalance.CurrentSequenceNumber),
+    FunctionResponse.MEDIA_TYPE);
+            }
+
+        }
+
+        /// <summary>
+        /// Pay the accrued interest and due to/from the account
+        /// </summary>
+        [FunctionName("PayInterest")]
+        public static async Task<HttpResponseMessage> PayInterestRun(
+          [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"PayInterest/{accountnumber}")]HttpRequestMessage req,
+          string accountnumber)
+        {
+            // Bolierplate: Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
+        }
+
+        /// <summary>
+        /// Extend the overdraft to cover the interest and due from the account
+        /// </summary>
+        [FunctionName("ExtendOverdraftForInterest")]
+        public static async Task<HttpResponseMessage> ExtendOverdraftForInterestRun(
+          [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"ExtendOverdraftForInterest/{accountnumber}")]HttpRequestMessage req,
+          string accountnumber)
+        {
+
+            // Bolierplate: Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
+        }
+
+
+#endregion
+#endif
+
     }
 }

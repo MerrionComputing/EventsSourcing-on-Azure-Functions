@@ -1,10 +1,13 @@
 
+using EventSourcingOnAzureFunctions.Common.Notification;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
+using Microsoft.Azure.WebJobs.Extensions.Storage;
 using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace RetailBank.AzureFunctionApp
@@ -21,11 +24,12 @@ namespace RetailBank.AzureFunctionApp
     {
 
         /// <summary>
-        /// This event is triggered whenever a new entity notification is sent via EventGrid
+        /// This event is triggered whenever a new bank account entity notification is sent via EventGrid,
+        /// and just adds a row to the "all-bank-accounts.txt" file
         /// </summary>
-        [FunctionName("OnNewEntityNotification")]
-        public static Task OnNewEntityNotificationRun([EventGridTrigger]EventGridEvent eventGridEvent,
-            [SignalR(HubName = "retailbanknotification")]IAsyncCollector<SignalRMessage> signalRMessages,
+        [FunctionName("OnNewBankAccountNotification")]
+        public static void OnNewBankAccountNotification([EventGridTrigger()]EventGridEvent eventGridEvent,
+            [Blob("bank/reference-data/all-bank-accounts.txt", FileAccess.Write , Connection = "StorageConnectionAppSetting")] TextWriter bankAccountList,
             ILogger log)
         {
 
@@ -43,17 +47,21 @@ namespace RetailBank.AzureFunctionApp
 
             if (null != eventGridEvent.Data)
             {
-                // Turn the eventgrid message into a SignalR notification and send it on..
-                return signalRMessages.AddAsync(
-                new SignalRMessage
+                NewEntityEventGridPayload payload = eventGridEvent.Data as NewEntityEventGridPayload;
+                if (null != payload )
                 {
-                    Target = "NewEntity",
-                    Arguments = new[] { eventGridEvent.Data }
-                });
+                    // New bank account is uniquely identified by key
+                    string newAccountNumber = payload.InstanceKey;  
+                    if (! string.IsNullOrWhiteSpace(newAccountNumber ) )
+                    {
+                        bankAccountList.WriteLine(newAccountNumber);
+                        bankAccountList.Flush(); 
+                    }
+                }
             }
             else
             {
-                return Task.FromException(new ArgumentException( "Event grid message has no data"));
+                throw new ArgumentException( "Event grid message has no data");
             }
 
         }
@@ -62,7 +70,7 @@ namespace RetailBank.AzureFunctionApp
         /// This event is triggered whenever a new event notification is sent via EventGrid
         /// </summary>
         [FunctionName("OnNewEventNotification")]
-        public static Task OnNewEventNotificationRun([EventGridTrigger]EventGridEvent eventGridEvent,
+        public static async Task OnNewEventNotificationRun([EventGridTrigger]EventGridEvent eventGridEvent,
             [SignalR(HubName = "retailbanknotification")]IAsyncCollector<SignalRMessage> signalRMessages,
             ILogger log)
         {
@@ -82,7 +90,7 @@ namespace RetailBank.AzureFunctionApp
             if (null != eventGridEvent.Data  )
             { 
             // Turn the eventgrid message into a SignalR notification and send it on..
-            return signalRMessages.AddAsync(
+            await signalRMessages.AddAsync(
                 new SignalRMessage
                 {
                     Target = "NewEvent",
@@ -91,7 +99,7 @@ namespace RetailBank.AzureFunctionApp
             }
             else
             {
-                return Task.FromException(new ArgumentException("Event grid message has no data"));
+                await Task.FromException(new ArgumentException("Event grid message has no data"));
             }
 
         }
