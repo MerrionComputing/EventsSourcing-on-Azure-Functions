@@ -11,7 +11,7 @@ namespace EventSourcingOnAzureFunctions.Common.Command.Events
     /// Each parameter gets its own event so that they can be overwritten during the 
     /// processing of the command if needed
     /// </remarks>
-    [EventName("Parameter Value Set")]
+    [EventName("Command Parameter Value Set")]
     public class ParameterValueSet
     {
 

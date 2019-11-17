@@ -1,0 +1,8 @@
+﻿Projection
+==========
+
+A set of events and projections to allow for running a projection on behalf of either
+a query or a command.
+
+These are appended to / read from the event stream of either the command or query
+for which they are being performed.
