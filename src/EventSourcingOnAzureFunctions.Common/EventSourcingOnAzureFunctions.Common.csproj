@@ -22,9 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Command\Projections\" />
-    <Folder Include="Query\Events\" />
-    <Folder Include="Query\Projections\" />
+    <Folder Include="ClassifierHandler\Projections\" />
+    <Folder Include="CommandHandler\Projections\" />
+    <Folder Include="QueryHandler\Projections\" />
   </ItemGroup>
 
 </Project>

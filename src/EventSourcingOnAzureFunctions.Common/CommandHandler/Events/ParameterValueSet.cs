@@ -2,7 +2,7 @@
 using System;
 
 
-namespace EventSourcingOnAzureFunctions.Common.Command.Events
+namespace EventSourcingOnAzureFunctions.Common.CommandHandler.Events
 {
     /// <summary>
     /// A parameter to be used when executing the command has been set

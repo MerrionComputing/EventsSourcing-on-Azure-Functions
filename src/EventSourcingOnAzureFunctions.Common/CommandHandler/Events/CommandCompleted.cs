@@ -1,7 +1,7 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using System;
 
-namespace EventSourcingOnAzureFunctions.Common.Command.Events
+namespace EventSourcingOnAzureFunctions.Common.CommandHandler.Events
 {
     /// <summary>
     /// A multi-step (event stream backed) command has completed

@@ -2,7 +2,7 @@
 using System;
 
 
-namespace EventSourcingOnAzureFunctions.Common.Command.Events
+namespace EventSourcingOnAzureFunctions.Common.CommandHandler.Events
 {
 
     /// <summary>
