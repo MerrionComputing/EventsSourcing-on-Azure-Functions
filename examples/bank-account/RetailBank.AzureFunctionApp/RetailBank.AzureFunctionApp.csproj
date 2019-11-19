@@ -34,4 +34,7 @@
       <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Account\Classifications\" />
+  </ItemGroup>
 </Project>

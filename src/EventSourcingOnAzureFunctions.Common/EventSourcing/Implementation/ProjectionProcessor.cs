@@ -2,8 +2,6 @@
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
@@ -40,7 +38,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
         }
 
         /// <summary>
-        /// Does the underlying event stream over which this projection should run exists yet?
+        /// Does the underlying event stream over which this projection should run exist yet?
         /// </summary>
         public async Task<bool> Exists()
         {

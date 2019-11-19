@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
 {
     public interface IProjectionProcessor
     {
-
 
         /// <summary>
         /// Does the event stream over which this projection is slated to run exist

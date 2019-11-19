@@ -48,9 +48,8 @@ namespace EventSourcingOnAzureFunctions.Common
         }
 
         /// <summary>
-        /// Initailise any common dependency injection configuration settings
+        /// Initialise any common dependency injection configuration settings
         /// </summary>
-        /// <param name="context"></param>
         public static void InitializeInjectionConfiguration(ExtensionConfigContext context)
         {
 
@@ -69,7 +68,13 @@ namespace EventSourcingOnAzureFunctions.Common
               .BindToInput<Projection>(BuildProjectionFromAttribute)
               ;
 
-            //3: EventTrigger 
+            // 3: Classification
+            context
+              .AddBindingRule<ClassificationAttribute>()
+              .BindToInput<Classification>(BuildClassificationFromAttribute)
+              ;
+
+            //4: EventTrigger 
             // TODO..
 
         }
@@ -116,6 +121,15 @@ namespace EventSourcingOnAzureFunctions.Common
 
             // Use this and the attribute to create a new classifier instance
             return Task<Projection>.FromResult(new Projection(attribute));
+        }
+
+        public static Task<Classification> BuildClassificationFromAttribute(ClassificationAttribute attribute,
+            ValueBindingContext context)
+        {
+            // If possible get the connection string to use
+
+            // Use this and the attribute to create a new classifier instance
+            return Task<Classification>.FromResult(new Classification (attribute));
         }
 
         public static IFunctionsHostBuilder AddAppSettingsToConfiguration(this IFunctionsHostBuilder builder)

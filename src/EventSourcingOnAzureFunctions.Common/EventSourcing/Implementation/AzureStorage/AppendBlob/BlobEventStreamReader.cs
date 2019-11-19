@@ -145,6 +145,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             return new ProjectionProcessor(Create(identity, connectionStringName));
         }
 
+        public static ClassificationProcessor CreateClassificationProcessor(IEventStreamIdentity identity,
+           string connectionStringName = @"")
+        {
+            return new ClassificationProcessor(Create(identity, connectionStringName));
+        }
+
         /// <summary>
         /// Does an event stream already exist for this Domain/Type/Instance
         /// </summary>

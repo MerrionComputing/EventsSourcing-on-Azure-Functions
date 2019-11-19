@@ -45,5 +45,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// The unique identity of the event stream and the projection to run over it
         /// </param>
         IProjectionProcessor CreateProjectionProcessorForEventStream(ProjectionAttribute attribute);
+
+        /// <summary>
+        /// Create a classification processor for the given event stream and classifier
+        /// </summary>
+        /// <param name="attribute">
+        /// The unique identity of the event stream and the projection to run over it
+        /// </param>
+        IClassificationProcessor CreateClassificationProcessorForEventStream(ClassificationAttribute attribute);
     }
 }

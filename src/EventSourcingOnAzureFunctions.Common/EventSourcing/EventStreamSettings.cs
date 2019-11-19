@@ -171,13 +171,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// <summary>
         /// Create a projection processor to run over the given event stream's backing store
         /// </summary>
-        /// <param name="attribute">
-        /// </param>
-        /// <param name="connectionStringName">
-        /// </param>
-        /// <remarks>
-        /// 
-        /// </remarks>
         public  IProjectionProcessor CreateProjectionProcessorForEventStream(ProjectionAttribute attribute)
         {
             string connectionStringName = GetConnectionStringName(attribute);
@@ -191,7 +184,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             return BlobEventStreamReader.CreateProjectionProcessor(attribute, connectionStringName);
         }
 
+        /// <summary>
+        /// Create a classification processor to run over the given event stream's backing store
+        /// </summary>
+        public IClassificationProcessor CreateClassificationProcessorForEventStream(ClassificationAttribute attribute)
+        {
+            string connectionStringName = GetConnectionStringName(attribute);
 
+            if (GetBackingImplementationType(attribute).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATIOIN_TABLE, StringComparison.OrdinalIgnoreCase))
+            {
+                return TableEventStreamReader.CreateClassificationProcessor(attribute, connectionStringName: connectionStringName);
+            }
+
+            // Default to AppendBlob
+            return BlobEventStreamReader.CreateClassificationProcessor(attribute, connectionStringName);
+        }
     }
 
 

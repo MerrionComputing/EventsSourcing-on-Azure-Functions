@@ -6,6 +6,10 @@ namespace EventSourcingOnAzureFunctions.Common.CommandHandler.Events
     /// <summary>
     /// A multi-step (event stream backed) command has completed
     /// </summary>
+    /// <remarks>
+    /// Once a query is tagged as completed it cannot be reopened so this 
+    /// should be the last event in the event stream
+    /// </remarks>
     [EventName("Command Created")]
     public class Completed
     {

@@ -1,21 +1,48 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
-
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
-    public class Projection
-         : IEventStreamIdentity
+    /// <summary>
+    /// A classifier is a simplified form of a projection that classifies entities as being
+    /// in our out of a given group
+    /// </summary>
+    /// <remarks>
+    /// This can be used to implement functionality broardly analoguous to a WHERE clause in SQL
+    /// </remarks>
+    public class Classification
+        : IEventStreamIdentity
     {
 
         private readonly IEventStreamSettings _settings = null;
-        private readonly IProjectionProcessor _projectionProcessor = null;
+        private readonly IClassificationProcessor _classificationProcessor = null;
 
+        /// <summary>
+        /// The different states that can result from a 
+        /// classifier step process
+        /// </summary>
+        public enum ClassificationResults
+        {
+            /// <summary>
+            /// The state remains as whatever it was before the classification
+            /// </summary>
+            Unchanged = 0,
+            /// <summary>
+            /// The entity instance is marked as being included in the group defined by the classification
+            /// </summary>
+            Include = 1,
+            /// <summary>
+            /// The entity instance is marked as being excluded in the group defined by the classification
+            /// </summary>
+            Exclude = 2
+        }
 
         private readonly string _domainName;
         /// <summary>
-        /// The domain in which this event stream that we are running the projection over is located
+        /// The domain in which the event stream the classifier will run over is located
         /// </summary>
         public string DomainName
         {
@@ -28,7 +55,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         private readonly string _entityTypeName;
         /// <summary>
-        /// The type of entity for which this event stream that we are running the projection over pertains
+        /// The type of entity over which this classifier will run
         /// </summary>
         public string EntityTypeName
         {
@@ -40,8 +67,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         private readonly string _instanceKey;
         /// <summary>
-        /// The specific uniquely identitified instance of the entity to which this event stream 
-        /// that we are running the projection over pertains
+        /// The specific uniquely identitified instance of the entity for which the classifier will run
         /// </summary>
         public string InstanceKey
         {
@@ -52,27 +78,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         }
 
         /// <summary>
-        /// The type of the projection we are going to run 
+        /// The specific classifier type to execute
         /// </summary>
-        private readonly string _projectionTypeName;
-        public string ProjectionTypeName
+        private readonly string _classifierTypeName;
+        public string ClassifierTypeName
         {
             get
             {
-                return _projectionTypeName;
-            }
-        }
-
-
-        public async Task<TProjection> Process<TProjection>(Nullable<DateTime> asOfDate = null) where TProjection : IProjection, new()
-        {
-            if (null != _projectionProcessor )
-            {
-                return await _projectionProcessor.Process<TProjection>(asOfDate); 
-            }
-            else
-            {
-                return await Task.FromException<TProjection>(new Exception("Projection processor not initialised"));
+                return _classifierTypeName;
             }
         }
 
@@ -86,20 +99,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+
         /// <summary>
         /// Create the projection from the attribute linked to the function parameter
         /// </summary>
         /// <param name="attribute">
         /// The attribute describing which projection to run
         /// </param>
-        public Projection(ProjectionAttribute attribute,
+        public Classification(ClassificationAttribute attribute,
             IEventStreamSettings settings = null)
         {
 
             _domainName = attribute.DomainName;
-            _entityTypeName  = attribute.EntityTypeName ;
+            _entityTypeName = attribute.EntityTypeName;
             _instanceKey = attribute.InstanceKey;
-            _projectionTypeName = attribute.ProjectionTypeName;
+            _classifierTypeName  = attribute.ClassifierTypeName ;
 
 
             if (null == settings)
@@ -113,20 +127,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
             _connectionStringName = _settings.GetConnectionStringName(attribute);
 
-            if (null == _projectionProcessor)
+            if (null == _classificationProcessor)
             {
-                _projectionProcessor = _settings.CreateProjectionProcessorForEventStream(attribute);
+                _classificationProcessor = _settings.CreateClassificationProcessorForEventStream(attribute);
             }
 
-        }
-
-        public async Task<bool> Exists()
-        {
-            if (null != _projectionProcessor)
-            {
-                return await _projectionProcessor.Exists();
-            }
-            return false;
         }
     }
 }
