@@ -85,6 +85,8 @@ In this library the state of an entity has to be retrieved on demand - this is t
 
 In order to use this library you will need an Azure account with the ability to create a storage container and to host an [azure functions](https://azure.microsoft.com/en-us/services/functions/) application.
 
+If you want to use the **notifications** functionality you will also need to set up an [event grid](https://azure.microsoft.com/en-us/services/event-grid/) topic that the library will push notifications to.
+
 ## Roadmap
 
 The current version allows the storing and projection of event stream backed entities in either AppendBlob or (recomended) Azure Tables storage.  This includes the concurrency protection that is needed to do this safely in a many-writers, many-readers scenario.
