@@ -39,7 +39,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             // TODO : Process the as-of date if it is set
         }
 
-        public Classification.ClassificationResults HandleEvent(string eventTypeName, object eventToHandle)
+        public ClassificationResponse.ClassificationResults HandleEvent(string eventTypeName, object eventToHandle)
         {
             if (typedEventHandlers.ContainsKey(eventTypeName))
             {
@@ -53,9 +53,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 {
                     invocationParameters = new object[] { eventToHandle };
                 }
-                return (Classification.ClassificationResults)typedEventHandlers[eventTypeName].Item2.Invoke(this, invocationParameters);
+                return (ClassificationResponse.ClassificationResults)typedEventHandlers[eventTypeName].Item2.Invoke(this, invocationParameters);
             }
-            return Classification.ClassificationResults.Unchanged;
+            return ClassificationResponse.ClassificationResults.Unchanged;
         }
 
         // Snapshots not implemented yet

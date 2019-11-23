@@ -12,6 +12,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <param name="eventInstance">
         /// The specific instance of this event type with its data properties set
         /// </param>
-        Classification.ClassificationResults   ClassifyEventInstance(TEventType eventInstance);
+        ClassificationResponse.ClassificationResults   ClassifyEventInstance(TEventType eventInstance);
     }
 }

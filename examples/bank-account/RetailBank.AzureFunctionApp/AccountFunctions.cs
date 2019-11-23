@@ -10,6 +10,7 @@ using RetailBank.AzureFunctionApp.Account.Projections;
 using System;
 using static EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.EventStreamBase;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
+using RetailBank.AzureFunctionApp.Account.Classifications;
 
 namespace RetailBank.AzureFunctionApp
 {
@@ -458,8 +459,8 @@ namespace RetailBank.AzureFunctionApp
             }
         }
 
-#if NOTBROKEN
-#region Interest accrual and payment
+
+        #region Interest accrual and payment
 
         /// <summary>
         /// Calculate the accrued interest and post it to the account
@@ -469,12 +470,13 @@ namespace RetailBank.AzureFunctionApp
           [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"AccrueInterest/{accountnumber}")]HttpRequestMessage req,
           string accountnumber,
           [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
-          [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
+          [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance,
+          [Classification("Bank", "Account", "{accountnumber}", nameof(InterestAccruedToday))] Classification clsAccruedToday)
         {
-            // Bolierplate: Set the start time for how long it took to process the message
+            // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
-            if (!await bankAccountEvents.Exists())
+            if (! await bankAccountEvents.Exists())
             {
                 // You cannot set an overdraft if the account does not exist
                 return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
@@ -484,13 +486,28 @@ namespace RetailBank.AzureFunctionApp
                     0));
             }
 
+            ClassificationResponse isAccrued = await clsAccruedToday.Classify< InterestAccruedToday>();
+            if (isAccrued.Result == ClassificationResponse.ClassificationResults.Include )
+            {
+                // The accrual for today has been performed for this account
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Interest accrual already done on account {accountnumber} today",
+                        isAccrued.AsOfSequence  ),
+                        FunctionResponse.MEDIA_TYPE
+                        );
+            }
+            
+
             // get the request body...
             InterestAccrualData data = await req.Content.ReadAsAsync<InterestAccrualData>();
 
-            // get the current account balance
-            Balance projectedBalance = await prjBankAccountBalance.Process<Balance>();
+            // Get the current account balance, as at midnight
+            Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(DateTime.Today);
             if (null != projectedBalance)
             {
+
                 Account.Events.InterestAccrued evAccrued = new Account.Events.InterestAccrued()
                 {
                     Commentary = data.Commentary,
@@ -508,14 +525,36 @@ namespace RetailBank.AzureFunctionApp
                     evAccrued.AmountAccrued = data.DebitInterestRate * projectedBalance.CurrentBalance;
                 }
 
-                await bankAccountEvents.AppendEvent(evAccrued);
+                try
+                { 
+                   await bankAccountEvents.AppendEvent(evAccrued, isAccrued.AsOfSequence);
+                }
+                catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException exWrite)
+                {
+                    return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Failed to write interest accrual event {exWrite.Message}",
+                        projectedBalance.CurrentSequenceNumber),
+                        FunctionResponse.MEDIA_TYPE);
+                }
 
                 return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
-    ProjectionFunctionResponse.CreateResponse(startTime,
-    false,
-    $"Interest accrued set as the new overdraft limit for account {accountnumber}",
-    projectedBalance.CurrentSequenceNumber),
-    FunctionResponse.MEDIA_TYPE);
+                    ProjectionFunctionResponse.CreateResponse(startTime,
+                    false,
+                    $"Interest accrued for account {accountnumber} is {evAccrued.AmountAccrued}",
+                    projectedBalance.CurrentSequenceNumber),
+                    FunctionResponse.MEDIA_TYPE);
+            }
+            else
+            {
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Unable to get current balance for account {accountnumber} for interest accrual",
+                        0),
+                        FunctionResponse.MEDIA_TYPE
+                        );
             }
 
         }
@@ -531,6 +570,12 @@ namespace RetailBank.AzureFunctionApp
             // Bolierplate: Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
+            // Not implemented yet
+            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                ProjectionFunctionResponse.CreateResponse(startTime,
+                true,
+                $"PayInterest not implemented",
+                0));
         }
 
         /// <summary>
@@ -545,11 +590,18 @@ namespace RetailBank.AzureFunctionApp
             // Bolierplate: Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
+            // Not implemented yet
+            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                ProjectionFunctionResponse.CreateResponse(startTime,
+                true,
+                $"ExtendOverdraftForInterest not implemented",
+                0));
+
         }
 
 
 #endregion
-#endif
+
 
     }
 }

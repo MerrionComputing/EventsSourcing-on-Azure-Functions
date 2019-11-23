@@ -20,25 +20,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         private readonly IEventStreamSettings _settings = null;
         private readonly IClassificationProcessor _classificationProcessor = null;
 
-        /// <summary>
-        /// The different states that can result from a 
-        /// classifier step process
-        /// </summary>
-        public enum ClassificationResults
-        {
-            /// <summary>
-            /// The state remains as whatever it was before the classification
-            /// </summary>
-            Unchanged = 0,
-            /// <summary>
-            /// The entity instance is marked as being included in the group defined by the classification
-            /// </summary>
-            Include = 1,
-            /// <summary>
-            /// The entity instance is marked as being excluded in the group defined by the classification
-            /// </summary>
-            Exclude = 2
-        }
+
 
         private readonly string _domainName;
         /// <summary>
@@ -99,6 +81,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        public async Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification, new()
+        {
+            if (null != _classificationProcessor )
+            {
+                return await _classificationProcessor.Classify<TClassification>(asOfDate);
+            }
+            else
+            {
+                return await Task.FromException<ClassificationResponse>(new Exception("Classification processor not initialised"));
+            }
+        }
 
         /// <summary>
         /// Create the projection from the attribute linked to the function parameter
@@ -132,6 +125,63 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 _classificationProcessor = _settings.CreateClassificationProcessorForEventStream(attribute);
             }
 
+        }
+    }
+
+
+    public class  ClassificationResponse
+    {
+        /// <summary>
+        /// The different states that can result from a 
+        /// classifier step process
+        /// </summary>
+        public enum ClassificationResults
+        {
+            /// <summary>
+            /// The state remains as whatever it was before the classification
+            /// </summary>
+            Unchanged = 0,
+            /// <summary>
+            /// The entity instance is marked as being included in the group defined by the classification
+            /// </summary>
+            Include = 1,
+            /// <summary>
+            /// The entity instance is marked as being excluded in the group defined by the classification
+            /// </summary>
+            Exclude = 2
+        }
+
+        private readonly ClassificationResults _result;
+        /// <summary>
+        /// The result of the classification 
+        /// </summary>
+        public ClassificationResults Result
+        {
+            get
+            {
+                return _result;
+            }
+        }
+
+        public readonly int _asOfSequence;
+        /// <summary>
+        /// The last sequence number read to get this classification result
+        /// </summary>
+        public int AsOfSequence
+        {
+            get
+            {
+                return _asOfSequence;
+            }
+        }
+
+
+        public ClassificationResponse(ClassificationResults result,
+            int asofSequence)
+        {
+
+            _result = result;
+            _asOfSequence = asofSequence;
         }
     }
 }

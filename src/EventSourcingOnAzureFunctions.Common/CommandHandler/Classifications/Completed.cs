@@ -16,9 +16,9 @@ namespace EventSourcingOnAzureFunctions.Common.CommandHandler.Classifications
     {
 
 
-        public Classification.ClassificationResults ClassifyEventInstance(Events.Completed eventInstance)
+        public ClassificationResponse.ClassificationResults ClassifyEventInstance(Events.Completed eventInstance)
         {
-            return Classification.ClassificationResults.Include;
+            return ClassificationResponse.ClassificationResults.Include;
         }
     }
 }

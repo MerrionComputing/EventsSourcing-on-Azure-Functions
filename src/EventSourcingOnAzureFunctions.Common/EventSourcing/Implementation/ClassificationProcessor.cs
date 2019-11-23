@@ -12,10 +12,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
 
         private readonly IEventStreamReader eventStreamReader = null;
 
-        public async Task<Classification.ClassificationResults> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification, new()
+        public async Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification, new()
         {
             TClassification classificationToRun = new TClassification();
-            Classification.ClassificationResults ret = Classification.ClassificationResults.Unchanged;
+            ClassificationResponse.ClassificationResults ret = ClassificationResponse.ClassificationResults.Unchanged;
 
             if (null != eventStreamReader)
             {
@@ -28,7 +28,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
                     if (classificationToRun.HandlesEventType(wrappedEvent.EventInstance.EventTypeName))
                     {
                         var stepResult = classificationToRun.HandleEvent(wrappedEvent.EventInstance.EventTypeName, wrappedEvent.EventInstance.EventPayload);
-                        if (stepResult != Classification.ClassificationResults.Unchanged )
+                        if (stepResult != ClassificationResponse.ClassificationResults.Unchanged )
                         {
                             // The classification state changed so store it as the current result
                             ret = stepResult;
@@ -40,7 +40,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
                 }
             }
 
-            return ret;
+            return new ClassificationResponse(ret, classificationToRun.CurrentSequenceNumber ) ;
         }
 
         /// <summary>

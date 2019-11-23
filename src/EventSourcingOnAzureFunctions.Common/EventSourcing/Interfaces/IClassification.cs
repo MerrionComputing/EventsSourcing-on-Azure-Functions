@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using static EventSourcingOnAzureFunctions.Common.EventSourcing.Classification;
+using static EventSourcingOnAzureFunctions.Common.EventSourcing.ClassificationResponse;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
 {

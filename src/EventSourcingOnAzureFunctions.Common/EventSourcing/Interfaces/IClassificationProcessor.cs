@@ -20,6 +20,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <param name="asOfDate">
         /// If set, only run the classification up until this date/time
         /// </param>
-        Task<Classification.ClassificationResults> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification , new();
+        Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification , new();
     }
 }
