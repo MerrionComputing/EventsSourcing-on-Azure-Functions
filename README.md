@@ -71,9 +71,11 @@ All of the properties of these two attributes are set to *AutoResolve* so they c
 
 ## Chosen technologies
 
-Because an event stream is an inherently append only system the storage technology underlying it is [AppendBlob](https://docs.microsoft.com/en-us/rest/api/storageservices/append-block) - a special type of Blob storage which only allows for blocks to be appended to the end of the blob.  Each blob can store up to 50,000 events and the container path can be nested in the same way as any other Azure Blob storage.
+For production use and especially for higher volume streams there is an Azure [Tables](https://docs.microsoft.com/en-us/rest/api/storageservices/summary-of-table-service-functionality) back end that I recommend be used.
 
-For higher volume streams there is an Azure [Tables](https://docs.microsoft.com/en-us/rest/api/storageservices/summary-of-table-service-functionality) back end that can be used instead of AppendBlob.  The choice of storage technology and storage target is switchable by a configuration setting on the application.
+Alternatively, because an event stream is an inherently append only system the storage technology underlying it is [AppendBlob](https://docs.microsoft.com/en-us/rest/api/storageservices/append-block) - a special type of Blob storage which only allows for blocks to be appended to the end of the blob.  Each blob can store up to 50,000 events and the container path can be nested in the same way as any other Azure Blob storage.
+
+The choice of storage technology and storage target is switchable by a configuration setting on the application.
 
 The [azure functions](https://azure.microsoft.com/en-us/services/functions/) code is based on version 2.0 of the azure functions SDK and is written in C#.
 
@@ -85,11 +87,13 @@ In this library the state of an entity has to be retrieved on demand - this is t
 
 In order to use this library you will need an Azure account with the ability to create a storage container and to host an [azure functions](https://azure.microsoft.com/en-us/services/functions/) application.
 
+If you want to use the **notifications** functionality you will also need to set up an [event grid](https://azure.microsoft.com/en-us/services/event-grid/) topic that the library will push notifications to.
+
 ## Roadmap
 
-The current version allows the storing and projection of event stream backed entities in either AppendBlob or (recomended) Azure Tables storage.  This includes the concurrency protection that is needed to do this safely in a many-writers, many-readers scenario.
+The current version allows the storing and projection of event stream backed entities in either Azure Tables storage (recommended) or AppendBlob.  This includes the concurrency protection that is needed to do this safely in a many-writers, many-readers scenario.
 
-It also has outgoing notificiations - effectively a change feed - that are raised whenerve a new entity is created or when a new event is appended to the event stream of an existing entity.  This is done via [event grid](https://azure.microsoft.com/en-us/services/event-grid/) to allow massive scale assembly of these event sourcing backed entities into an ecosystem.
+It also has outgoing notificiations - effectively a change feed - that are raised whenever a new entity is created or when a new event is appended to the event stream of an existing entity.  This is done via [event grid](https://azure.microsoft.com/en-us/services/event-grid/) to allow massive scale assembly of these event sourcing backed entities into an ecosystem.
 
-The next phase is to have notification derived triggers which can listen to these outgoing notifications and trigger serverless functions when they occur.  
+The next phase is to have notification derived triggers which can listen to these outgoing notifications and trigger serverless functions when they occur, and to provide the scaffold for creating CQRS systems on azure serverless.
 
