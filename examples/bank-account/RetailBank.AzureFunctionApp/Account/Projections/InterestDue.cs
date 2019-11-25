@@ -11,13 +11,38 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
     /// A negative amount means that the bank is owed interest from the accont
     /// </remarks>
     public class InterestDue
-        : ProjectionBase 
+        : ProjectionBase ,
+        IHandleEventType<InterestAccrued >,
+        IHandleEventType<InterestPaid > 
     {
 
-        // 1 - What events does this projection care about ?
+        decimal _interestDue;
+        public decimal Due
+        {
+            get
+            {
+                return _interestDue;
+            }
+        }
 
 
-        // 2- What does it do with them ?
+
+        public void HandleEventInstance(InterestAccrued eventInstance)
+        {
+            if (null != eventInstance )
+            {
+                _interestDue += eventInstance.AmountAccrued;
+            }
+        }
+
+        public void HandleEventInstance(InterestPaid eventInstance)
+        {
+            if (null != eventInstance)
+            {
+                _interestDue -= eventInstance.AmountPaid;
+            }
+        }
+
 
     }
 }

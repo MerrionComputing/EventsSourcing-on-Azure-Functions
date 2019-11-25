@@ -12,7 +12,7 @@ namespace RetailBank.AzureFunctionApp.Account.Events
         /// <remarks>
         /// This can be negative interest was charged
         /// </remarks>
-        public decimal AmountAccrued { get; set; }
+        public decimal AmountPaid { get; set; }
 
         /// <summary>
         /// The commentary attached to the interest 

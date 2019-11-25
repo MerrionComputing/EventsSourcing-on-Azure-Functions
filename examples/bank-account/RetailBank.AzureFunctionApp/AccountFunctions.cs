@@ -11,6 +11,7 @@ using System;
 using static EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.EventStreamBase;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using RetailBank.AzureFunctionApp.Account.Classifications;
+using RetailBank.AzureFunctionApp.Account.Events;
 
 namespace RetailBank.AzureFunctionApp
 {
@@ -478,7 +479,7 @@ namespace RetailBank.AzureFunctionApp
 
             if (! await bankAccountEvents.Exists())
             {
-                // You cannot set an overdraft if the account does not exist
+                // You cannot accrue interest if the account does not exist
                 return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
                     ProjectionFunctionResponse.CreateResponse(startTime,
                     true,
@@ -565,17 +566,96 @@ namespace RetailBank.AzureFunctionApp
         [FunctionName("PayInterest")]
         public static async Task<HttpResponseMessage> PayInterestRun(
           [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"PayInterest/{accountnumber}")]HttpRequestMessage req,
-          string accountnumber)
+          string accountnumber,
+          [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(InterestDue ))] Projection prjInterestDue,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(OverdraftLimit))] Projection prjBankAccountOverdraft)
         {
-            // Bolierplate: Set the start time for how long it took to process the message
+            // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
-            // Not implemented yet
-            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
-                ProjectionFunctionResponse.CreateResponse(startTime,
-                true,
-                $"PayInterest not implemented",
-                0));
+            if (!await bankAccountEvents.Exists())
+            {
+                // You cannot pay interest if the account does not exist
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                    ProjectionFunctionResponse.CreateResponse(startTime,
+                    true,
+                    $"Account {accountnumber} does not exist",
+                    0),
+                    FunctionResponse.MEDIA_TYPE);
+            }
+
+            // get the interest owed / due as now
+            InterestDue interestDue = await prjInterestDue.Process<InterestDue>();
+            if (null != interestDue )
+            {
+                // if the interest due is negative we need to make sure the account has sufficient balance
+                if (interestDue.Due < 0.00M )
+                {
+                    Balance balance = await prjBankAccountBalance.Process<Balance>();
+                    if (null != balance )
+                    {
+                        decimal availableBalance = balance.CurrentBalance;
+                        
+                        // is there an overdraft?
+                        OverdraftLimit overdraft = await prjBankAccountOverdraft.Process<OverdraftLimit>();
+                        if (null != overdraft )
+                        {
+                            availableBalance += overdraft.CurrentOverdraftLimit;
+                        }
+
+                        if (availableBalance < interestDue.Due  )
+                        {
+                            // can't pay the interest
+                            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                                ProjectionFunctionResponse.CreateResponse(startTime,
+                                true,
+                                $"Unable to pay interest of {interestDue.Due} as available balance is only {availableBalance}",
+                                interestDue.CurrentSequenceNumber ),
+                                FunctionResponse.MEDIA_TYPE);
+                        }
+                    }
+                }
+
+                // pay the interest
+                decimal amountToPay = decimal.Round(interestDue.Due, 2, MidpointRounding.AwayFromZero);
+                if (amountToPay != 0.00M)
+                {
+                    InterestPaid evInterestPaid = new InterestPaid()
+                    {
+                        AmountPaid = decimal.Round(interestDue.Due, 2, MidpointRounding.AwayFromZero),
+                        Commentary = $"Interest due {interestDue.Due} as at {interestDue.CurrentSequenceNumber}"
+                    };
+                    await bankAccountEvents.AppendEvent(evInterestPaid);
+
+                    return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        false,
+                        evInterestPaid.Commentary,
+                        interestDue.CurrentSequenceNumber),
+                        FunctionResponse.MEDIA_TYPE);
+                }
+                else
+                {
+                    return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        false,
+                        $"No interest due so none was paid out",
+                        interestDue.CurrentSequenceNumber),
+                        FunctionResponse.MEDIA_TYPE);
+                }
+            }
+            else
+            {
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Unable to get interest due for account {accountnumber} for interest payment",
+                        0),
+                        FunctionResponse.MEDIA_TYPE
+                        );
+            }
         }
 
         /// <summary>
