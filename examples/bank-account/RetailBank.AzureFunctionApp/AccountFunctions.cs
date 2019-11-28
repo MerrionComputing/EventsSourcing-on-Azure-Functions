@@ -12,6 +12,7 @@ using static EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.E
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using RetailBank.AzureFunctionApp.Account.Classifications;
 using RetailBank.AzureFunctionApp.Account.Events;
+using System.Collections.Generic;
 
 namespace RetailBank.AzureFunctionApp
 {
@@ -173,6 +174,37 @@ namespace RetailBank.AzureFunctionApp
 
         }
 
+
+        [FunctionName("GetAllAccounts")]
+        public static async Task<HttpResponseMessage> GetAllAccountsRun(
+          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetAllAccounts/{asOfDate?}")]HttpRequestMessage req,
+           string asOfDate,
+          [Classification("Bank", "Account", "ALL", nameof(InterestAccruedToday))] Classification clsAllAccounts)
+        {
+
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
+            IEnumerable<string> allAccounts = await clsAllAccounts.GetAllInstanceKeys(null);
+            System.Text.StringBuilder sbRet = new System.Text.StringBuilder(); 
+            if (null != allAccounts )
+            {
+                foreach (string accountNumber in allAccounts)
+                {
+                    if (! (sbRet.Length == 0))
+                    {
+                        sbRet.Append(",");  
+                    }
+                    sbRet.Append(accountNumber);  
+                }
+            }
+
+            return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.OK,
+                    FunctionResponse.CreateResponse(startTime,
+                    false,
+                    $"Account numbers: {sbRet.ToString()}  "),
+                    FunctionResponse.MEDIA_TYPE);
+        }
 
         [FunctionName("DepositMoney")]
         public static async Task<HttpResponseMessage> DepositMoneyRun(
