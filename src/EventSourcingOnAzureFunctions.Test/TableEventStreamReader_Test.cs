@@ -36,7 +36,7 @@ namespace EventSourcingOnAzureFunctions.Test
 
             ProjectionProcessor testObj = new ProjectionProcessor(testReader);
 
-            Assert.IsNotNull(testReader); 
+            Assert.IsNotNull(testReader);
 
         }
 
@@ -61,8 +61,8 @@ namespace EventSourcingOnAzureFunctions.Test
         [TestMethod]
         public async Task Projection_NotExists_TestMethod()
         {
-            bool expected = false ;
-            bool actual = true ;
+            bool expected = false;
+            bool actual = true;
 
             TableEventStreamReader testReader = new TableEventStreamReader(
                 new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance not existing abc.def"),
@@ -89,13 +89,25 @@ namespace EventSourcingOnAzureFunctions.Test
 
             ProjectionProcessor testObj = new ProjectionProcessor(testReader);
 
-            var result =  testObj.Process<MockProjectionOne>() ;
+            var result = testObj.Process<MockProjectionOne>();
             actual = result.Result.TotalCount;
 
-            Assert.AreNotEqual (notexpected, actual);
+            Assert.AreNotEqual(notexpected, actual);
 
         }
 
+        [TestMethod]
+        public async Task AllKeys_TestMethod()
+        {
+
+            TableEventStreamReader testReader = new TableEventStreamReader(
+                new EventStreamAttribute("Bank", "Account", "Instance 123"),
+                "RetailBank");
+
+            var allKeys = await testReader.GetAllInstanceKeys(null);
+
+            Assert.IsNotNull(allKeys); 
+        }
     }
 }
 

@@ -2,6 +2,7 @@
 using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -246,6 +247,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         }
 
         /// <summary>
+        /// Get all the "key" rows in the table
+        /// </summary>
+        private TableQuery GetKeysQuery()
+        {
+            return new TableQuery()
+                .Where(
+                    TableQuery.GenerateFilterCondition("RowKey",
+                         QueryComparisons.GreaterThanOrEqual,
+                         SequenceNumberAsString(0)
+                    )
+                );
+        }
+
+        /// <summary>
         /// Get the standard request options to use when retrieving the event stream data from a table
         /// </summary>
         private TableRequestOptions GetDefaultRequestOptions()
@@ -287,6 +302,47 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     Permissions = SharedAccessTablePermissions.Query 
                 };
             }
+        }
+
+
+        public async Task<IEnumerable<string>> GetAllInstanceKeys(DateTime? asOfDate)
+        {
+
+            if (Table != null)
+            {
+                List<string> ret = new List<string>();
+
+                TableContinuationToken token = new TableContinuationToken();
+
+                TableQuery getEventsQuery = GetKeysQuery();
+
+                do
+                {
+                    // create the query to be executed..
+                    var segment = await Table.ExecuteQuerySegmentedAsync(getEventsQuery,
+                         token,
+                         requestOptions: GetDefaultRequestOptions(),
+                         operationContext: GetDefaultOperationContext());
+
+                    foreach (DynamicTableEntity dteRow in segment)
+                    {
+                        // add the "key"
+                        if (dteRow.Properties.ContainsKey(nameof(InstanceKey)))
+                        {
+                            ret.Add(dteRow.Properties[nameof(InstanceKey)].StringValue);
+                        }
+                    }
+
+                    // update the continuation token to get the next chunk of records
+                    token = segment.ContinuationToken;
+
+                } while (null != token);
+
+                return ret;
+            }
+
+
+            return Enumerable.Empty<string>();
         }
 
         public TableEventStreamReader(IEventStreamIdentity identity,
@@ -334,5 +390,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             return new ClassificationProcessor(Create(identity, connectionStringName));
         }
+
+
     }
 }

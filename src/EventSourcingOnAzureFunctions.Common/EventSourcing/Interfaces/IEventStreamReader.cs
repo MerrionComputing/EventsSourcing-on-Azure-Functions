@@ -53,6 +53,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         Task<IEnumerable<IEventContext>> GetEventsWithContext(int StartingSequenceNumber = 0,
             DateTime? effectiveDateTime = null);
 
-
+        /// <summary>
+        /// Get all of the unique instances of this domain/entity type
+        /// </summary>
+        /// <param name="asOfDate">
+        /// (Optional) The date as of which to get all the instance keys
+        /// </param>
+        /// <remarks
+        /// This is to allow for set-based functionality
+        /// </remarks>    
+        Task<IEnumerable<string>> GetAllInstanceKeys(DateTime? asOfDate);
     }
 }

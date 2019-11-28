@@ -94,6 +94,27 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         }
 
         /// <summary>
+        /// Get all of the unique instances of this domain/entity type
+        /// </summary>
+        /// <param name="asOfDate">
+        /// (Optional) The date as of which to get all the instance keys
+        /// </param>
+        /// <remarks
+        /// This is to allow for set-based functionality
+        /// </remarks>
+        public async Task<IEnumerable<string > > GetAllInstanceKeys(DateTime? asOfDate = null)
+        {
+            if (null != _classificationProcessor)
+            {
+                return await _classificationProcessor.GetAllInstanceKeys(asOfDate);
+            }
+            else
+            {
+                return await Task.FromException<IEnumerable<string>>(new Exception("Classification processor not initialised"));
+            }
+        }
+
+        /// <summary>
         /// Create the projection from the attribute linked to the function parameter
         /// </summary>
         /// <param name="attribute">

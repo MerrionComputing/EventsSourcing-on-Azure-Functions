@@ -169,6 +169,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 return Task.FromResult<bool>(false);
             }
         }
- 
+
+        /// <summary>
+        /// Get all of the unique instances of this domain/entity type
+        /// </summary>
+        /// <param name="asOfDate">
+        /// (Optional) The date as of which to get all the instance keys
+        /// </param>
+        /// <remarks
+        /// This is to allow for set-based functionality
+        /// </remarks>
+        public Task<IEnumerable<string>> GetAllInstanceKeys(DateTime? asOfDate)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

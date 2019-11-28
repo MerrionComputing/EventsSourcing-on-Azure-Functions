@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
@@ -21,5 +22,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// If set, only run the classification up until this date/time
         /// </param>
         Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification , new();
+
+
+        /// <summary>
+        /// Get all of the unique instances of this domain/entity type
+        /// </summary>
+        /// <param name="asOfDate">
+        /// (Optional) The date as of which to get all the instance keys
+        /// </param>
+        /// <remarks
+        /// This is to allow for set-based functionality
+        /// </remarks>    
+        Task<IEnumerable<string>> GetAllInstanceKeys(DateTime? asOfDate);
     }
 }

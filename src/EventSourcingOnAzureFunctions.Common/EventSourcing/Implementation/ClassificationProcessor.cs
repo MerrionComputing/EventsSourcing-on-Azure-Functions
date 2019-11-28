@@ -2,6 +2,8 @@
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
@@ -55,6 +57,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             return false;
         }
 
+
+        public async Task<IEnumerable<string>> GetAllInstanceKeys(DateTime? asOfDate)
+        {
+            if (null != eventStreamReader)
+            {
+                return await eventStreamReader.GetAllInstanceKeys(asOfDate);
+            }
+            else
+            {
+                return Enumerable.Empty<string>();
+            }
+        }
 
         public ClassificationProcessor(BlobEventStreamReader blobEventStreamReader)
         {
