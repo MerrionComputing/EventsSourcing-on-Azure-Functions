@@ -16,7 +16,7 @@ using System.Collections.Generic;
 
 namespace RetailBank.AzureFunctionApp
 {
-    public  class AccountFunctions
+    public partial class AccountFunctions
     {
 
         /// <summary>
@@ -694,7 +694,7 @@ namespace RetailBank.AzureFunctionApp
         /// Extend the overdraft to cover the interest and due from the account
         /// </summary>
         /// <remarks>
-        /// 
+        /// If there is no extrension needed then this command does not do anything
         /// </remarks>
         [FunctionName("ExtendOverdraftForInterest")]
         public static async Task<HttpResponseMessage> ExtendOverdraftForInterestRun(
@@ -774,6 +774,8 @@ namespace RetailBank.AzureFunctionApp
 
 
         }
+
+
 
 
 #endregion
