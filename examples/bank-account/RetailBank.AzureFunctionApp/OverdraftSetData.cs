@@ -18,5 +18,7 @@ namespace RetailBank.AzureFunctionApp
         /// The commentary attached to the overdraft limit 
         /// </summary>
         public string Commentary { get; set; }
+
+
     }
 }

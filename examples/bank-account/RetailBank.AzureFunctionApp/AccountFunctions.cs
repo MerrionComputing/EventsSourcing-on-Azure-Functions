@@ -693,27 +693,90 @@ namespace RetailBank.AzureFunctionApp
         /// <summary>
         /// Extend the overdraft to cover the interest and due from the account
         /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
         [FunctionName("ExtendOverdraftForInterest")]
         public static async Task<HttpResponseMessage> ExtendOverdraftForInterestRun(
           [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"ExtendOverdraftForInterest/{accountnumber}")]HttpRequestMessage req,
-          string accountnumber)
+          string accountnumber,
+          [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(InterestDue))] Projection prjInterestDue,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance,
+          [Projection("Bank", "Account", "{accountnumber}", nameof(OverdraftLimit))] Projection prjBankAccountOverdraft
+          )
         {
 
             // Bolierplate: Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
-            // Not implemented yet
-            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+            // Check the balance is negative
+            // get the interest owed / due as now
+            InterestDue interestDue = await prjInterestDue.Process<InterestDue>();
+            if (null != interestDue)
+            {
+                // if the interest due is negative we need to make sure the account has sufficient balance
+                if (interestDue.Due < 0.00M)
+                {
+                    Balance balance = await prjBankAccountBalance.Process<Balance>();
+                    if (null != balance)
+                    {
+                        decimal availableBalance = balance.CurrentBalance;
+
+                        // is there an overdraft?
+                        OverdraftLimit overdraft = await prjBankAccountOverdraft.Process<OverdraftLimit>();
+                        if (null != overdraft)
+                        {
+                            availableBalance += overdraft.CurrentOverdraftLimit;
+                        }
+
+                        if (availableBalance < interestDue.Due)
+                        {
+                            decimal newOverdraft = overdraft.CurrentOverdraftLimit;
+                            decimal extension = 10.00M + Math.Abs(interestDue.Due % 10.00M);
+                            OverdraftLimitSet evNewLimit = new OverdraftLimitSet()
+                            {
+                                OverdraftLimit = newOverdraft + extension,
+                                Commentary = $"Overdraft extended to pay interest of {interestDue.Due} ",
+                                Unauthorised = true
+                            };
+
+                            await bankAccountEvents.AppendEvent(evNewLimit);
+
+                            return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
+                                ProjectionFunctionResponse.CreateResponse(startTime,
+                                false,
+                                $"Extended the overdraft by {extension} for payment of interest {interestDue.Due} for account {accountnumber}",
+                                interestDue.CurrentSequenceNumber  ),
+                                FunctionResponse.MEDIA_TYPE);
+                        }
+                    }
+                }
+
+                // Not needed
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
                 ProjectionFunctionResponse.CreateResponse(startTime,
-                true,
-                $"ExtendOverdraftForInterest not implemented",
-                0));
+                false,
+                $"Extending the overdraft for interest not required for account {accountnumber}",
+                interestDue.CurrentSequenceNumber),
+                FunctionResponse.MEDIA_TYPE);
+            }
+            else
+            {
+                return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                        ProjectionFunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Unable to extend the overdraft for account {accountnumber} for interest payment",
+                        0),
+                        FunctionResponse.MEDIA_TYPE
+                        );
+            }
+
 
         }
 
 
 #endregion
-
 
     }
 }

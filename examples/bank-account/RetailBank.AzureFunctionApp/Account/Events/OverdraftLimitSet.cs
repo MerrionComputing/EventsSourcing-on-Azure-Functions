@@ -16,5 +16,10 @@ namespace RetailBank.AzureFunctionApp.Account.Events
         /// </summary>
         public string Commentary { get; set; }
 
+        /// <summary>
+        /// Is the overdraft unauthorized (due to a mandatory withdrawal exceeding
+        /// the current overdraft limit)
+        /// </summary>
+        public bool Unauthorised { get; set; }
     }
 }
