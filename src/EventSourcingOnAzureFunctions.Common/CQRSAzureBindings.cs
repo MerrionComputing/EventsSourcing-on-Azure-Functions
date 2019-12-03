@@ -149,7 +149,12 @@ namespace EventSourcingOnAzureFunctions.Common
                 .AddEnvironmentVariables() 
                 .Build();
 
-            var environmentName = tmpConfig["Environment"];
+            string environmentName = tmpConfig["Environment"];
+            if (string.IsNullOrEmpty(environmentName) )
+            {
+                // default to production
+                environmentName = "production";
+            }
 
             var configurationBuilder = new ConfigurationBuilder();
 
@@ -168,8 +173,14 @@ namespace EventSourcingOnAzureFunctions.Common
                 .AddEnvironmentVariables() 
                 .Build();
 
-            builder.Services.Replace(ServiceDescriptor.Singleton(typeof(IConfiguration), configuration));
-
+            if (builder.Services.Contains(ServiceDescriptor.Singleton(typeof(IConfiguration))))
+            {
+                builder.Services.Replace(ServiceDescriptor.Singleton(typeof(IConfiguration), configuration));
+            }
+            else
+            {
+                builder.Services.AddSingleton<IConfiguration>(configuration);
+            }
             return builder;
         }
 

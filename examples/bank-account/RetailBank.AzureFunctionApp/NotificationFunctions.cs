@@ -3,8 +3,6 @@ using EventSourcingOnAzureFunctions.Common.Notification;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
-using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-using Microsoft.Azure.WebJobs.Extensions.Storage;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
@@ -62,44 +60,6 @@ namespace RetailBank.AzureFunctionApp
             else
             {
                 throw new ArgumentException( "Event grid message has no data");
-            }
-
-        }
-
-        /// <summary>
-        /// This event is triggered whenever a new event notification is sent via EventGrid
-        /// </summary>
-        [FunctionName("OnNewEventNotification")]
-        public static async Task OnNewEventNotificationRun([EventGridTrigger]EventGridEvent eventGridEvent,
-            [SignalR(HubName = "retailbanknotification")]IAsyncCollector<SignalRMessage> signalRMessages,
-            ILogger log)
-        {
-
-            #region Logging
-            if (null != log)
-            {
-                log.LogInformation("OnNewEventNotification called");
-                if (null != eventGridEvent.Data)
-                {
-                    log.LogInformation(eventGridEvent.Data.ToString());
-                }
-            }
-            #endregion
-
-
-            if (null != eventGridEvent.Data  )
-            { 
-            // Turn the eventgrid message into a SignalR notification and send it on..
-            await signalRMessages.AddAsync(
-                new SignalRMessage
-                {
-                    Target = "NewEvent",
-                    Arguments = new[] { eventGridEvent.Data }
-                });
-            }
-            else
-            {
-                await Task.FromException(new ArgumentException("Event grid message has no data"));
             }
 
         }

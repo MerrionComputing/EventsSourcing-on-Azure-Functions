@@ -32,15 +32,14 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     IConfiguration configuration = scope.ServiceProvider.GetRequiredService< IConfiguration > ();
                     if (null != configuration )
                     {
-                        EventSourcingOnAzureOptions optionConfig = configuration.GetEventSourcingOnAzureOptionsConfig();
+                        EventSourcingOnAzureOptions optionConfig = new EventSourcingOnAzureOptions(configuration);
                         options = Options.Create<EventSourcingOnAzureOptions>(optionConfig);
                         if (null == nameResolver)
                         {
                             // make a default name resolver
-                            nameResolver = new Microsoft.Azure.WebJobs.DefaultNameResolver(configuration );
+                            nameResolver = new NotificationDispatcherNameResolver(configuration );
                         }
                     }
-                    //logger = scope.ServiceProvider.GetRequiredService<ILogger>();
                 }
 
                 if (null == options )
