@@ -27,7 +27,9 @@ namespace RetailBank.AzureFunctionApp
         /// </summary>
         [FunctionName("OnNewBankAccountNotification")]
         public static void OnNewBankAccountNotification([EventGridTrigger()]EventGridEvent eventGridEvent,
-            [Blob("bank/reference-data/all-bank-accounts.txt", FileAccess.Write , Connection = "StorageConnectionAppSetting")] TextWriter bankAccountList,
+            [Blob("bank/reference-data/all-bank-accounts.txt", 
+            FileAccess.Write , 
+            Connection = "RetailBank")] TextWriter bankAccountList,
             ILogger log)
         {
 
