@@ -22,8 +22,8 @@ namespace RetailBank.AzureFunctionApp
 
         // 1 - Accrue interest for all 
         // Triggered by a timer "0 30 1 * * *"  at 01:30 AM every day
-        [FunctionName("AccrueInterestFoAllAccountsTimer")]
-        public static async Task AccrueInterestFoAllAccountsTimerRun(
+        [FunctionName(nameof(AccrueInterestFoAllAccountsTimer))]
+        public static async Task AccrueInterestFoAllAccountsTimer(
             [TimerTrigger("0 30 1 * * *", 
             RunOnStartup=false,
             UseMonitor =true)] TimerInfo accrueInterestTimer,
@@ -34,12 +34,11 @@ namespace RetailBank.AzureFunctionApp
             // Get all the account numbers
             IEnumerable<string> allAccounts = await clsAllAccounts.GetAllInstanceKeys();
 
-            await accrueInterestOrchestration.StartNewAsync("AccrueInterestFoAllAccounts", allAccounts);
-
+            await accrueInterestOrchestration.StartNewAsync(nameof(AccrueInterestForAllAccounts), allAccounts);
         }
 
         // Accrue Interest For All Accounts
-        [FunctionName("AccrueInterestFoAllAccounts")]
+        [FunctionName(nameof(AccrueInterestForAllAccounts))]
         public static async Task AccrueInterestForAllAccounts
             ([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
@@ -51,7 +50,7 @@ namespace RetailBank.AzureFunctionApp
                 var accrualTasks = new List<Task<Tuple<string, bool>>>();
                 foreach (string accountNumber in allAccounts)
                 {
-                    Task<Tuple<string, bool>> accrualTask = context.CallSubOrchestratorAsync<Tuple<string, bool>>("AccrueInterestForSpecificAccount", accountNumber );
+                    Task<Tuple<string, bool>> accrualTask = context.CallSubOrchestratorAsync<Tuple<string, bool>>(nameof(AccrueInterestForSpecificAccount), accountNumber );
                     accrualTasks.Add(accrualTask);
                 }
 
@@ -78,8 +77,8 @@ namespace RetailBank.AzureFunctionApp
         }
 
         //AccrueInterestForSpecificAccount
-        [FunctionName("AccrueInterestForSpecificAccount")]
-        public static async Task<Tuple<string, bool>> AccrueInterestForSpecificAccountActivity
+        [FunctionName(nameof(AccrueInterestForSpecificAccount))]
+        public static async Task<Tuple<string, bool>> AccrueInterestForSpecificAccount
             ([ActivityTrigger] IDurableActivityContext accrueInterestContext)
         {
 
