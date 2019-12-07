@@ -50,7 +50,7 @@ namespace RetailBank.AzureFunctionApp
                 var accrualTasks = new List<Task<Tuple<string, bool>>>();
                 foreach (string accountNumber in allAccounts)
                 {
-                    Task<Tuple<string, bool>> accrualTask = context.CallSubOrchestratorAsync<Tuple<string, bool>>(nameof(AccrueInterestForSpecificAccount), accountNumber );
+                    Task<Tuple<string, bool>> accrualTask = context.CallActivityAsync<Tuple<string, bool>>(nameof(AccrueInterestForSpecificAccount), accountNumber );
                     accrualTasks.Add(accrualTask);
                 }
 
@@ -114,11 +114,13 @@ namespace RetailBank.AzureFunctionApp
                             {
                                 // Using the credit rate
                                 evAccrued.AmountAccrued = CREDIT_INTEREST_RATE  * projectedBalance.CurrentBalance;
+                                evAccrued.InterestRateInEffect = CREDIT_INTEREST_RATE;
                             }
                             else
                             {
                                 // Use the debit rate
                                 evAccrued.AmountAccrued = DEBIT_INTEREST_RATE * projectedBalance.CurrentBalance;
+                                evAccrued.InterestRateInEffect = DEBIT_INTEREST_RATE;
                             }
 
                             try

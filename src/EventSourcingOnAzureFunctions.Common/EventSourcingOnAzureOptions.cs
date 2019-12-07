@@ -75,6 +75,8 @@ namespace EventSourcingOnAzureFunctions.Common
         public EventSourcingOnAzureOptions(IConfiguration configuration)
         {
 
+            bool configFound = false;
+
             if (null != configuration)
             {
                 if (configuration.GetSection(EventSourcingOnAzureOptionsConfigExtensions.DefaultConfigKey) != null)
@@ -82,6 +84,13 @@ namespace EventSourcingOnAzureFunctions.Common
                     var ret = configuration.GetSection(EventSourcingOnAzureOptionsConfigExtensions.DefaultConfigKey).Get<EventSourcingOnAzureOptions>();
                     if (null != ret)
                     {
+                        this.EventGridHubName = ret.EventGridHubName;
+                        this.EventGridKeySettingName = ret.EventGridKeySettingName;
+                        this.EventGridKeyValue = ret.EventGridKeyValue;
+                        this.EventGridPublishRetryCount = ret.EventGridPublishRetryCount;
+                        this.EventGridPublishRetryInterval = ret.EventGridPublishRetryInterval;
+                        this.RaiseEntityCreationNotification = ret.RaiseEntityCreationNotification;
+                        this.RaiseEventNotification = ret.RaiseEventNotification;
                         if (string.IsNullOrWhiteSpace(ret.EventGridKeyValue))
                         {
                             if (!string.IsNullOrWhiteSpace(ret.EventGridKeySettingName))
@@ -89,62 +98,80 @@ namespace EventSourcingOnAzureFunctions.Common
                                 this.EventGridKeyValue = Environment.GetEnvironmentVariable(ret.EventGridKeySettingName);
                             }
                         }
+                        configFound = true;
                     }
                 }
-                else
+            }
+
+            // Try to fill in any settings from environment strings if not in config
+
+            if (string.IsNullOrWhiteSpace(this.EventGridHubName))
+            {
+                this.EventGridHubName = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridHubName));
+            }
+
+            if (string.IsNullOrWhiteSpace(this.EventGridKeySettingName))
+            {
+                this.EventGridKeySettingName = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridKeySettingName));
+            }
+
+            if (string.IsNullOrWhiteSpace(this.EventGridKeyValue))
+            {
+                this.EventGridKeyValue = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridKeyValue));
+            }
+
+            if (string.IsNullOrWhiteSpace(this.EventGridTopicEndpoint))
+            {
+                this.EventGridTopicEndpoint = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridTopicEndpoint));
+            }
+
+            if (!configFound)
+            {
+                string envEventGridPublishRetryCount = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridPublishRetryCount));
+                if (!string.IsNullOrWhiteSpace(envEventGridPublishRetryCount))
                 {
-                    this.EventGridHubName = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridHubName));
-                    this.EventGridKeySettingName = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridKeySettingName));
-                    this.EventGridKeyValue = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridKeyValue));
-                    this.EventGridTopicEndpoint = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridTopicEndpoint));
-
-
-                    string envEventGridPublishRetryCount = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridPublishRetryCount));
-                    if (!string.IsNullOrWhiteSpace(envEventGridPublishRetryCount))
+                    int envRetry;
+                    if (int.TryParse(envEventGridPublishRetryCount, out envRetry))
                     {
-                        int envRetry;
-                        if (int.TryParse(envEventGridPublishRetryCount, out envRetry))
+                        if ((envRetry > 0) && (envRetry <= EventSourcingOnAzureOptions.MAX_RETRIES))
                         {
-                            if ((envRetry > 0) && (envRetry <= EventSourcingOnAzureOptions.MAX_RETRIES))
-                            {
-                                this.EventGridPublishRetryCount = envRetry;
-                            }
+                            this.EventGridPublishRetryCount = envRetry;
                         }
                     }
+                }
 
-                    // 
-                    string envEventGridPublishRetryInterval = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridPublishRetryInterval));
-                    if (!string.IsNullOrWhiteSpace(envEventGridPublishRetryInterval))
+                // 
+                string envEventGridPublishRetryInterval = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.EventGridPublishRetryInterval));
+                if (!string.IsNullOrWhiteSpace(envEventGridPublishRetryInterval))
+                {
+                    TimeSpan tsenvEventGridPublishRetryInterval;
+                    if (TimeSpan.TryParse(envEventGridPublishRetryInterval, out tsenvEventGridPublishRetryInterval))
                     {
-                        TimeSpan tsenvEventGridPublishRetryInterval;
-                        if (TimeSpan.TryParse(envEventGridPublishRetryInterval, out tsenvEventGridPublishRetryInterval))
+                        if (tsenvEventGridPublishRetryInterval.TotalMilliseconds >= EventSourcingOnAzureOptions.MIN_WAIT)
                         {
-                            if (tsenvEventGridPublishRetryInterval.TotalMilliseconds >= EventSourcingOnAzureOptions.MIN_WAIT)
-                            {
-                                this.EventGridPublishRetryInterval = tsenvEventGridPublishRetryInterval;
-                            }
+                            this.EventGridPublishRetryInterval = tsenvEventGridPublishRetryInterval;
                         }
                     }
+                }
 
-                    // boolean flags
-                    string envRaiseEntityCreationNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEntityCreationNotification));
-                    if (!string.IsNullOrWhiteSpace(envRaiseEntityCreationNotification))
+                // boolean flags
+                string envRaiseEntityCreationNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEntityCreationNotification));
+                if (!string.IsNullOrWhiteSpace(envRaiseEntityCreationNotification))
+                {
+                    bool raiseEntityCreate = false;
+                    if (bool.TryParse(envRaiseEntityCreationNotification, out raiseEntityCreate))
                     {
-                        bool raiseEntityCreate = false;
-                        if (bool.TryParse(envRaiseEntityCreationNotification, out raiseEntityCreate))
-                        {
-                            this.RaiseEntityCreationNotification = raiseEntityCreate;
-                        }
+                        this.RaiseEntityCreationNotification = raiseEntityCreate;
                     }
+                }
 
-                    string envRaiseEventNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEventNotification));
-                    if (!string.IsNullOrWhiteSpace(envRaiseEventNotification))
+                string envRaiseEventNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEventNotification));
+                if (!string.IsNullOrWhiteSpace(envRaiseEventNotification))
+                {
+                    bool raiseEvent = false;
+                    if (bool.TryParse(envRaiseEventNotification, out raiseEvent))
                     {
-                        bool raiseEvent = false;
-                        if (bool.TryParse(envRaiseEventNotification, out raiseEvent))
-                        {
-                            this.RaiseEventNotification = raiseEvent;
-                        }
+                        this.RaiseEventNotification = raiseEvent;
                     }
                 }
             }
