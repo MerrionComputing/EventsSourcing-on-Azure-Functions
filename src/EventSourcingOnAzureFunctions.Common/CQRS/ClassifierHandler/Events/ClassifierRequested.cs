@@ -4,52 +4,49 @@ using System;
 
 namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events
 {
-    [EventName("Classification Returned")]
-    public class ClassifierResultReturned
+
+    [EventName("Classification Requested")]
+    public class ClassifierRequested
         : IClassifierRequest
     {
 
-
         /// <summary>
-        /// The domain name of the event stream over which the classifier was run
+        /// The domain name of the event stream over which the classification is 
+        /// to be run
         /// </summary>
         public string DomainName { get; set; }
 
         /// <summary>
-        /// The entity type for which the classifier was run
+        /// The entity type for which the classification will be run
         /// </summary>
         public string EntityTypeName { get; set; }
 
         /// <summary>
         /// The unique instance of the event stream over which the 
-        /// classifier was run
+        /// classification should run
         /// </summary>
         public string InstanceKey { get; set; }
 
         /// <summary>
-        /// The name of the classifier we ran over that event stream
+        /// The name of the classification to run over that event stream
         /// </summary>
         public string ClassifierTypeName { get; set; }
 
         /// <summary>
-        /// The date up-to which the classifier was run
+        /// The date up-to which we want the classification to be run
         /// </summary>
         public Nullable<DateTime> AsOfDate { get; set; }
 
+        /// <summary>
+        /// The date/time the classification request was logged by the system
+        /// </summary>
+        public DateTime DateLogged { get; set; }
 
         /// <summary>
-        /// The sequence number of the last event read when running the classifier
-        /// </summary>
-        /// <remarks>
-        /// This can be used for concurrency protection
-        /// </remarks>
-        public int AsOfSequenceNumber { get; set; }
+        /// An unique identifier set by the caller to trace this classifier operation
+        /// </summary> 
+        public string CorrelationIdentifier { get; set; }
 
-        /// <summary>
-        /// The result of the classification - is this instance a member of whatever
-        /// group clause the classification represents
-        /// </summary>
-        public bool Result { get; set; }
 
     }
 }

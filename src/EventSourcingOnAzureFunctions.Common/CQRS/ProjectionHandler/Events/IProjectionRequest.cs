@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EventSourcingOnAzureFunctions.Common.ProjectionHandler.Events
+namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events
 {
     public interface IProjectionRequest
     {
@@ -34,5 +34,9 @@ namespace EventSourcingOnAzureFunctions.Common.ProjectionHandler.Events
         /// </summary>
         Nullable<DateTime> AsOfDate { get; set; }
 
+        /// <summary>
+        /// An unique identifier set by the caller to trace this projection operation
+        /// </summary> 
+        string CorrelationIdentifier { get; set; }
     }
 }

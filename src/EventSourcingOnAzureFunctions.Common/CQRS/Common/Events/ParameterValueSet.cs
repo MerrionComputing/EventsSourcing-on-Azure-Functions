@@ -2,16 +2,16 @@
 using System;
 
 
-namespace EventSourcingOnAzureFunctions.Common.CommandHandler.Events
+namespace EventSourcingOnAzureFunctions.Common.CQRS.Common.Events
 {
     /// <summary>
-    /// A parameter to be used when executing the command has been set
+    /// A parameter to be used when executing the command or query has been set
     /// </summary>
     /// <remarks>
     /// Each parameter gets its own event so that they can be overwritten during the 
     /// processing of the command if needed
     /// </remarks>
-    [EventName("Command Parameter Value Set")]
+    [EventName("Parameter Value Set")]
     public class ParameterValueSet
     {
 

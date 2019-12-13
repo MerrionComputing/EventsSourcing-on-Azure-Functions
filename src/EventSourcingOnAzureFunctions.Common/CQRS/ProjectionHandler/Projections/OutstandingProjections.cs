@@ -1,11 +1,11 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using EventSourcingOnAzureFunctions.Common.ProjectionHandler.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EventSourcingOnAzureFunctions.Common.ProjectionHandler.Projections
+namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Projections
 {
     /// <summary>
     /// The projection to get the list of all projection requests outstanding for a

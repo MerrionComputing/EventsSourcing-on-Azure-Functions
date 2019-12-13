@@ -22,9 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ClassifierHandler\Projections\" />
-    <Folder Include="CommandHandler\Projections\" />
-    <Folder Include="QueryHandler\Projections\" />
+    <Folder Include="CQRS\CommandHandler\Projections\" />
+    <Folder Include="CQRS\QueryHandler\Projections\" />
   </ItemGroup>
 
 </Project>

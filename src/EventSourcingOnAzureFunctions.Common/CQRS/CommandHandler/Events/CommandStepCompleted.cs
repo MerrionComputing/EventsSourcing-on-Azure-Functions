@@ -1,7 +1,7 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using System;
 
-namespace EventSourcingOnAzureFunctions.Common.CommandHandler.Events
+namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
 {
 
     /// <summary>

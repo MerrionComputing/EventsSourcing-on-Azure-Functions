@@ -1,7 +1,7 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using System;
 
-namespace EventSourcingOnAzureFunctions.Common.QueryHandler.Events
+namespace EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Events
 {
     /// <summary>
     /// A multi-step (event stream backed) query has completed
