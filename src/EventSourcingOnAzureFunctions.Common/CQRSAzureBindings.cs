@@ -82,7 +82,10 @@ namespace EventSourcingOnAzureFunctions.Common
               ;
 
             // 5: Command
-            // TODO..
+            context
+              .AddBindingRule<CommandAttribute>()
+              .BindToInput<Command>(BuildCommandFromAttribute)
+              ;
 
             //6: EventTrigger 
             // TODO..
@@ -148,6 +151,13 @@ namespace EventSourcingOnAzureFunctions.Common
         {
             // Use this and the attribute to create a new query instance
             return Task<Query>.FromResult(new Query(attribute));
+        }
+
+        public static Task<Command> BuildCommandFromAttribute(CommandAttribute attribute,
+            ValueBindingContext context)
+        {
+            // Use this and the attribute to create a new command instance
+            return Task<Command>.FromResult(new Command(attribute));
         }
 
         public static IFunctionsHostBuilder AddAppSettingsToConfiguration(this IFunctionsHostBuilder builder)
