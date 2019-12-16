@@ -13,6 +13,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         Task<bool> Exists();
 
         /// <summary>
+        /// Set a named parameter to be used when performing the 
+        /// classification
+        /// </summary>
+        /// <param name="parameterName">
+        /// The name of the parameter - this must be unique within the classification
+        /// </param>
+        /// <param name="parameterValue">
+        /// The value to assign to the named parameter
+        /// </param>
+        void SetParameter(string parameterName, object parameterValue);
+
+        /// <summary>
         /// Run the given classification over the underlying event stream
         /// </summary>
         /// <typeparam name="TClassification">

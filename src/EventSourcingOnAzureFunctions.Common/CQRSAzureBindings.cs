@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.Notification;
+using EventSourcingOnAzureFunctions.Common.CQRS;
 
 namespace EventSourcingOnAzureFunctions.Common
 {
@@ -74,7 +75,16 @@ namespace EventSourcingOnAzureFunctions.Common
               .BindToInput<Classification>(BuildClassificationFromAttribute)
               ;
 
-            //4: EventTrigger 
+            // 4: Query
+            context
+              .AddBindingRule<QueryAttribute>()
+              .BindToInput<Query>(BuildQueryFromAttribute)
+              ;
+
+            // 5: Command
+            // TODO..
+
+            //6: EventTrigger 
             // TODO..
 
         }
@@ -130,6 +140,14 @@ namespace EventSourcingOnAzureFunctions.Common
 
             // Use this and the attribute to create a new classifier instance
             return Task<Classification>.FromResult(new Classification (attribute));
+        }
+
+        //
+        public static Task<Query> BuildQueryFromAttribute(QueryAttribute attribute,
+            ValueBindingContext context)
+        {
+            // Use this and the attribute to create a new query instance
+            return Task<Query>.FromResult(new Query(attribute));
         }
 
         public static IFunctionsHostBuilder AddAppSettingsToConfiguration(this IFunctionsHostBuilder builder)

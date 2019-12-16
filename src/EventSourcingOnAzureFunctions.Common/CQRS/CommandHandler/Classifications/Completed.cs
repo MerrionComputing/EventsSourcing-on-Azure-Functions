@@ -20,5 +20,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Classificatio
         {
             return ClassificationResponse.ClassificationResults.Include;
         }
+
+        public override void SetParameter(string parameterName, object parameterValue)
+        {
+            // This classifier has no parameters
+        }
     }
 }

@@ -23,5 +23,10 @@ namespace RetailBank.AzureFunctionApp.Account.Classifications
             }
             return ClassificationResponse.ClassificationResults.Unchanged;
         }
+
+        public override void SetParameter(string parameterName, object parameterValue)
+        {
+            // This classifier has no parameters
+        }
     }
 }

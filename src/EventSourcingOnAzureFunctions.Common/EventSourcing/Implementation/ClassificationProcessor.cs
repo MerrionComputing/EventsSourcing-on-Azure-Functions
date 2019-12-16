@@ -70,6 +70,55 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             }
         }
 
+
+        private readonly Dictionary<string, object> _parameters = new Dictionary<string, object>();  
+        public void SetParameter(string parameterName, object parameterValue)
+        {
+            if (!_parameters.ContainsKey(parameterName))
+            {
+                _parameters.Add(parameterName, parameterValue);
+            }
+            else
+            {
+                // Overwrite the previous value
+                if (null != parameterValue)
+                {
+                    _parameters[parameterName] = parameterValue;
+                }
+                else
+                {
+                    _parameters[parameterName] = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Does the named parameter exist
+        /// </summary>
+        /// <param name="parameterName">
+        /// The name of the parameter to find
+        /// </param>
+        public bool ParameterExists(string parameterName)
+        {
+            if (_parameters.ContainsKey(parameterName))
+            {
+                if (null != _parameters[parameterName ] )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public object GetParameterValue(string parameterName)
+        {
+            if (ParameterExists(parameterName ) )
+            {
+                return _parameters[parameterName];
+            }
+            return null;
+        }
+
         public ClassificationProcessor(BlobEventStreamReader blobEventStreamReader)
         {
             // Initialise the reader to use to read the events to be processed

@@ -64,6 +64,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         // As of date not implemented yet
         public DateTime CurrentAsOfDate => throw new NotImplementedException();
 
+        /// <summary>
+        /// Allow parameters to be passed to the classification class
+        /// </summary>
+        /// <param name="parameterName">
+        /// The unique name of the parameter
+        /// </param>
+        /// <param name="parameterValue">
+        /// The value to use for that parameter
+        /// </param>
+        public abstract void SetParameter(string parameterName, object parameterValue);
 
         private Dictionary<string, Tuple<Type, System.Reflection.MethodInfo>> typedEventHandlers = new Dictionary<string, Tuple<Type, System.Reflection.MethodInfo>>();
 

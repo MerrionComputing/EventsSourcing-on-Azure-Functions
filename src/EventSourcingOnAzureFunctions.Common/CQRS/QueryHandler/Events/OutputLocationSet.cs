@@ -22,7 +22,14 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Events
         /// </remarks>
         public string Location { get; set; }
 
-
+        /// <summary>
+        /// What type of output this is
+        /// </summary>
+        /// <remarks>
+        /// This could be e.g. a storage type, a webhook, an eventgrid 
+        /// end point etc.
+        /// </remarks>
+        public string TargetType { get; set; }
 
     }
 }

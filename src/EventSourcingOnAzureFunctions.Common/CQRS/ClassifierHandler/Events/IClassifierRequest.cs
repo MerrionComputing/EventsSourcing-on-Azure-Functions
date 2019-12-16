@@ -34,5 +34,6 @@ namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events
         /// </summary>
         Nullable<DateTime> AsOfDate { get; set; }
 
+
     }
 }

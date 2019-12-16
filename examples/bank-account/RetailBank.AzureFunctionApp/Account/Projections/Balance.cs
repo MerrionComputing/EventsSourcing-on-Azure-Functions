@@ -10,7 +10,8 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
     public class Balance
         : ProjectionBase,
         IHandleEventType<MoneyDeposited>,
-        IHandleEventType<MoneyWithdrawn >
+        IHandleEventType<MoneyWithdrawn >,
+        IHandleEventType<InterestPaid > 
     {
 
         private decimal currentBalance;
@@ -39,6 +40,14 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
             if (null != eventInstance )
             {
                 currentBalance -= eventInstance.AmountWithdrawn;
+            }
+        }
+
+        public void HandleEventInstance(InterestPaid eventInstance)
+        {
+            if (null != eventInstance)
+            {
+                currentBalance += eventInstance.AmountPaid;
             }
         }
     }

@@ -68,7 +68,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         }
 
         // Note: The parameter names need to match the property names (except for the camelCase) because 
-        // the autoresolve uses this fact to perform the instatntiation
+        // the autoresolve uses this fact to perform the instantiation
         public ClassificationAttribute(string domainName,
                         string entityTypeName,
                         string instanceKey,

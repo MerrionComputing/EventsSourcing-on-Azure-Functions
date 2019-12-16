@@ -81,6 +81,23 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        /// <summary>
+        /// Set a parameter to be used when running the classifier
+        /// </summary>
+        /// <param name="parameterName">
+        /// The name of the parameter - this must be unique per classifier
+        /// </param>
+        /// <param name="parameterValue">
+        /// The value to use for that named parameter for this run
+        /// </param>
+        public void SetParameter(string parameterName, object parameterValue)
+        {
+            if (null != _classificationProcessor )
+            {
+                _classificationProcessor.SetParameter(parameterName, parameterValue);  
+            }
+        }
+
         public async Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification, new()
         {
             if (null != _classificationProcessor )
