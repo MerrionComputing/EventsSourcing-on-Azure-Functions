@@ -12,11 +12,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
     public class WriteContext
         : IWriteContext
     {
-        public string Who { get; }
+        public string Who { get; internal set; }
 
         public string Source { get; internal set; }
 
-        public string Commentary { get; }
+        public string Commentary { get; internal set; }
 
         public string CorrelationIdentifier { get; internal set; }
 

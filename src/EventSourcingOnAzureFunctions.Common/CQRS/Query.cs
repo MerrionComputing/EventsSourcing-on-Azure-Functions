@@ -11,6 +11,17 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
     public class Query
     {
 
+        private readonly string _domainName;
+        /// <summary>
+        /// The business domain in which the query is located
+        /// </summary>
+        public string DomainName
+        {
+            get
+            {
+                return _domainName;
+            }
+        }
 
         private readonly string _queryName;
         /// <summary>
@@ -40,8 +51,32 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         {
             if (null != attribute )
             {
+                _domainName = attribute.DomainName;
                 _queryName = attribute.QueryName;
                 _uniqueIdentifier = attribute.UniqueIdentifier;
+            }
+        }
+
+
+        /// <summary>
+        /// Make a "queries" domain for the given top level domain
+        /// </summary>
+        /// <param name="domainName">
+        /// The top level (business) domain
+        /// </param>
+        /// <remarks>
+        /// This allows different domains' query names to be unique even if
+        /// the base query names are not
+        /// </remarks>
+        public static string MakeDomainQueryName(string domainName)
+        {
+            if (!string.IsNullOrWhiteSpace(domainName))
+            {
+                return domainName.Trim() + @".Query";
+            }
+            else
+            {
+                return "Query";
             }
         }
     }

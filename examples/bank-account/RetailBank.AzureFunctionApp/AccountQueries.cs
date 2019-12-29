@@ -28,7 +28,7 @@ namespace RetailBank.AzureFunctionApp
         [FunctionName(nameof(AccountsBelowThresholdQuery))]
         public static async Task<HttpResponseMessage> AccountsBelowThresholdQuery(
             [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"AccountsBelowThresholdQuery")]HttpRequestMessage req,
-            [QueryAttribute("Accounts Below Threshold")] Query qryAccountsBelowThresholdQuery
+            [QueryAttribute("Bank","Accounts Below Threshold")] Query qryAccountsBelowThresholdQuery
             )
         {
             // Set the start time for how long it took to process the message

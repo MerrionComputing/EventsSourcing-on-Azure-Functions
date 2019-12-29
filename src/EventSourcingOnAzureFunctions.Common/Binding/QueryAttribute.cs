@@ -14,6 +14,19 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         : Attribute
     {
 
+        private readonly string _domainName;
+        /// <summary>
+        /// The business domain in which the query is located
+        /// </summary>
+        [AutoResolve]
+        public string DomainName
+        {
+            get
+            {
+                return _domainName;
+            }
+        }
+
         private readonly string _queryName;
         /// <summary>
         /// The name of the query to run
@@ -45,9 +58,11 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
         // Note: The parameter names need to match the property names (except for the camelCase) because 
         // the autoresolve uses this fact to perform the instantiation
-        public QueryAttribute(string queryName,
+        public QueryAttribute(string domainName, 
+            string queryName,
             string uniqueIdentifier = @"")
         {
+            _domainName = domainName;
             _queryName = queryName;
             if (string.IsNullOrWhiteSpace(uniqueIdentifier ) )
             {

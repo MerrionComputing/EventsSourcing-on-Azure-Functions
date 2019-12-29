@@ -14,6 +14,19 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         : Attribute
     {
 
+        private readonly string _domainName;
+        /// <summary>
+        /// The business domain in which the command is located
+        /// </summary>
+        [AutoResolve]
+        public string DomainName
+        {
+            get
+            {
+                return _domainName;
+            }
+        }
+
         private readonly string _commandName;
         /// <summary>
         /// The name of the command to run
@@ -46,9 +59,11 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
         // Note: The parameter names need to match the property names (except for the camelCase) because 
         // the autoresolve uses this fact to perform the instantiation
-        public CommandAttribute(string commandName,
+        public CommandAttribute(string domainName, 
+            string commandName,
             string uniqueIdentifier = @"")
         {
+            _domainName = domainName;
             _commandName = commandName;
             if (string.IsNullOrWhiteSpace(uniqueIdentifier))
             {

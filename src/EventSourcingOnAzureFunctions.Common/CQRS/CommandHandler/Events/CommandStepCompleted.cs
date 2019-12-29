@@ -7,7 +7,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
     /// <summary>
     /// A named step that is part of executing this command has completed
     /// </summary>
-    [EventName("Command Created")]
+    [EventName("Command Step Completed")]
     public class StepCompleted
     {
 
