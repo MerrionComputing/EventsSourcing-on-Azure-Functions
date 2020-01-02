@@ -1,9 +1,12 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.CQRS.Common.Events;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using EventSourcingOnAzureFunctions.Common.Notification;
+using Microsoft.Azure.EventGrid.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -78,6 +81,35 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
+        // get the current value set for a parameter
+        public async Task<object> GetParameterValue(string parameterName,
+            Nullable<DateTime> asOfDate = null)
+        {
+            if (!string.IsNullOrWhiteSpace(parameterName))
+            {
+                Projection prjCmdParams = new Projection(
+                    new ProjectionAttribute(MakeDomainCommandName(DomainName),
+                    CommandName,
+                    UniqueIdentifier,
+                    nameof(CommandHandler.Projections.ParameterValues)));
+               
+                if (null != prjCmdParams)
+                {
+                    ParameterValues values = await prjCmdParams.Process<ParameterValues>(asOfDate);
+                    if (null != values )
+                    {
+                        if (values.Values.ContainsKey(parameterName )  )
+                        {
+                            return values.Values[parameterName]; 
+                        }
+                    }
+                }
+            }
+
+            // If no parameter is found, default to null
+            return null;
+        }
+
         // 2 - Initaite a command step
         public async Task InitiateStep(string stepName)
         {
@@ -99,6 +131,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         }
 
 
+
         public Command(CommandAttribute attribute)
         {
             if (null != attribute )
@@ -112,6 +145,21 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                     Source = _commandName,
                     CausationIdentifier = _uniqueIdentifier 
                 };
+            }
+        }
+
+        public Command(EventGridEvent egCommandNotification)
+        {
+            if (null != egCommandNotification )
+            {
+                // get the NewEventEventGridPayload from the event grid event
+                NewEventEventGridPayload payload = egCommandNotification.Data as NewEventEventGridPayload;
+                if (null != payload )
+                {
+                    _domainName = payload.DomainName;
+                    _commandName = payload.EntityTypeName;
+                    _uniqueIdentifier = payload.InstanceKey;
+                }
             }
         }
 

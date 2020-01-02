@@ -45,6 +45,7 @@ namespace RetailBank.AzureFunctionApp
             // No parameters passed in - but set the as-of date/time so that if this command is 
             // re-executed it does not return a different result
             await cmdApplyAccruedInterest.SetParameter("As Of Date", startTime);
+            await cmdApplyAccruedInterest.SetParameter("Account Number", accountnumber );
 
             // Start the set-overdraft-for-interest command step
             await cmdApplyAccruedInterest.InitiateStep(COMMAND_STEP_OVERDRAFT);
@@ -67,13 +68,24 @@ namespace RetailBank.AzureFunctionApp
         /// <param name="egStepTriggered">
         /// The event grid event that gets sent to this command step
         /// </param>
-        public static void SetOverdraftForInterestCommandStep
+        public static async void SetOverdraftForInterestCommandStep
             ([EventGridTrigger]EventGridEvent egStepTriggered
              )
         {
 
             // Get the parameters from the event grid trigger
+            // (Payload is a Command Step Initiated)
+            Command cmdApplyAccruedInterest = new Command(egStepTriggered);
+            if (null != cmdApplyAccruedInterest)
+            {
+                // Get the parameter for account number
+                string accountNumber = (string)(await cmdApplyAccruedInterest.GetParameterValue("Account Number")); 
+                if (! string.IsNullOrWhiteSpace(accountNumber ) )
+                {
+                    // run the "set overdraft limit for interest" function (?)
 
+                }
+            }
 
         }
     }

@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="CQRS\CommandHandler\Projections\" />
     <Folder Include="CQRS\QueryHandler\Projections\" />
   </ItemGroup>
 
