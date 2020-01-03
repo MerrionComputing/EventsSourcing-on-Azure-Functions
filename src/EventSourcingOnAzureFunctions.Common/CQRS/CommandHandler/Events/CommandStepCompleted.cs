@@ -16,6 +16,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
         /// </summary>
         public string StepName { get; set; }
 
+        /// <summary>
+        /// The message returned in completing the step
+        /// </summary>
+        public string Message { get; set; }
 
         /// <summary>
         /// The date/time the command step completion was logged by the system

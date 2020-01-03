@@ -81,7 +81,18 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
-        // get the current value set for a parameter
+        /// <summary>
+        /// Get the current value set for a parameter
+        /// </summary>
+        /// <param name="parameterName">
+        /// The name of the parameter to get
+        /// </param>
+        /// <param name="asOfDate">
+        /// (Optional) The as-of date for which to get the parameter value
+        /// </param>
+        /// <returns>
+        /// If no parameter with the given name exists this will return null
+        /// </returns>
         public async Task<object> GetParameterValue(string parameterName,
             Nullable<DateTime> asOfDate = null)
         {
@@ -110,7 +121,42 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             return null;
         }
 
-        // 2 - Initaite a command step
+        /// <summary>
+        /// Get the current values set of the parameters of this command
+        /// </summary>
+        /// <param name="asOfDate">
+        /// (Optional) The as-of date for which to get the parameter values
+        /// </param>
+        /// <returns></returns>
+        public async Task<IReadOnlyDictionary<string,object>> GetParameterValues(Nullable<DateTime> asOfDate = null)
+        {
+            Projection prjCmdParams = new Projection(
+                new ProjectionAttribute(MakeDomainCommandName(DomainName),
+                CommandName,
+                UniqueIdentifier,
+                nameof(CommandHandler.Projections.ParameterValues)));
+
+            if (null != prjCmdParams)
+            {
+                ParameterValues values = await prjCmdParams.Process<ParameterValues>(asOfDate);
+                if (null != values)
+                {
+                    if (null != values.Values)
+                    {
+                        return values.Values;
+                    }
+                }
+            }
+            // If no parameters found default to an empty list
+            return new Dictionary<string, object>(); 
+        }
+
+        /// <summary>
+        /// Initiate a command step
+        /// </summary>
+        /// <param name="stepName">
+        /// The name of the step to run
+        /// </param>
         public async Task InitiateStep(string stepName)
         {
             if (!string.IsNullOrWhiteSpace(stepName))
@@ -130,7 +176,36 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
+        /// <summary>
+        /// Mark a command step as being completed
+        /// </summary>
+        /// <param name="stepName">
+        /// The name of the step that has been completed
+        /// </param>
+        /// <param name="completionMessage">
+        /// Additional text for the step completion
+        /// </param>
+        public async Task StepCompleted(string stepName,
+            string completionMessage)
+        {
+            if (!string.IsNullOrWhiteSpace(stepName))
+            {
 
+                EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
+                    CommandName,
+                    UniqueIdentifier),
+                    context: _commandContext);
+
+                StepCompleted evStep = new StepCompleted()
+                {
+                    StepName = stepName,
+                    Message = completionMessage ,
+                    DateLogged = DateTime.UtcNow 
+                };
+
+                await esCmd.AppendEvent(evStep);
+            }
+        }
 
         public Command(CommandAttribute attribute)
         {
