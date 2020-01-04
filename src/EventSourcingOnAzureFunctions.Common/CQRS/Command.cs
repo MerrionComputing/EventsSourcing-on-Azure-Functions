@@ -157,7 +157,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         /// <param name="stepName">
         /// The name of the step to run
         /// </param>
-        public async Task InitiateStep(string stepName)
+        public async Task InitiateStep(string stepName,
+            string targetDomain = "",
+            string targetEntityType = "",
+            string targetEntityInstance = "")
         {
             if (!string.IsNullOrWhiteSpace(stepName))
             {
@@ -169,7 +172,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
                 CommandStepInitiated evStep = new CommandStepInitiated()
                 {
-                    StepName = stepName
+                    StepName = stepName,
+                    DomainName = targetDomain ,
+                    EntityTypeName = targetEntityType ,
+                    InstanceKey = targetEntityInstance 
                 };
 
                 await esCmd.AppendEvent(evStep);
@@ -186,7 +192,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         /// Additional text for the step completion
         /// </param>
         public async Task StepCompleted(string stepName,
-            string completionMessage)
+            string completionMessage,
+            string targetDomain = "",
+            string targetEntityType = "",
+            string targetEntityInstance = "")
         {
             if (!string.IsNullOrWhiteSpace(stepName))
             {
@@ -200,7 +209,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                 {
                     StepName = stepName,
                     Message = completionMessage ,
-                    DateLogged = DateTime.UtcNow 
+                    DateLogged = DateTime.UtcNow ,
+                    DomainName = targetDomain,
+                    EntityTypeName = targetEntityType,
+                    InstanceKey = targetEntityInstance
                 };
 
                 await esCmd.AppendEvent(evStep);

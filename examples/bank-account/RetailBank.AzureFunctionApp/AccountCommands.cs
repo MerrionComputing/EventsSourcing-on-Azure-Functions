@@ -22,8 +22,8 @@ namespace RetailBank.AzureFunctionApp
     public partial class AccountCommands
     {
 
-        const string COMMAND_STEP_OVERDRAFT = "Set Overdraft For Interest";
-        const string COMMAND_STEP_PAY_INTEREST = "Pay Accrued Interest";
+        public const string COMMAND_STEP_OVERDRAFT = "Set Overdraft For Interest";
+        public const string COMMAND_STEP_PAY_INTEREST = "Pay Accrued Interest";
 
         /// <summary>
         /// Apply accrued interest to an account
@@ -72,6 +72,7 @@ namespace RetailBank.AzureFunctionApp
         /// <param name="egStepTriggered">
         /// The event grid event that gets sent to this command step
         /// </param>
+        [FunctionName(nameof(SetOverdraftForInterestCommandStep))]
         public static async void SetOverdraftForInterestCommandStep
             ([EventGridTrigger]EventGridEvent egStepTriggered
              )
@@ -180,6 +181,7 @@ namespace RetailBank.AzureFunctionApp
         /// <param name="egStepTriggered">
         /// The event grid event that gets sent to this command step
         /// </param>
+        [FunctionName(nameof(PayInterestCommandStep))]
         public static async void PayInterestCommandStep
             ([EventGridTrigger]EventGridEvent egStepTriggered)
         {

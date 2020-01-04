@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 
 namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
@@ -9,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
     /// </summary>
     [EventName("Command Step Completed")]
     public class StepCompleted
+        : IEventStreamIdentity
     {
 
         /// <summary>
@@ -27,5 +29,19 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
         public DateTime DateLogged { get; set; }
 
 
+        /// <summary>
+        /// The domain of the entity to which the command step was applied
+        /// </summary>
+        public string DomainName { get; set; }
+
+        /// <summary>
+        /// The entity type of the entity to which the command step was applied
+        /// </summary>
+        public string EntityTypeName { get; set; }
+
+        /// <summary>
+        /// The instance unique key of the entity to which the command step was applied
+        /// </summary>
+        public string InstanceKey { get; set; }
     }
 }
