@@ -15,6 +15,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using System.Net.Http;
 using EventSourcingOnAzureFunctions.Common.CQRS;
 using RetailBank.AzureFunctionApp.Account.Events;
+using System.Linq;
 
 namespace RetailBank.AzureFunctionApp
 {
@@ -154,7 +155,12 @@ namespace RetailBank.AzureFunctionApp
         {
 
             // Get all the account numbers
-            IEnumerable<string> allAccounts = await clsAllAccounts.GetAllInstanceKeys();
+            IEnumerable<string> allAccounts = await req.Content.ReadAsAsync<IEnumerable<string>>();
+            if ( (null == allAccounts) || (allAccounts.Count() == 0) )
+            {
+                // If no account list passed it, get all the accounts
+                allAccounts = await clsAllAccounts.GetAllInstanceKeys();
+            }
 
             await accrueInterestOrchestration.StartNewAsync(nameof(ApplyInterestForAllAccounts), allAccounts);
 
@@ -192,6 +198,7 @@ namespace RetailBank.AzureFunctionApp
                     if (overdraftTask.Result.Item2)
                     {
                         Task interestTask = context.CallActivityAsync(nameof(PayInterestForSpecificAccount), overdraftTask.Result.Item1);
+                        payInterestTasks.Add(interestTask);
                     }
                 }
 
@@ -303,18 +310,22 @@ namespace RetailBank.AzureFunctionApp
                                     success = false;
                                 }
 
-                                if (success)
-                                {
-                                    await cmdPayInterest.StepCompleted(AccountCommands.COMMAND_STEP_OVERDRAFT,
-                                            result,
-                                            "Bank",
-                                            "Account",
-                                            accountNumber);
-                                }
+
                             }
                         }
                     }
                 }
+
+                // Log the step completion if it was successful
+                if (success)
+                {
+                    await cmdPayInterest.StepCompleted(AccountCommands.COMMAND_STEP_OVERDRAFT,
+                            result,
+                            "Bank",
+                            "Account",
+                            accountNumber);
+                }
+
             }
 
             return new Tuple<string, bool>(accountNumber, success);
