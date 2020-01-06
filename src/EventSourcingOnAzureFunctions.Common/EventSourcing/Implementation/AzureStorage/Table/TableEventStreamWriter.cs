@@ -3,6 +3,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
             // Read and update the [RECORDID_SEQUENCE] row in a transaction..
-            nextSequence = IncrementSequenceNumber();
+            nextSequence = await IncrementSequenceNumber();
 
             if (expectedTopSequenceNumber > 0)
             {
@@ -96,7 +97,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// This is done before the event itself is written so that a partial failure leaves a gap in the event stream which is
         /// less harmful than an overwritten event record
         /// </remarks>
-        private int IncrementSequenceNumber()
+        private async Task<int> IncrementSequenceNumber()
         {
             bool recordUpdated = false;
             int tries = 0;
@@ -120,23 +121,43 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 string lastETag = streamFooter.ETag;
 
-
-                TableResult tres = Table.Execute(TableOperation.InsertOrReplace(streamFooter),
-                      null,
-                      new OperationContext
-                      {
-                          UserHeaders = new Dictionary<String, String>
-                          {
-                              { "If-Match", lastETag }
-                          }
-                      });
-
-                if (tres.HttpStatusCode == 204)
+                try
                 {
-                    recordUpdated = true;
+                    TableResult tres = await Table.ExecuteAsync(TableOperation.InsertOrReplace(streamFooter),
+                          null,
+                          new OperationContext
+                          {
+                              UserHeaders = new Dictionary<String, String>
+                              {
+                              { "If-Match", lastETag }
+                              }
+                          });
+
+                    if (tres.HttpStatusCode == 204)
+                    {
+                        recordUpdated = true;
+                    }
+                }
+                catch (Microsoft.Azure.Cosmos.Table.StorageException sEx)
+                {
+                    if (sEx.RequestInformation.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)
+                    {
+                        // Precondition Failed - could not update the footer due to a concurrency error
+                        recordUpdated = false;
+                        // Wait a random-ish amount of time
+                        int delayMilliseconds = 13 * new Random().Next(10, 100);
+                        await Task.Delay(delayMilliseconds); 
+                    }
+                    else
+                    {
+                        throw new EventStreamWriteException(this, streamFooter.LastSequence,
+                                                message: "Unable to increment the stream sequence number due to storage error",
+                                                source: "Table Event Stream Writer",
+                                                innerException: sEx);
+                    }
                 }
 
-                if (tries > 200)
+                if (tries > 500)
                 {
                     // catastrophic deadlock
                     throw new EventStreamWriteException(this, streamFooter.LastSequence,

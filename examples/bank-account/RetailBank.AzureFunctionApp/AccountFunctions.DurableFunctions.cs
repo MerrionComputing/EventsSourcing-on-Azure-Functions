@@ -181,31 +181,47 @@ namespace RetailBank.AzureFunctionApp
 
             if (null != allAccounts)
             {
-                var overdraftForInterestTasks = new List<Task<Tuple<string, bool>>>();
+                var overdraftForInterestTasks = new List<Task>();
                 foreach (string accountNumber in allAccounts)
                 {
-                    Task<Tuple<string, bool>> overdraftTask = context.CallActivityAsync<Tuple<string, bool>>(nameof(SetOverdraftForInterestForSpecificAccount), accountNumber);
+                    Task overdraftTask = context.CallSubOrchestratorAsync(nameof(ApplyInterestForSpecificAccount), accountNumber);
                     overdraftForInterestTasks.Add(overdraftTask);
                 }
 
                 // Perform all the overdraft extension operations in parrallel
                 await Task.WhenAll(overdraftForInterestTasks);
 
-                // Only actually pay interest for those where the last step succeeded..
-                var payInterestTasks = new List<Task>();
-                foreach (var overdraftTask in overdraftForInterestTasks)
-                {
-                    if (overdraftTask.Result.Item2)
-                    {
-                        Task interestTask = context.CallActivityAsync(nameof(PayInterestForSpecificAccount), overdraftTask.Result.Item1);
-                        payInterestTasks.Add(interestTask);
-                    }
-                }
-
-                await Task.WhenAll(payInterestTasks);
             }
         }
 
+
+        /// <summary>
+        /// Apply the interest for a specific account
+        /// </summary>
+        /// <param name="context">
+        /// The sub orchestration context to use for the command
+        /// to apply interest to one account
+        /// </param>
+        /// <returns></returns>
+        [FunctionName(nameof(ApplyInterestForSpecificAccount)) ]
+        public static async Task ApplyInterestForSpecificAccount(
+          [OrchestrationTrigger] IDurableOrchestrationContext context)
+        {
+
+            string accountNumber = context.GetInput<string>();
+            
+            if (! string.IsNullOrEmpty(accountNumber ) )
+            {
+                Tuple<string, bool>  overdraftTask = await context.CallActivityAsync<Tuple<string, bool>>(nameof(SetOverdraftForInterestForSpecificAccount), accountNumber); ;
+
+                if (overdraftTask.Item2 )
+                {
+                    // ok to pay the interest
+                    await context.CallActivityAsync(nameof(PayInterestForSpecificAccount), accountNumber );
+                }
+            }
+
+        }
 
         [FunctionName(nameof(SetOverdraftForInterestForSpecificAccount))]
         public static async Task<Tuple<string, bool >> SetOverdraftForInterestForSpecificAccount
