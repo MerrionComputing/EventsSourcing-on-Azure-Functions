@@ -1,9 +1,14 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.Common.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Events;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using EventSourcingOnAzureFunctions.Common.Notification;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -79,8 +84,122 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         // Validations
 
         // Classification request
+        /// <summary>
+        /// Request a classification to be performed as part of this query
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain name of the entity over which the classification is to run
+        /// </param>
+        /// <param name="entityTypeName">
+        /// The entity type over which to run the classification
+        /// </param>
+        /// <param name="instanceKey">
+        /// The specific instance over which to run the classification
+        /// </param>
+        /// <param name="classifierTypeName">
+        /// The specific type of classification process to run over the event stream
+        /// </param>
+        /// <param name="asOfDate">
+        /// (Optional) The date up to which to run the classification
+        /// </param>
+        /// <param name="classificationParameters">
+        /// (Optional) Any additional parameters to use in the classification process
+        /// </param>
+        public async Task RequestClassification(string domainName,
+                        string entityTypeName,
+                        string instanceKey,
+                        string classifierTypeName,
+                        Nullable<DateTime> asOfDate ,
+                        IEnumerable<KeyValuePair<string, object >> classificationParameters )
+        {
+
+            // Correlation to link the parameters to the classification 
+            Guid correlationId = Guid.NewGuid();
+
+            EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
+                QueryName,
+                UniqueIdentifier),
+                context: _queryContext);
+
+            if (null != classificationParameters )
+            {
+                // add a classification request parameter for each...
+                foreach (KeyValuePair<string, object>  parameter in classificationParameters )
+                {
+                    ClassifierRequestParameterSet evParam = new ClassifierRequestParameterSet()
+                    {
+                        CorrelationIdentifier = correlationId.ToString(),
+                        ParameterName = parameter.Key ,
+                        ParameterValue = parameter.Value 
+                    };
+
+                    await esQry.AppendEvent(evParam);
+                }
+            }
+
+            // add the classification request
+            ClassifierRequested evRequest = new ClassifierRequested()
+            {
+                CorrelationIdentifier = correlationId.ToString(),
+                DomainName = domainName ,
+                EntityTypeName = entityTypeName ,
+                InstanceKey = instanceKey ,
+                ClassifierTypeName = classifierTypeName ,
+                AsOfDate = asOfDate 
+            };
+
+            await esQry.AppendEvent(evRequest);  
+
+        }
+
 
         // Projection request
+        /// <summary>
+        /// Request a projection to be performed
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain name of the entity over which the classification is to run
+        /// </param>
+        /// <param name="entityTypeName">
+        /// The entity type over which to run the classification
+        /// </param>
+        /// <param name="instanceKey">
+        /// The specific instance over which to run the classification
+        /// </param>
+        /// <param name="classifierTypeName">
+        /// The specific type of classification process to run over the event stream
+        /// </param>
+        /// <param name="asOfDate">
+        /// (Optional) The date up to which to run the classification
+        /// </param>
+        public async Task RequestProjection(string domainName,
+                        string entityTypeName,
+                        string instanceKey,
+                        string projectionTypeName,
+                        Nullable<DateTime> asOfDate)
+        {
+            Guid correlationId = Guid.NewGuid();
+
+            EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
+                QueryName,
+                UniqueIdentifier),
+                context: _queryContext);
+
+            ProjectionRequested evPrj = new ProjectionRequested()
+            { 
+                CorrelationIdentifier = correlationId.ToString(),
+                DomainName = domainName,
+                EntityTypeName = entityTypeName ,
+                InstanceKey = instanceKey ,
+                ProjectionTypeName = projectionTypeName ,
+                AsOfDate = asOfDate ,
+                DateLogged = DateTime.UtcNow 
+            };
+
+            await esQry.AppendEvent(evPrj);
+            
+        }
+
 
         // Collations
 
@@ -140,8 +259,36 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             await SetResponseTarget("Webhook",
                 webhookAddress.AbsoluteUri );
         }
-        
 
+        /// <summary>
+        /// Send the output of a query to Event Grid for distribution 
+        /// </summary>
+        /// <param name="eventType">
+        /// The event type to use for the event
+        /// </param>
+        /// <param name="subject">
+        /// The subject to use to route the event with
+        /// </param>
+        /// <param name="eventGridTopicEndpoint">
+        /// The end point to send the event grid message out to
+        /// </param>
+        public async Task AddEventGridOutput(string eventType,
+            string subject,
+            Uri eventGridTopicEndpoint)
+        {
+            EventGridEventRouting er = new EventGridEventRouting()
+            { 
+                EventType = eventType,
+                Subject = subject,
+                EventGridTopicEndpoint = eventGridTopicEndpoint.AbsolutePath  
+            };
+
+            string jsonRouting = JsonConvert.SerializeObject(er);
+
+            await SetResponseTarget("Event Grid Event",
+                jsonRouting); 
+
+        }
 
         public Query(QueryAttribute attribute)
         {

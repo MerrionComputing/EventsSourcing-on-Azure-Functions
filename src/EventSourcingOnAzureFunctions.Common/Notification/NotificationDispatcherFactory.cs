@@ -19,8 +19,6 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         {
             if (null != services )
             {
-
-                // TODO: Work out how the feck to do this...
                 INameResolver nameResolver = null;
                 IOptions<EventSourcingOnAzureOptions> options = null;
                 ILogger logger = null;
