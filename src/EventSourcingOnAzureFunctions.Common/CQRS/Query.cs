@@ -152,6 +152,66 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         }
 
+        // Classifier response...
+        /// <summary>
+        /// Post a response from a classifier onto the given query event stream
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain name of the entity over which the classification was run
+        /// </param>
+        /// <param name="entityTypeName">
+        /// The entity type over which the classification was run
+        /// </param>
+        /// <param name="instanceKey">
+        /// The specific instance over which the classification was run
+        /// </param>
+        /// <param name="classifierTypeName">
+        /// The specific type of classification process to run over the event stream
+        /// </param>
+        /// <param name="asOfDate">
+        /// (Optional) The date up to which to run the classification
+        /// </param>
+        /// <param name="correlationIdentifier">
+        /// The unique identifier for this classification instance
+        /// </param>
+        /// <param name="asOfSequenceNumber">
+        /// The sequence number of the last event read when running the classifier
+        /// (This can be used to determine if the classification is still valid)
+        /// </param> 
+        /// <param name="result">
+        /// The result of running the classifier
+        /// </param>
+        /// <returns></returns>
+        public async Task PostClassifierResponse(string domainName,
+                        string entityTypeName,
+                        string instanceKey,
+                        string classifierTypeName,
+                        Nullable<DateTime> asOfDate,
+                        string correlationIdentifier,
+                        int asOfSequenceNumber,
+                        bool result)
+        {
+
+            EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
+                QueryName,
+                UniqueIdentifier),
+                context: _queryContext);
+
+            ClassifierResultReturned evRet = new ClassifierResultReturned()
+            {
+                DomainName = domainName ,
+                EntityTypeName = entityTypeName ,
+                InstanceKey = instanceKey ,
+                ClassifierTypeName = classifierTypeName ,
+                AsOfDate = asOfDate ,
+                AsOfSequenceNumber = asOfSequenceNumber ,
+                CorrelationIdentifier = correlationIdentifier,
+                Result = result 
+            };
+
+
+            await esQry.AppendEvent(evRet); 
+        }
 
         // Projection request
         /// <summary>
@@ -200,8 +260,40 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             
         }
 
+        public async Task PostProjectionResponse(string domainName,
+                        string entityTypeName,
+                        string instanceKey,
+                        string projectionTypeName,
+                        Nullable<DateTime> asOfDate, 
+                        string correlationIdentifier,
+                        int asOfSequenceNumber,
+                        object projectionResult)
+        {
+
+            EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
+                QueryName,
+                UniqueIdentifier),
+                context: _queryContext);
+
+            ProjectionValueReturned evRet = new ProjectionValueReturned()
+            { 
+                DomainName = domainName ,
+                EntityTypeName = entityTypeName,
+                InstanceKey = instanceKey ,
+                AsOfDate = asOfDate ,
+                AsOfSequenceNumber = asOfSequenceNumber ,
+                CorrelationIdentifier = correlationIdentifier ,
+                ProjectionTypeName = projectionTypeName ,
+                DateLogged = DateTime.UtcNow ,
+                Value = projectionResult 
+            };
+
+            await esQry.AppendEvent(evRet);  
+        }
 
         // Collations
+
+
 
         // Response
         private async Task SetResponseTarget(string targetType,
