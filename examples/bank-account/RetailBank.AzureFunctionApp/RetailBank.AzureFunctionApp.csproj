@@ -36,4 +36,8 @@
       <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Branch\" />
+    <Folder Include="Product\" />
+  </ItemGroup>
 </Project>
