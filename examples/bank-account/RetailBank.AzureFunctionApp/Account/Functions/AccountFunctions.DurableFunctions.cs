@@ -184,13 +184,12 @@ namespace RetailBank.AzureFunctionApp
                 var overdraftForInterestTasks = new List<Task>();
                 foreach (string accountNumber in allAccounts)
                 {
-                    Task overdraftTask = context.CallSubOrchestratorAsync(nameof(ApplyInterestForSpecificAccount), accountNumber);
+                    Task overdraftTask = context.CallSubOrchestratorAsync(nameof(ApplyInterestForSpecificAccount),
+                        accountNumber);
                     overdraftForInterestTasks.Add(overdraftTask);
                 }
-
                 // Perform all the overdraft extension operations in parrallel
                 await Task.WhenAll(overdraftForInterestTasks);
-
             }
         }
 
@@ -212,7 +211,8 @@ namespace RetailBank.AzureFunctionApp
             
             if (! string.IsNullOrEmpty(accountNumber ) )
             {
-                Tuple<string, bool>  overdraftTask = await context.CallActivityAsync<Tuple<string, bool>>(nameof(SetOverdraftForInterestForSpecificAccount), accountNumber); ;
+                Tuple<string, bool>  overdraftTask = await context.CallActivityAsync<Tuple<string, bool>>
+                                   (nameof(SetOverdraftForInterestForSpecificAccount), accountNumber); ;
 
                 if (overdraftTask.Item2 )
                 {

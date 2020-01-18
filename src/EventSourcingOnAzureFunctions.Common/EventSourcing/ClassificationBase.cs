@@ -13,6 +13,23 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// </summary>
         public int CurrentSequenceNumber { get { return _sequenceNumber; } }
 
+        private bool _wasExcluded = false;
+        public bool WasEverExcluded
+        {
+            get
+            {
+                return _wasExcluded;
+            }
+        }
+
+        private bool _wasIncluded = false;
+        public bool WasEverIncluded
+        {
+            get
+            {
+                return _wasIncluded;
+            }
+        }
 
         public bool HandlesEventType(string eventTypeName)
         {
@@ -39,7 +56,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             // TODO : Process the as-of date if it is set
         }
 
-        public ClassificationResponse.ClassificationResults HandleEvent(string eventTypeName, object eventToHandle)
+        public ClassificationResponse.ClassificationResults HandleEvent(string eventTypeName, 
+            object eventToHandle)
         {
             if (typedEventHandlers.ContainsKey(eventTypeName))
             {
@@ -53,7 +71,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 {
                     invocationParameters = new object[] { eventToHandle };
                 }
-                return (ClassificationResponse.ClassificationResults)typedEventHandlers[eventTypeName].Item2.Invoke(this, invocationParameters);
+                ClassificationResponse.ClassificationResults ret = (ClassificationResponse.ClassificationResults)typedEventHandlers[eventTypeName].Item2.Invoke(this, invocationParameters);
+                if (ret == ClassificationResponse.ClassificationResults.Exclude )
+                {
+                    _wasExcluded = true;
+                }
+                if (ret == ClassificationResponse.ClassificationResults.Include )
+                {
+                    _wasIncluded = true;
+                }
+                return ret;
             }
             return ClassificationResponse.ClassificationResults.Unchanged;
         }
