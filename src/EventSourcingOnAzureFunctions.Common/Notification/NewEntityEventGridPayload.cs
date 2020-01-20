@@ -78,5 +78,21 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             };
 
         }
+
+        /// <summary>
+        /// Make an event type name for the newly created entity notification message
+        /// </summary>
+        /// <param name="newEntity">
+        /// The newly created entity
+        /// </param>
+        public static string MakeEventTypeName(IEventStreamIdentity newEntity)
+        {
+            if (null == newEntity )
+            {
+                return EVENT_TYPE;
+            }
+
+            return $"{newEntity.DomainName}.{newEntity.EntityTypeName}.NewEntity";
+        }
     }
 }

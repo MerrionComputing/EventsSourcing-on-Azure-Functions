@@ -140,7 +140,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     new EventGridEvent()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = NewEntityEventGridPayload.EVENT_TYPE ,
+                        EventType = NewEntityEventGridPayload.MakeEventTypeName(newEntity ) ,
                         Subject = MakeEventGridSubject(newEntity) ,
                         DataVersion = NewEntityEventGridPayload.DATA_VERSION,
                         Data = payload,
@@ -194,7 +194,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     new EventGridEvent()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = NewEventEventGridPayload.EVENT_TYPE ,
+                        EventType = NewEventEventGridPayload.MakeEventTypeName(targetEntity, eventType )   ,
                         Subject = MakeEventGridSubject(targetEntity, eventType) ,
                         DataVersion = NewEventEventGridPayload.DATA_VERSION ,
                         Data = payload,
