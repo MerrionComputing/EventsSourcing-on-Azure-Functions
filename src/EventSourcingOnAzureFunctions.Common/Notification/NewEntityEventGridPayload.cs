@@ -46,6 +46,10 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         [JsonProperty(PropertyName = "commentary")]
         public string Commentary { get; set; }
 
+
+        [JsonProperty(PropertyName = "context" ) ]
+        public IWriteContext Context { get; set; }
+
         /// <summary>
         /// Empty constructor for serialisation
         /// </summary>
@@ -55,7 +59,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
 
         public static NewEntityEventGridPayload Create(IEventStreamIdentity newEntity,
             string notificationId = @"",
-            string commentary = @"")
+            string commentary = @"",
+            IWriteContext context = null)
         {
 
             if (null == newEntity )
@@ -74,7 +79,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 EntityTypeName = newEntity.EntityTypeName ,
                 InstanceKey = newEntity.InstanceKey ,
                 NotificationId = notificationId ,
-                Commentary = commentary 
+                Commentary = commentary ,
+                Context = context 
             };
 
         }

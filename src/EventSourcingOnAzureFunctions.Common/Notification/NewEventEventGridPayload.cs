@@ -61,7 +61,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <summary>
         /// The payload of the event appended to the event stream
         /// </summary>
+        [JsonProperty(PropertyName = "eventPayload")]
         public object EventPayload { get; set; }
+
+
+        [JsonProperty(PropertyName = "context")]
+        public IWriteContext Context { get; set; }
 
         /// <summary>
         /// Empty constructor for serialisation
@@ -76,7 +81,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 int sequenceNumber,
                 string notificationId = @"",
                 string commentary = @"",
-                object eventPayload = null)
+                object eventPayload = null,
+                IWriteContext context = null)
         {
 
             if (null == entityAffected)
@@ -103,12 +109,17 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 NotificationId = notificationId,
                 Commentary = commentary,
                 EventType = eventType,
-                SequenceNumber = sequenceNumber 
+                SequenceNumber = sequenceNumber  
             };
 
             if (null != eventPayload )
             {
                 ret.EventPayload = eventPayload;
+            }
+
+            if (null != context)
+            { 
+                ret.Context = context;
             }
 
             return ret;

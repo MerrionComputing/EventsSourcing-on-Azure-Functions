@@ -17,7 +17,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         : INotificationDispatcher
     {
         public Task NewEntityCreated(IEventStreamIdentity newEntity,
-            string commentary=@"")
+            string commentary=@"",
+            IWriteContext context = null)
         {
             // do nothing
             return Task.CompletedTask;
@@ -26,7 +27,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         public Task NewEventAppended(IEventStreamIdentity targetEntity, string eventType, 
             int sequenceNumber,
             string commentary = @"",
-            object messagePayload = null)
+            object messagePayload = null,
+            IWriteContext context = null)
         {
             // do nothing
             return Task.CompletedTask;

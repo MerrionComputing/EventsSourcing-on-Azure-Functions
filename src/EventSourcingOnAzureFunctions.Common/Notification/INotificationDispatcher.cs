@@ -21,8 +21,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <param name="commentary">
         /// (Optional) Additional commentary for the new entity creation for logging / diagnostics
         /// </param>
+        /// <param name="context">
+        /// (Optional) The additional context with which the new entity was written
+        /// </param>
         Task NewEntityCreated(IEventStreamIdentity newEntity,
-            string commentary = @"");
+            string commentary = @"",
+            IWriteContext  context = null);
 
         /// <summary>
         /// A new event was appended to an event stream - notify the world
@@ -37,15 +41,19 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// The sequence number of the new event that was appended
         /// </param>
         /// <param name="commentary">
-        /// (Optional) Additional commentary for the new entity creation for logging / diagnostics
+        /// (Optional) Additional commentary for the new event for logging / diagnostics
         /// </param>
         /// <param name="eventPayload">
-        /// The payload content of the event appended to the event stream
+        /// (Optional) The payload content of the event appended to the event stream
+        /// </param>
+        /// <param name="context">
+        /// (Optional) The additional context with which the new event was written
         /// </param>
         Task NewEventAppended(IEventStreamIdentity targetEntity,
             string eventType,
             int sequenceNumber,
             string commentary = @"",
-            object eventPayload = null);
+            object eventPayload = null,
+            IWriteContext context = null);
     }
 }

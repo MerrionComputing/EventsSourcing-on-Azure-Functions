@@ -124,7 +124,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// The new entity that has been created
         /// </param>
         public async Task NewEntityCreated(IEventStreamIdentity newEntity,
-            string commentary = @"")
+            string commentary = @"",
+            IWriteContext context = null)
         {
 
             if (this._options.Value.RaiseEntityCreationNotification)
@@ -132,7 +133,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
 
                 // Create the notification
                 NewEntityEventGridPayload payload = NewEntityEventGridPayload.Create(newEntity,
-                    commentary: commentary );
+                    commentary: commentary ,
+                    context: context  );
 
                 // Create an event grid message to send
                 EventGridEvent[] message = new EventGridEvent[]
@@ -175,7 +177,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             string eventType,
             int sequenceNumber,
             string commentary = @"",
-            object eventPayload = null)
+            object eventPayload = null,
+            IWriteContext context = null)
         {
 
             if (this._options.Value.RaiseEventNotification)
@@ -186,7 +189,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     eventType,
                     sequenceNumber,
                     commentary: commentary ,
-                    eventPayload:  eventPayload);
+                    eventPayload:  eventPayload,
+                    context: context );
 
                 // Create an event grid message to send
                 EventGridEvent[] message = new EventGridEvent[]
