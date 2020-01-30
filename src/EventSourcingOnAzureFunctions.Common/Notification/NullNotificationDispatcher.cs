@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 
 namespace EventSourcingOnAzureFunctions.Common.Notification
@@ -33,6 +34,17 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             // do nothing
             return Task.CompletedTask;
             
+        }
+
+        public Task ProjectionCompleted(IEventStreamIdentity targetEntity, 
+            string projectionType, 
+            int asOfSequenceNumber, 
+            DateTime? asOfDate, 
+            IEnumerable<ProjectionSnapshotProperty> currentValues, 
+            string commentary = "")
+        {
+            // do nothing
+            return Task.CompletedTask;
         }
     }
 }

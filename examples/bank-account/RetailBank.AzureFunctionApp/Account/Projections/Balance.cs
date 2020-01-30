@@ -27,6 +27,8 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
             }
         }
 
+        
+
         public void HandleEventInstance(MoneyDeposited eventInstance)
         {
             if (null != eventInstance )
@@ -49,6 +51,11 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
             {
                 currentBalance += eventInstance.AmountPaid;
             }
+        }
+
+        public Balance()
+        {
+            
         }
     }
 }

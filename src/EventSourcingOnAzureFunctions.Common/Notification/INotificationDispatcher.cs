@@ -1,4 +1,5 @@
-﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -55,5 +56,16 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             string commentary = @"",
             object eventPayload = null,
             IWriteContext context = null);
+
+
+        Task ProjectionCompleted(IEventStreamIdentity targetEntity,
+            string projectionType,
+            int asOfSequenceNumber,
+            Nullable<DateTime> asOfDate,
+            IEnumerable<ProjectionSnapshotProperty> currentValues,
+            string commentary = @"");
+
+
+        // TODO: Task ClassificationCompleted();
     }
 }

@@ -13,6 +13,8 @@ using Microsoft.Azure.EventGrid.Models;
 using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using EventSourcingOnAzureFunctions.Common.EventSourcing;
 
 namespace EventSourcingOnAzureFunctions.Common.Notification
 {
@@ -216,6 +218,71 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             }
         }
 
+        /// <summary>
+        /// Send a notification that a projection has been run
+        /// </summary>
+        /// <param name="targetEntity">
+        /// The entity instance over which the projection was run
+        /// </param>
+        /// <param name="projectionType">
+        /// The type of the projection that was run
+        /// </param>
+        /// <param name="asOfSequenceNumber">
+        /// The sequence number of the last event in the stream that was read in this projection
+        /// </param>
+        /// <param name="asOfDate">
+        /// (Optional) The as-of date passed to the projection request
+        /// </param>
+        /// <param name="currentValues">
+        /// The set of values for the state as read by the projection
+        /// </param>
+        /// <param name="commentary">
+        /// (Optional) Additional commentary
+        /// </param>
+        public async Task ProjectionCompleted(IEventStreamIdentity targetEntity,
+            string projectionType,
+            int asOfSequenceNumber,
+            DateTime? asOfDate,
+            IEnumerable<ProjectionSnapshotProperty> currentValues,
+            string commentary = "")
+        {
+            if (this._options.Value.RaiseProjectionCompletedNotification)
+            {
+                //  Create the notification
+                ProjectionCompleteEventGridPayload payload = ProjectionCompleteEventGridPayload.Create(
+                    targetEntity ,
+                    projectionType,
+                    asOfSequenceNumber ,
+                    asOfDate ,
+                    currentValues,
+                    commentary 
+                    );
+
+
+                // Create an event grid message to send
+                EventGridEvent[] message = new EventGridEvent[]
+                {
+                    new EventGridEvent()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EventType = ProjectionCompleteEventGridPayload.MakeEventTypeName(targetEntity, projectionType  )   ,
+                        Subject = MakeEventGridSubject(targetEntity, projectionType ) ,
+                        DataVersion = NewEventEventGridPayload.DATA_VERSION ,
+                        Data = payload,
+                        EventTime = DateTime.UtcNow
+                    }
+                };
+
+                // Send it off asynchronously
+                await SendNotificationAsync(message);
+            }
+            else
+            {
+                // Nothing to do as config doesn't want notifications sent out for 
+                // projection completion
+                return;
+            }
+        }
 
         /// <summary>
         /// Turn an entity identifier into an eventgrid message subject
@@ -294,6 +361,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 }
             }
         }
+
+
 
         internal class HttpRetryMessageHandler :
             DelegatingHandler

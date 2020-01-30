@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
+    [JsonObject]
     public class ProjectionSnapshotProperty
     {
 
@@ -12,6 +14,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// <summary>
         /// The unique name of the property (akin to a column header)
         /// </summary>
+        [JsonProperty(PropertyName = "name" , Required = Required.Always )]
         public string Name {get;}
 
         /// <summary>
@@ -20,12 +23,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// <remarks>
         /// If this is NO_ROW_NUMBER the projection may be one that does not have rows
         /// </remarks>
+        [JsonProperty(PropertyName = "row")]
         public int RowNumber { get; }
 
         /// <summary>
         /// The value of this projection property
         /// </summary>
-        public object ValueAsObject { get; }
+        [JsonProperty(PropertyName = "value")]
+        public object ValueAsObject { get; set; }
 
         protected internal ProjectionSnapshotProperty(string name,
             int rowNumber = NO_ROW_NUMBER ,

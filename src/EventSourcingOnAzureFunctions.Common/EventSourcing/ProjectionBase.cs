@@ -1,6 +1,7 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
@@ -63,14 +64,70 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         public void OnEventRead(int sequenceNumber, DateTime? asOfDate)
         {
             _sequenceNumber = sequenceNumber;
-            // TODO : Process the as-of date if it is set
+            // Process the as-of date if it is set
+            if (asOfDate.HasValue )
+            {
+                _currentAsOfDate = asOfDate.Value;
+            }
+        }
+
+        /// <summary>
+        /// Add or update aproperty of the projection
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <param name="rowNumber"></param>
+        /// <param name="value"></param>
+        protected void AddOrUpdateValue<TValue>(string propertyName, int rowNumber, TValue value)
+        {
+ 
+
+            if (_currentValues.Exists( t =>
+            {
+                return t.Name == propertyName && t.RowNumber == rowNumber;
+            }))
+            {
+                // Update the value of that snapshot item
+                ProjectionSnapshotProperty currentValue = _currentValues.First( t =>
+                {
+                    return t.Name == propertyName && t.RowNumber == rowNumber;
+                });
+
+                // update the value
+                currentValue.ValueAsObject = value;
+
+            }
+            else
+            {
+                // Add a new snapshot item
+                _currentValues.Add(ProjectionSnapshotProperty.Create<TValue>(propertyName, value, rowNumber));
+            }
+
+
+
+        }
+
+
+        private string MakePropertyName(string propertyName, int rowNumber)
+        {
+            if ((rowNumber == ProjectionSnapshotProperty.NO_ROW_NUMBER))
+                return propertyName;
+            else
+                return propertyName + "(" + rowNumber.ToString() + ")";
         }
 
         // Snapshots not implemented yet
         public bool SupportsSnapshots => false;
 
         // As of date not implemented yet
-        public DateTime CurrentAsOfDate => throw new NotImplementedException();
+        private DateTime _currentAsOfDate;
+        public DateTime CurrentAsOfDate
+        {
+            get
+            {
+                return _currentAsOfDate;
+            }
+        }
 
 
         private Dictionary<string, Tuple<Type, System.Reflection.MethodInfo>> typedEventHandlers = new Dictionary<string, Tuple<Type, System.Reflection.MethodInfo>>();

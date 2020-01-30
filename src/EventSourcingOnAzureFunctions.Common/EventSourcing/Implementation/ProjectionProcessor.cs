@@ -10,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
         : IProjectionProcessor
     {
 
+        
         private readonly IEventStreamReader eventStreamReader = null;
 
         public async Task<TProjection> Process<TProjection>(DateTime? asOfDate = null) where TProjection : IProjection, new()

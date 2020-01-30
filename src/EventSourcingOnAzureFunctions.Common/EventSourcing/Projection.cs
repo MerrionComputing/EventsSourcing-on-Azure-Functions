@@ -1,5 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using EventSourcingOnAzureFunctions.Common.Notification;
 using System;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         private readonly IEventStreamSettings _settings = null;
         private readonly IProjectionProcessor _projectionProcessor = null;
-
+        private readonly INotificationDispatcher _notificationDispatcher = null;
 
         private readonly string _domainName;
         /// <summary>
@@ -68,7 +69,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         {
             if (null != _projectionProcessor )
             {
-                return await _projectionProcessor.Process<TProjection>(asOfDate); 
+                TProjection ret= await _projectionProcessor.Process<TProjection>(asOfDate);
+                if (null != _notificationDispatcher)
+                {
+                    // Dispatch a projection-completed notification
+                    await _notificationDispatcher.ProjectionCompleted(this,
+                        _projectionTypeName,
+                        ret.CurrentSequenceNumber,
+                        asOfDate,
+                        ret.CurrentValues);
+                }
+                return ret;
             }
             else
             {
@@ -93,7 +104,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// The attribute describing which projection to run
         /// </param>
         public Projection(ProjectionAttribute attribute,
-            IEventStreamSettings settings = null)
+            IEventStreamSettings settings = null,
+            INotificationDispatcher dispatcher = null)
         {
 
             _domainName = attribute.DomainName;
@@ -116,6 +128,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             if (null == _projectionProcessor)
             {
                 _projectionProcessor = _settings.CreateProjectionProcessorForEventStream(attribute);
+            }
+
+            if (null == dispatcher)
+            {
+                // Create a new dispatcher 
+                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatcher;
+            }
+            else
+            {
+                _notificationDispatcher = dispatcher;
             }
 
         }

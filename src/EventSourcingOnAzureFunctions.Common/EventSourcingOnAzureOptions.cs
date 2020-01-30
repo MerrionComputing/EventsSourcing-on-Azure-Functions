@@ -28,6 +28,17 @@ namespace EventSourcingOnAzureFunctions.Common
         /// </summary>
         public bool RaiseEventNotification { get; set; } = false;
 
+
+        /// <summary>
+        /// Should this function app raise notifications when a projection completes
+        /// </summary>
+        public bool RaiseProjectionCompletedNotification { get; set; } = false;
+
+        /// <summary>
+        /// Should this function app raise notifications when a classification completes
+        /// </summary>
+        public bool RaiseClassificationCompletedNotification { get; set; } = false;
+
         /// <summary>
         /// The name of the eventgrid hug to send notifications via
         /// </summary>
@@ -91,6 +102,8 @@ namespace EventSourcingOnAzureFunctions.Common
                         this.EventGridPublishRetryInterval = ret.EventGridPublishRetryInterval;
                         this.RaiseEntityCreationNotification = ret.RaiseEntityCreationNotification;
                         this.RaiseEventNotification = ret.RaiseEventNotification;
+                        this.RaiseProjectionCompletedNotification = ret.RaiseProjectionCompletedNotification;
+                        this.RaiseClassificationCompletedNotification = ret.RaiseClassificationCompletedNotification;
                         if (string.IsNullOrWhiteSpace(ret.EventGridKeyValue))
                         {
                             if (!string.IsNullOrWhiteSpace(ret.EventGridKeySettingName))
@@ -172,6 +185,28 @@ namespace EventSourcingOnAzureFunctions.Common
                     if (bool.TryParse(envRaiseEventNotification, out raiseEvent))
                     {
                         this.RaiseEventNotification = raiseEvent;
+                    }
+                }
+
+                //RaiseProjectionCompletedNotification
+                string envRaiseProjectionCompletedNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseProjectionCompletedNotification));
+                if (!string.IsNullOrWhiteSpace(envRaiseEventNotification))
+                {
+                    bool raiseEvent = false;
+                    if (bool.TryParse(envRaiseProjectionCompletedNotification, out raiseEvent))
+                    {
+                        this.RaiseProjectionCompletedNotification = raiseEvent;
+                    }
+                }
+
+                //RaiseClassificationtionCompletedNotification
+                string envRaiseClassificationCompletedNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseClassificationCompletedNotification));
+                if (!string.IsNullOrWhiteSpace(envRaiseClassificationCompletedNotification))
+                {
+                    bool raiseEvent = false;
+                    if (bool.TryParse(envRaiseClassificationCompletedNotification, out raiseEvent))
+                    {
+                        this.RaiseClassificationCompletedNotification = raiseEvent;
                     }
                 }
             }
