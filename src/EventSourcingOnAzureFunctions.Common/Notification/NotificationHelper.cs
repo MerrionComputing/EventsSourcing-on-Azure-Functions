@@ -233,8 +233,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <param name="asOfDate">
         /// (Optional) The as-of date passed to the projection request
         /// </param>
-        /// <param name="currentValues">
-        /// The set of values for the state as read by the projection
+        /// <param name="currentValue">
+        /// The value for the state as read by the projection
         /// </param>
         /// <param name="commentary">
         /// (Optional) Additional commentary
@@ -243,7 +243,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             string projectionType,
             int asOfSequenceNumber,
             DateTime? asOfDate,
-            IEnumerable<ProjectionSnapshotProperty> currentValues,
+            object currentValue,
             string commentary = "")
         {
             if (this._options.Value.RaiseProjectionCompletedNotification)
@@ -254,7 +254,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     projectionType,
                     asOfSequenceNumber ,
                     asOfDate ,
-                    currentValues,
+                    currentValue,
                     commentary 
                     );
 

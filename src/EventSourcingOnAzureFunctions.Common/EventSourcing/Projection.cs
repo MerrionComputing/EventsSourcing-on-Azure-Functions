@@ -77,7 +77,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                         _projectionTypeName,
                         ret.CurrentSequenceNumber,
                         asOfDate,
-                        ret.CurrentValues);
+                        ret);
                 }
                 return ret;
             }

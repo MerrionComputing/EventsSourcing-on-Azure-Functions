@@ -40,7 +40,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             string projectionType, 
             int asOfSequenceNumber, 
             DateTime? asOfDate, 
-            IEnumerable<ProjectionSnapshotProperty> currentValues, 
+            object currentValue, 
             string commentary = "")
         {
             // do nothing

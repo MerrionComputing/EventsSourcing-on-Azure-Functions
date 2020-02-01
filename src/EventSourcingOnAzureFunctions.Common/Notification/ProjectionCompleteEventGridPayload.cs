@@ -69,8 +69,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         [JsonProperty(PropertyName = "commentary")]
         public string Commentary { get; set; }
 
-        [JsonProperty(PropertyName = "values")] 
-        IEnumerable<ProjectionSnapshotProperty> CurrentValues { get; set; }
+        [JsonProperty(PropertyName = "value")] 
+        object CurrentValue { get; set; }
 
         /// <summary>
         /// Empty constructor for serialisation
@@ -84,7 +84,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             string projectionType,
             int asOfSequenceNumber,
             Nullable<DateTime> asOfDate,
-            IEnumerable<ProjectionSnapshotProperty> currentValues,
+            object currentValue,
             string notificationId = @"",
             string commentary = @"")
         {
@@ -120,12 +120,9 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 ret.AsOfDate = asOfDate;
             }
 
-            if (null != currentValues)
+            if (null != currentValue)
             {
-                if (currentValues.Count() > 0)
-                {
-                    ret.CurrentValues = currentValues;
-                }
+                    ret.CurrentValue = currentValue;
             }
 
             return ret;
