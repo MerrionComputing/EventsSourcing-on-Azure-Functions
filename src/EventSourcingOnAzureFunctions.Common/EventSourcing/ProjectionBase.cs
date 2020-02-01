@@ -21,9 +21,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         public int CurrentSequenceNumber { get { return _sequenceNumber;  } }
 
 
-        private List<ProjectionSnapshotProperty> _currentValues = new List<ProjectionSnapshotProperty>();
-        public IEnumerable<ProjectionSnapshotProperty> CurrentValues => _currentValues ;
-
         public void HandleEvent(string eventTypeName, object eventToHandle)
         {
             if (typedEventHandlers.ContainsKey(eventTypeName ))
@@ -70,43 +67,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 _currentAsOfDate = asOfDate.Value;
             }
         }
-
-        /// <summary>
-        /// Add or update aproperty of the projection
-        /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="propertyName"></param>
-        /// <param name="rowNumber"></param>
-        /// <param name="value"></param>
-        protected void AddOrUpdateValue<TValue>(string propertyName, int rowNumber, TValue value)
-        {
- 
-
-            if (_currentValues.Exists( t =>
-            {
-                return t.Name == propertyName && t.RowNumber == rowNumber;
-            }))
-            {
-                // Update the value of that snapshot item
-                ProjectionSnapshotProperty currentValue = _currentValues.First( t =>
-                {
-                    return t.Name == propertyName && t.RowNumber == rowNumber;
-                });
-
-                // update the value
-                currentValue.ValueAsObject = value;
-
-            }
-            else
-            {
-                // Add a new snapshot item
-                _currentValues.Add(ProjectionSnapshotProperty.Create<TValue>(propertyName, value, rowNumber));
-            }
-
-
-
-        }
-
 
         private string MakePropertyName(string propertyName, int rowNumber)
         {

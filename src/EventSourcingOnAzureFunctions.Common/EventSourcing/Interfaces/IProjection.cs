@@ -75,12 +75,5 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </remarks>
         void OnEventRead(int sequenceNumber, DateTime? asOfDate);
 
-        /// <summary>
-        /// The current set of values the projection has as at the current point in time
-        /// </summary>
-        /// <remarks>
-        /// These are the business-meaningful properties of the projection
-        /// </remarks>
-        IEnumerable<ProjectionSnapshotProperty> CurrentValues { get; }
     }
 }
