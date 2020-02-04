@@ -132,7 +132,7 @@ namespace RetailBank.AzureFunctionApp
                             {
                                 await bankAccountEvents.AppendEvent(evAccrued, isAccrued.AsOfSequence);
                             }
-                            catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException exWrite)
+                            catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException)
                             {
                                 // We can't be sure this hasn't already run... 
                                 return new Tuple<string, bool>(accountNumber, false);
@@ -321,7 +321,7 @@ namespace RetailBank.AzureFunctionApp
                                 {
                                     await bankAccountEvents.AppendEvent(evNewLimit, balance.CurrentSequenceNumber);
                                 }
-                                catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException exWrite)
+                                catch (EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions.EventStreamWriteException)
                                 {
                                     success = false;
                                 }
