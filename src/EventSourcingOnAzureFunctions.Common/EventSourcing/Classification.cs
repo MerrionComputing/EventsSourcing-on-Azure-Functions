@@ -1,5 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using EventSourcingOnAzureFunctions.Common.Notification;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -19,6 +20,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         private readonly IEventStreamSettings _settings = null;
         private readonly IClassificationProcessor _classificationProcessor = null;
+        private readonly INotificationDispatcher _notificationDispatcher = null;
 
 
 
@@ -102,7 +104,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         {
             if (null != _classificationProcessor )
             {
-                return await _classificationProcessor.Classify<TClassification>(asOfDate);
+                ClassificationResponse ret=  await _classificationProcessor.Classify<TClassification>(asOfDate);
+                if (null != _notificationDispatcher )
+                {
+                    await _notificationDispatcher.ClassificationCompleted(this,
+                        ClassifierTypeName,
+                        _classificationProcessor.Parameters,
+                        ret.AsOfSequence ,
+                        asOfDate,
+                        ret);
+                }
+                return ret;
             }
             else
             {
@@ -138,7 +150,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// The attribute describing which projection to run
         /// </param>
         public Classification(ClassificationAttribute attribute,
-            IEventStreamSettings settings = null)
+            IEventStreamSettings settings = null,
+            INotificationDispatcher dispatcher = null)
         {
 
             _domainName = attribute.DomainName;
@@ -163,6 +176,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 _classificationProcessor = _settings.CreateClassificationProcessorForEventStream(attribute);
             }
 
+            if (null == dispatcher)
+            {
+                // Create a new dispatcher 
+                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatcher;
+            }
+            else
+            {
+                _notificationDispatcher = dispatcher;
+            }
         }
     }
 
@@ -213,13 +235,66 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        private  readonly bool _wasEverIncluded = false;
+        /// <summary>
+        /// Was this entity ever included according to this classifier
+        /// </summary>
+        public bool WasEverIncluded
+        {
+            get
+            {
+                return _wasEverIncluded;
+            }
+        }
+
+        private readonly bool _wasEverExcluded = false;
+        /// <summary>
+        /// Was this entity ever excluded according to this classifier
+        /// </summary>
+        public bool WasEverExcluded
+        {
+            get
+            {
+                return _wasEverExcluded;
+            }
+        }
+
+        private readonly Dictionary<string, object> _parameters = new Dictionary<string, object>();
+        public Dictionary<string, object> Parameters
+        {
+            get
+            {
+                return _parameters;
+            }
+        }
 
         public ClassificationResponse(ClassificationResults result,
-            int asofSequence)
+            int asofSequence,
+            bool wasEverIncluded,
+            bool wasEverExcluded,
+            Dictionary<string, object> parameters = null)
         {
 
             _result = result;
             _asOfSequence = asofSequence;
+
+            _wasEverIncluded = wasEverIncluded;
+            _wasEverExcluded = WasEverIncluded;
+
+            if (_result == ClassificationResults.Include )
+            {
+                _wasEverIncluded = true;
+            }
+
+            if (_result == ClassificationResults.Exclude )
+            {
+                _wasEverExcluded = true;
+            }
+
+            if (null != parameters )
+            {
+                _parameters = parameters;
+            }
         }
     }
 }

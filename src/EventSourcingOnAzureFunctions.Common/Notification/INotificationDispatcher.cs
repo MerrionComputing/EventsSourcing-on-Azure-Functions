@@ -87,6 +87,34 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             string commentary = @"");
 
 
-        // TODO: Task ClassificationCompleted();
+        /// <summary>
+        /// A classification completed
+        /// </summary>
+        /// <param name="targetEntity">
+        /// The entity over which the classification process was run
+        /// </param>
+        /// <param name="classificationType">
+        /// The type of the classification
+        /// </param>
+        /// <param name="parameters">
+        /// Any additional parameters used when processing the classification
+        /// </param>
+        /// <param name="asOfSequenceNumber">
+        /// The sequence number of the last event read in processing the classification
+        /// </param>
+        /// <param name="asOfDate">
+        /// The as-of date up to which the classification was ran
+        /// </param>
+        /// <param name="commentary">
+        /// (Optional) Additional commentary to pass with the notification
+        /// </param>
+        Task ClassificationCompleted(IEventStreamIdentity targetEntity,
+            string classificationType,
+            Dictionary<string, object> parameters,
+            int asOfSequenceNumber,
+            Nullable<DateTime> asOfDate,
+            ClassificationResponse response,
+            string commentary = @"");
+
     }
 }

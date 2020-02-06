@@ -17,6 +17,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     public class NullNotificationDispatcher
         : INotificationDispatcher
     {
+
+
         public Task NewEntityCreated(IEventStreamIdentity newEntity,
             string commentary=@"",
             IWriteContext context = null)
@@ -41,6 +43,18 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             int asOfSequenceNumber, 
             DateTime? asOfDate, 
             object currentValue, 
+            string commentary = "")
+        {
+            // do nothing
+            return Task.CompletedTask;
+        }
+
+        public Task ClassificationCompleted(IEventStreamIdentity targetEntity, 
+            string classificationType, 
+            Dictionary<string, object> parameters, 
+            int asOfSequenceNumber, 
+            DateTime? asOfDate, 
+            ClassificationResponse response, 
             string commentary = "")
         {
             // do nothing

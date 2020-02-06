@@ -6,6 +6,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
 {
     public interface IClassificationProcessor
     {
+        
 
         /// <summary>
         /// Does the event stream over which this projection is slated to run exist
@@ -23,6 +24,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// The value to assign to the named parameter
         /// </param>
         void SetParameter(string parameterName, object parameterValue);
+
+        /// <summary>
+        /// Get the name-value set of patameters for this classifier
+        /// </summary>
+        Dictionary<string, object> Parameters { get; }
+
 
         /// <summary>
         /// Run the given classification over the underlying event stream

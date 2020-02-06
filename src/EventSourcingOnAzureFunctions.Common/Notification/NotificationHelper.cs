@@ -284,6 +284,74 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             }
         }
 
+
+        /// <summary>
+        /// A classification completed
+        /// </summary>
+        /// <param name="targetEntity">
+        /// The entity over which the classification process was run
+        /// </param>
+        /// <param name="classificationType">
+        /// The type of the classification
+        /// </param>
+        /// <param name="parameters">
+        /// Any additional parameters used when processing the classification
+        /// </param>
+        /// <param name="asOfSequenceNumber">
+        /// The sequence number of the last event read in processing the classification
+        /// </param>
+        /// <param name="asOfDate">
+        /// The as-of date up to which the classification was ran
+        /// </param>
+        /// <param name="commentary">
+        /// (Optional) Additional commentary to pass with the notification
+        /// </param>
+        public async Task ClassificationCompleted(IEventStreamIdentity targetEntity, 
+            string classificationType, 
+            Dictionary<string, object> parameters, 
+            int asOfSequenceNumber, 
+            DateTime? asOfDate, 
+            ClassificationResponse response, 
+            string commentary = "")
+        {
+            if (this._options.Value.RaiseClassificationCompletedNotification )
+            {
+                //  Create the notification
+                ClassificationCompleteEventGridPayload payload = ClassificationCompleteEventGridPayload.Create(
+                    targetEntity,
+                    classificationType,
+                    asOfSequenceNumber,
+                    asOfDate,
+                    response,
+                    commentary
+                    );
+
+
+                // Create an event grid message to send
+                EventGridEvent[] message = new EventGridEvent[]
+                {
+                    new EventGridEvent()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EventType = ClassificationCompleteEventGridPayload.MakeEventTypeName(targetEntity, classificationType  )   ,
+                        Subject = MakeEventGridSubject(targetEntity, classificationType ) ,
+                        DataVersion = NewEventEventGridPayload.DATA_VERSION ,
+                        Data = payload,
+                        EventTime = DateTime.UtcNow
+                    }
+                };
+
+                // Send it off asynchronously
+                await SendNotificationAsync(message);
+            }
+            else
+            {
+                // Nothing to do as config doesn't want notifications sent out for 
+                // classification completion
+                return;
+            }
+        }
+
         /// <summary>
         /// Turn an entity identifier into an eventgrid message subject
         /// </summary>

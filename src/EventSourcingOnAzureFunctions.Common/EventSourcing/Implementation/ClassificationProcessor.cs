@@ -19,6 +19,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             TClassification classificationToRun = new TClassification();
             ClassificationResponse.ClassificationResults ret = ClassificationResponse.ClassificationResults.Unchanged;
 
+            bool wasEverIncluded = false;
+            bool wasEverExcluded = false;
+
             if (null != eventStreamReader)
             {
                 foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext(effectiveDateTime: asOfDate))
@@ -34,6 +37,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
                         {
                             // The classification state changed so store it as the current result
                             ret = stepResult;
+                            if (ret == ClassificationResponse.ClassificationResults.Include )
+                            {
+                                wasEverIncluded = true;
+                            }
+                            if (ret == ClassificationResponse.ClassificationResults.Exclude )
+                            {
+                                wasEverIncluded = true;
+                            }
                         }
                     }
 
@@ -42,7 +53,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
                 }
             }
 
-            return new ClassificationResponse(ret, classificationToRun.CurrentSequenceNumber ) ;
+            
+
+            return new ClassificationResponse(ret, 
+                classificationToRun.CurrentSequenceNumber,
+                wasEverIncluded ,
+                wasEverExcluded,
+                Parameters ) ;
+
         }
 
         /// <summary>
@@ -71,7 +89,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
         }
 
 
-        private readonly Dictionary<string, object> _parameters = new Dictionary<string, object>();  
+        private readonly Dictionary<string, object> _parameters = new Dictionary<string, object>();
+
+        /// <summary>
+        /// The set of name-value parameters set fot the classification
+        /// </summary>
+        public Dictionary<string, object> Parameters
+        {
+            get
+            {
+                return _parameters;
+            }
+        }
+
         public void SetParameter(string parameterName, object parameterValue)
         {
             if (!_parameters.ContainsKey(parameterName))
