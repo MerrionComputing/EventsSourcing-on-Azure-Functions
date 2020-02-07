@@ -79,6 +79,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         {
         }
 
+        
 
         public static ProjectionCompleteEventGridPayload Create(IEventStreamIdentity targetEntity,
             string projectionType,

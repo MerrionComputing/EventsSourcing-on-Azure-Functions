@@ -66,6 +66,23 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         [JsonProperty(PropertyName = "commentary")]
         public string Commentary { get; set; }
 
+        /// <summary>
+        /// The current result of the classification 
+        /// </summary>
+        [JsonProperty(PropertyName = "result")]
+        public ClassificationResponse.ClassificationResults Result { get; set; }
+
+        /// <summary>
+        /// Was this entity ever included according to the classifier
+        /// </summary>
+        [JsonProperty(PropertyName = "wasEverIncluded")]
+        public bool WasEverIncluded { get; set; }
+
+        /// <summary>
+        /// Was this entity ever excluded according to the classifier
+        /// </summary>
+        [JsonProperty(PropertyName = "wasEverExcluded")]
+        public bool WasEverExcluded { get; set; }
 
         /// <summary>
         /// Empty constructor for serialisation
@@ -79,10 +96,50 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             string classificationType, 
             int asOfSequenceNumber, 
             DateTime? asOfDate, 
-            ClassificationResponse response, 
-            string commentary)
+            ClassificationResponse response,
+            string notificationId = @"",
+            string commentary = @"")
         {
-            throw new NotImplementedException();
+            if (null == targetEntity)
+            {
+                throw new ArgumentNullException(nameof(targetEntity));
+            }
+
+            if (string.IsNullOrWhiteSpace(classificationType))
+            {
+                throw new ArgumentNullException(nameof(classificationType));
+            }
+
+            // Default the notification id if not are provided
+            if (string.IsNullOrEmpty(notificationId))
+            {
+                notificationId = Guid.NewGuid().ToString("N");
+            }
+
+            ClassificationCompleteEventGridPayload ret=  new ClassificationCompleteEventGridPayload()
+            {
+                DomainName = targetEntity.DomainName,
+                EntityTypeName = targetEntity.EntityTypeName,
+                InstanceKey = targetEntity.InstanceKey,
+                NotificationId = notificationId,
+                Commentary = commentary,
+                ClassificationTypeName = classificationType ,
+                SequenceNumber = asOfSequenceNumber
+            };
+
+            if (asOfDate.HasValue)
+            {
+                ret.AsOfDate = asOfDate;
+            }
+
+            if (null != response)
+            {
+                ret.Result  = response.Result ;
+                ret.WasEverExcluded = response.WasEverExcluded;
+                ret.WasEverIncluded = response.WasEverIncluded;
+            }
+
+            return ret;
         }
 
         public static string MakeEventTypeName(IEventStreamIdentity targetEntity, 
