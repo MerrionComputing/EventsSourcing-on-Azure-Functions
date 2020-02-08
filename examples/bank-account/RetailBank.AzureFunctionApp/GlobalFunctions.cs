@@ -26,9 +26,7 @@ namespace RetailBank.AzureFunctionApp
         {
             if (null != eventGridEvent)
             {
-                log.LogInformation($"{eventGridEvent.Subject}");
-                log.LogInformation($"{eventGridEvent.Topic}");
-                log.LogInformation($"{eventGridEvent.EventType}");
+                log.LogInformation($"{eventGridEvent.EventType} :: {eventGridEvent.Subject}");
                 log.LogInformation(eventGridEvent.Data.ToString());
             }
             else
