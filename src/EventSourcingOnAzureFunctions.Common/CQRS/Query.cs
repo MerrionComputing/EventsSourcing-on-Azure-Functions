@@ -240,10 +240,11 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         {
             Guid correlationId = Guid.NewGuid();
 
-            EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
-                QueryName,
-                UniqueIdentifier),
-                context: _queryContext);
+            EventStream esQry = new EventStream(new EventStreamAttribute(
+                       MakeDomainQueryName(DomainName),
+                       QueryName,
+                       UniqueIdentifier),
+                       context: _queryContext);
 
             ProjectionRequested evPrj = new ProjectionRequested()
             { 
@@ -257,7 +258,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             };
 
             await esQry.AppendEvent(evPrj);
-            
         }
 
         public async Task PostProjectionResponse(string domainName,

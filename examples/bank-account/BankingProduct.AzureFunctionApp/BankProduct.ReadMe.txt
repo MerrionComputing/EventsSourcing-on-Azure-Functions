@@ -1,0 +1,6 @@
+﻿Banking Product
+===============
+
+Domain for dealing with a banking products - this is to show an example of inter-domain (DDD)
+communication and may not be how a real world bank would choose to organise its domains.
+
