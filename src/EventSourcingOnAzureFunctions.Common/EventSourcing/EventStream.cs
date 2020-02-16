@@ -148,6 +148,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        /// <summary>
+        /// Delete this event stream instance
+        /// </summary>
+        /// <remarks>
+        /// This is included for short-lived entities (like commands, queries, sagas) but is 
+        /// not a good idea for real business entities.
+        /// </remarks>
+        public void DeleteStream()
+        {
+            if (null != _writer )
+            {
+                _writer.DeleteStream(); 
+            }
+        }
 
         public override string ToString()
         {

@@ -43,5 +43,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <returns></returns>
         Task<bool> Exists();
 
+
+        /// <summary>
+        /// Delete the underlying event stream of this event stream identity
+        /// </summary>
+        void DeleteStream();
     }
 }

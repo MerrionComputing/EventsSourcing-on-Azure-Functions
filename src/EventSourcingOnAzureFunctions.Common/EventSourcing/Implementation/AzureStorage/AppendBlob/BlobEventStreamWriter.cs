@@ -197,6 +197,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             _writerContext = writerContext;
         }
 
+        /// <summary>
+        /// Delete the blob file containing the event stream
+        /// </summary>
+        public void DeleteStream()
+        {
+            if (null != EventStreamBlob)
+            {
+                EventStreamBlob.Delete(Microsoft.Azure.Storage.Blob.DeleteSnapshotsOption.IncludeSnapshots);
+            }
+        }
+
         public BlobEventStreamWriter(IEventStreamIdentity identity,
             string connectionStringName = @"")
            : base(identity,

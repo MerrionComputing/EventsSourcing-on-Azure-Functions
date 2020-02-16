@@ -106,6 +106,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public string Context { get; set; }
 
         /// <summary>
+        /// This flag is set to indicate that an event stream is being deleted
+        /// </summary>
+        public bool Deleting { get; set; }
+
+        /// <summary>
         /// The special concurrency protection tag used to make sure no update has occured since the last read
         /// </summary>
         public string ETag { get ; set; }
@@ -135,6 +140,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     InstanceKey = properties[nameof(InstanceKey)].StringValue;
                 }
+                if (properties.ContainsKey(nameof(Deleting )))
+                {
+                    Deleting = properties[nameof(Deleting )].BooleanValue.GetValueOrDefault(false) ;
+                }
             }
         }
 
@@ -147,6 +156,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             ret.Add(nameof(DomainName), EntityProperty.GeneratePropertyForString(DomainName));
             ret.Add(nameof(EntityTypeName), EntityProperty.GeneratePropertyForString(EntityTypeName));
             ret.Add(nameof(InstanceKey), EntityProperty.GeneratePropertyForString(InstanceKey));
+            ret.Add(nameof(Deleting), EntityProperty.GeneratePropertyForBool(Deleting));
             return ret;
         }
 

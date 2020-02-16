@@ -168,12 +168,146 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             if (null != streamFooter)
             {
+                if (streamFooter.Deleting )
+                {
+                    // Do not allow a write to an event stream that is being deleted
+                    throw new EventStreamWriteException(this, 
+                        streamFooter.LastSequence,
+                        message: "Unable to write to this event stream as it is being deleted",
+                        source: "Table Event Stream Writer");
+                }
                 return streamFooter.LastSequence;
             }
             else
             {
                 return 1;
             }
+        }
+
+
+        /// <summary>
+        /// Delete all the records in the table linked to this event stream
+        /// </summary>
+        public void DeleteStream()
+        {
+            // 1- mark the stream footer as "Deleting"
+            bool recordUpdated = false;
+            int tries = 0;
+
+            TableEntityKeyRecord streamFooter = null;
+
+            while (!recordUpdated)
+            {
+                tries += 1;
+                // read in the a [TableEntityKeyRecord]
+
+                streamFooter = (TableEntityKeyRecord)Table.Execute(
+                    TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0)),
+                    operationContext: GetDefaultOperationContext()).Result;
+
+                if (null == streamFooter)
+                {
+                    streamFooter = new TableEntityKeyRecord(this);
+                }
+                streamFooter.Deleting = true;
+
+                string lastETag = streamFooter.ETag;
+
+                try
+                {
+                    TableResult tres = Table.Execute(TableOperation.InsertOrReplace(streamFooter),
+                          null,
+                          new OperationContext
+                          {
+                              UserHeaders = new Dictionary<String, String>
+                              {
+                              { "If-Match", lastETag }
+                              }
+                          });
+
+                    if (tres.HttpStatusCode == 204)
+                    {
+                        recordUpdated = true;
+                    }
+                }
+                catch (Microsoft.Azure.Cosmos.Table.StorageException sEx)
+                {
+                    if (sEx.RequestInformation.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)
+                    {
+                        // Precondition Failed - could not update the footer due to a concurrency error
+                        recordUpdated = false;
+                        // Wait a random-ish amount of time
+                        int delayMilliseconds = 13 * new Random().Next(10, 100);
+                        System.Threading.Thread.Sleep(delayMilliseconds);
+                    }
+                    else
+                    {
+                        throw new EventStreamWriteException(this, streamFooter.LastSequence,
+                                                message: "Unable to set the Deleting flag stream sequence number due to storage error",
+                                                source: "Table Event Stream Writer",
+                                                innerException: sEx);
+                    }
+                }
+
+                if (tries > 500)
+                {
+                    // catastrophic deadlock
+                    throw new EventStreamWriteException(this, streamFooter.LastSequence,
+                        message: "Unable to set the Deleting flag number due to deadlock",
+                        source: "Table Event Stream Writer");
+                }
+            }
+
+            // 2- delete the actual stream records in reverse order
+            if (Table != null)
+            {
+                // We need a continuation token as this is done in batches of 100...
+                TableContinuationToken token = new TableContinuationToken();
+
+                TableQuery getEventsToDeleteQuery = DeleteRowsQuery();
+
+                //TableOperation.Delete();
+                do
+                {
+                    // create the query to be executed..
+                    var segment = Table.ExecuteQuerySegmented(getEventsToDeleteQuery,
+                         token,
+                         requestOptions: new TableRequestOptions()
+                         {
+                             PayloadFormat = TablePayloadFormat.Json,
+                             TableQueryMaxItemCount = MAX_BATCH_SIZE
+                         },
+                         operationContext: GetDefaultOperationContext());
+
+                    TableBatchOperation deleteBatch = new TableBatchOperation();
+
+                    foreach (DynamicTableEntity dteRow in segment)
+                    {
+                        deleteBatch.Add(TableOperation.Delete(dteRow));
+                    }
+                    Table.ExecuteBatch(deleteBatch);
+
+                    // update the continuation token to get the next chunk of records
+                    token = segment.ContinuationToken;
+
+                } while (null != token);
+
+
+            }
+        }
+
+        /// <summary>
+        /// Create a query to get the events 
+        /// for an instance key to delete them
+        /// </summary>
+        private TableQuery DeleteRowsQuery()
+        {
+            return new TableQuery()
+                .Where(
+                    TableQuery.GenerateFilterCondition("PartitionKey",
+                          QueryComparisons.Equal,
+                          InstanceKey)
+                    );
         }
 
         private IWriteContext _writerContext;
@@ -273,7 +407,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     Permissions =
                     SharedAccessTablePermissions.Add |
                     SharedAccessTablePermissions.Query |
-                    SharedAccessTablePermissions.Update
+                    SharedAccessTablePermissions.Update 
                 };
             }
         }
@@ -293,6 +427,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     | SharedAccessAccountPermissions.Update
                     | SharedAccessAccountPermissions.Write
                     | SharedAccessAccountPermissions.List
+                    | SharedAccessAccountPermissions.Delete 
 
                     ,
                     ResourceTypes = SharedAccessAccountResourceTypes.Object,
@@ -376,9 +511,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             return new EntityProperty(pi.GetValue(eventPayload, null).ToString());
         }
-
-
-
 
 
     }

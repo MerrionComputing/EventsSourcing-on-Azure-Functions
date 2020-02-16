@@ -100,6 +100,48 @@ namespace RetailBank.AzureFunctionApp
             }
         }
 
+        //DeleteAccount...
+        [FunctionName("DeleteAccount")]
+        public static async Task<HttpResponseMessage> DeleteAccountRun(
+                      [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"DeleteAccount/{accountnumber}")]HttpRequestMessage req,
+                      string accountnumber,
+                      [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
+        {
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
+            if (!await bankAccountEvents.Exists())
+            {
+                return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.Forbidden,
+                    FunctionResponse.CreateResponse(startTime,
+                    true,
+                    $"Cannot delete account {accountnumber} as it does not exist"),
+                    FunctionResponse.MEDIA_TYPE);
+            }
+            else
+            {
+                try
+                {
+                    bankAccountEvents.DeleteStream(); 
+                }
+                catch (EventStreamWriteException exWrite)
+                {
+                    return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.Conflict,
+                        FunctionResponse.CreateResponse(startTime,
+                        true,
+                        $"Account {accountnumber} had a conflict error on deletion {exWrite.Message }"),
+                        FunctionResponse.MEDIA_TYPE);
+                }
+
+                return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.Created,
+                FunctionResponse.CreateResponse(startTime,
+                false,
+                $"Account { accountnumber} deleted"),
+                FunctionResponse.MEDIA_TYPE);
+
+            }
+        }
+
         /// <summary>
         /// Get the current balance of a bank account
         /// </summary>
