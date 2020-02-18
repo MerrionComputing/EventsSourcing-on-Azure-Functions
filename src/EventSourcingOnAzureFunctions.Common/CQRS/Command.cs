@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.CQRS.Common.Events;
@@ -149,6 +150,40 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
             // If no parameters found default to an empty list
             return new Dictionary<string, object>(); 
+        }
+
+
+        /// <summary>
+        /// Get the current execution state of this command
+        /// </summary>
+        /// <remarks>
+        /// This can be used to decide whether to retry a failed command or 
+        /// to perform post-completion processing etc.
+        /// </remarks>
+        public async Task<CommandExecutionState> GetExecutionState()
+        {
+            Projection prjCmdState = new Projection(
+                new ProjectionAttribute(MakeDomainCommandName(DomainName),
+                CommandName,
+                UniqueIdentifier,
+                nameof(CommandHandler.Projections.ExecutionState)));
+
+            if (null != prjCmdState)
+            {
+                var stateProjection=  await prjCmdState.Process<ExecutionState>();  
+                if (null != stateProjection )
+                {
+                    return new CommandExecutionState()
+                    {
+                        CurrentStatus = stateProjection.CurrentStatus,
+                        AsOfSequenceNumber = stateProjection.CurrentSequenceNumber,
+                        Message = stateProjection.Message
+                    };
+                }
+            }
+
+            // State cannot be retrieved
+            return null;
         }
 
         /// <summary>
