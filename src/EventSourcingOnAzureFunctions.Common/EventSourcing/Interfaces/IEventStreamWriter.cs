@@ -48,5 +48,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// Delete the underlying event stream of this event stream identity
         /// </summary>
         void DeleteStream();
+
+        /// <summary>
+        /// Write an index card record to be used to be used rapidly to look up the
+        /// full set of event streams of this type
+        /// </summary>
+        Task WriteIndex();
     }
 }

@@ -512,6 +512,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             return new EntityProperty(pi.GetValue(eventPayload, null).ToString());
         }
 
+        /// <summary>
+        /// Write (or overwrite) an INDEX-CARD row for this entity
+        /// </summary>
+        public async Task WriteIndex()
+        {
+            // Make an index card record
+            TableEntityIndexCardRecord indexCard = new TableEntityIndexCardRecord()
+            {
+            DomainName = this.DomainName ,
+            EntityTypeName = this.EntityTypeName ,
+            InstanceKey = this.InstanceKey 
+            };
 
+            TableResult tres = await Table.ExecuteAsync(TableOperation.InsertOrReplace(indexCard));
+
+        }
     }
 }

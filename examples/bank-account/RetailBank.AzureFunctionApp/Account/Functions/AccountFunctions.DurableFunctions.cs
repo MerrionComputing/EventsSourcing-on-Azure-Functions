@@ -1,21 +1,19 @@
 ﻿
 
 using EventSourcingOnAzureFunctions.Common.Binding;
-using EventSourcingOnAzureFunctions.Common.EventSourcing;
-
-using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-
-using Microsoft.Azure.WebJobs;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using RetailBank.AzureFunctionApp.Account.Projections;
-using RetailBank.AzureFunctionApp.Account.Classifications;
-using System;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using System.Net.Http;
 using EventSourcingOnAzureFunctions.Common.CQRS;
+using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using RetailBank.AzureFunctionApp.Account.Classifications;
 using RetailBank.AzureFunctionApp.Account.Events;
+using RetailBank.AzureFunctionApp.Account.Projections;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace RetailBank.AzureFunctionApp
 {
@@ -36,10 +34,8 @@ namespace RetailBank.AzureFunctionApp
             [Classification("Bank", "Account", "ALL", @"")] Classification clsAllAccounts
              )
         {
-            // Get all the account numbers
-            IEnumerable<string> allAccounts = await clsAllAccounts.GetAllInstanceKeys();
 
-            await accrueInterestOrchestration.StartNewAsync(nameof(AccrueInterestForAllAccounts), allAccounts);
+            await accrueInterestOrchestration.StartNewAsync(nameof(AccrueInterestForAllAccounts));
         }
 
         // Accrue Interest For All Accounts
@@ -48,7 +44,7 @@ namespace RetailBank.AzureFunctionApp
             ([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
 
-            IEnumerable<string> allAccounts = context.GetInput<IEnumerable<string>>();
+            IEnumerable<string> allAccounts = await context.CallActivityAsync<IEnumerable<string>>(nameof(ListAllBankAccounts), null);
 
             if (null != allAccounts)
             {
@@ -79,6 +75,17 @@ namespace RetailBank.AzureFunctionApp
 
             }
 
+        }
+
+        // List all accounts
+        [FunctionName(nameof(ListAllBankAccounts))]
+        public static async Task<IEnumerable<string>> ListAllBankAccounts(
+            [ActivityTrigger] IDurableActivityContext listAccountsContext,
+            [Classification("Bank", "Account", "ALL", @"")] Classification clsAllAccounts)
+        {
+            Nullable<DateTime> asOfDate = listAccountsContext.GetInput<Nullable<DateTime>>();
+
+            return await clsAllAccounts.GetAllInstanceKeys(asOfDate);
         }
 
         //AccrueInterestForSpecificAccount
@@ -150,17 +157,11 @@ namespace RetailBank.AzureFunctionApp
         [FunctionName(nameof(ApplyInterestForAllAccountsTrigger))]
         public static async Task ApplyInterestForAllAccountsTrigger(
             [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"ApplyInterestForAllAccounts")]HttpRequestMessage req,
-            [DurableClient] IDurableOrchestrationClient accrueInterestOrchestration,
-            [Classification("Bank", "Account", "ALL", @"")] Classification clsAllAccounts)
+            [DurableClient] IDurableOrchestrationClient accrueInterestOrchestration)
         {
 
             // Get all the account numbers
             IEnumerable<string> allAccounts = await req.Content.ReadAsAsync<IEnumerable<string>>();
-            if ( (null == allAccounts) || (allAccounts.Count() == 0) )
-            {
-                // If no account list passed it, get all the accounts
-                allAccounts = await clsAllAccounts.GetAllInstanceKeys();
-            }
 
             await accrueInterestOrchestration.StartNewAsync(nameof(ApplyInterestForAllAccounts), allAccounts);
 
@@ -178,6 +179,12 @@ namespace RetailBank.AzureFunctionApp
         {
 
             IEnumerable<string> allAccounts = context.GetInput<IEnumerable<string>>();
+
+            if ((null == allAccounts) || (allAccounts.Count() == 0))
+            {
+                // If no accounst were specified, do them all
+                allAccounts = await context.CallActivityAsync<IEnumerable<string>>(nameof(ListAllBankAccounts), null);
+            }
 
             if (null != allAccounts)
             {
@@ -202,29 +209,29 @@ namespace RetailBank.AzureFunctionApp
         /// to apply interest to one account
         /// </param>
         /// <returns></returns>
-        [FunctionName(nameof(ApplyInterestForSpecificAccount)) ]
+        [FunctionName(nameof(ApplyInterestForSpecificAccount))]
         public static async Task ApplyInterestForSpecificAccount(
           [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
 
             string accountNumber = context.GetInput<string>();
-            
-            if (! string.IsNullOrEmpty(accountNumber ) )
+
+            if (!string.IsNullOrEmpty(accountNumber))
             {
-                Tuple<string, bool>  overdraftTask = await context.CallActivityAsync<Tuple<string, bool>>
+                Tuple<string, bool> overdraftTask = await context.CallActivityAsync<Tuple<string, bool>>
                                    (nameof(SetOverdraftForInterestForSpecificAccount), accountNumber); ;
 
-                if (overdraftTask.Item2 )
+                if (overdraftTask.Item2)
                 {
                     // ok to pay the interest
-                    await context.CallActivityAsync(nameof(PayInterestForSpecificAccount), accountNumber );
+                    await context.CallActivityAsync(nameof(PayInterestForSpecificAccount), accountNumber);
                 }
             }
 
         }
 
         [FunctionName(nameof(SetOverdraftForInterestForSpecificAccount))]
-        public static async Task<Tuple<string, bool >> SetOverdraftForInterestForSpecificAccount
+        public static async Task<Tuple<string, bool>> SetOverdraftForInterestForSpecificAccount
           ([ActivityTrigger] IDurableActivityContext interestOverdraftContext)
         {
 
@@ -234,7 +241,7 @@ namespace RetailBank.AzureFunctionApp
             Command cmdPayInterest = new Command(
                 new CommandAttribute("Bank",
                     "Pay Interest",
-                    interestOverdraftContext.InstanceId )
+                    interestOverdraftContext.InstanceId)
                 );
 
             if (!string.IsNullOrWhiteSpace(accountNumber))
@@ -242,10 +249,10 @@ namespace RetailBank.AzureFunctionApp
 
                 string result = "No overdraft required";
 
-                await cmdPayInterest.InitiateStep(AccountCommands.COMMAND_STEP_OVERDRAFT ,
+                await cmdPayInterest.InitiateStep(AccountCommands.COMMAND_STEP_OVERDRAFT,
                     "Bank",
                     "Account",
-                    accountNumber );
+                    accountNumber);
 
                 // run the "set overdraft limit for interest" function 
                 // 1- Get interest due...
@@ -415,5 +422,67 @@ namespace RetailBank.AzureFunctionApp
 
             }
         }
+
+
+        // 3- Utility functions
+        // Rebuild index cards
+        [FunctionName(nameof(RebuildAccountIndexesTrigger))]
+        public static async Task RebuildAccountIndexesTrigger(
+            [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"RebuildAccountIndexes")]HttpRequestMessage req,
+            [DurableClient] IDurableOrchestrationClient rebuildIndexesOrchestration)
+        {
+
+            await rebuildIndexesOrchestration.StartNewAsync(nameof(RebuildAccountIndexes), null);
+
+        }
+
+        //RebuildAccountIndexes
+        [FunctionName(nameof(RebuildAccountIndexes))]
+        public static async Task RebuildAccountIndexes(
+           [OrchestrationTrigger] IDurableOrchestrationContext context)
+        {
+
+            IEnumerable<string> allAccounts = context.GetInput<IEnumerable<string>>();
+
+            if ((null == allAccounts) || (allAccounts.Count() == 0))
+            {
+                // If no accounst were specified, do them all
+                allAccounts = await context.CallActivityAsync<IEnumerable<string>>(nameof(ListAllBankAccounts), null);
+            }
+
+            if (null != allAccounts)
+            {
+                var rebuildIndexTasks = new List<Task>();
+                foreach (string accountNumber in allAccounts)
+                {
+                    Task overdraftTask = context.CallSubOrchestratorAsync(nameof(RebuildAccountIndexForSpecificAccount),
+                        accountNumber);
+                    rebuildIndexTasks.Add(overdraftTask);
+                }
+                // Perform all the overdraft extension operations in parrallel
+                await Task.WhenAll(rebuildIndexTasks);
+            }
+        }
+
+        //RebuildAccountIndexForSpecificAccount
+        [FunctionName(nameof(RebuildAccountIndexForSpecificAccount))]
+        public static async Task RebuildAccountIndexForSpecificAccount
+          ([ActivityTrigger] IDurableActivityContext payInterestContext)
+        {
+            string accountNumber = payInterestContext.GetInput<string>();
+
+            if (!string.IsNullOrWhiteSpace(accountNumber))
+            {
+                EventStream esAccount = new EventStream(new EventStreamAttribute("Bank",
+                    "Account",
+                    accountNumber));
+
+                if (null != esAccount)
+                {
+                    await esAccount.WriteIndex(); 
+                }
+            }
+        }
+
     }
 }

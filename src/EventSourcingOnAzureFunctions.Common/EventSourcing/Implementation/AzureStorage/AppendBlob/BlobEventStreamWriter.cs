@@ -208,6 +208,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
+
+        public Task WriteIndex()
+        {
+            // Currently does not do anything, as the file system query is as fast as 
+            // it can be
+            return Task.CompletedTask;
+        }
+
         public BlobEventStreamWriter(IEventStreamIdentity identity,
             string connectionStringName = @"")
            : base(identity,

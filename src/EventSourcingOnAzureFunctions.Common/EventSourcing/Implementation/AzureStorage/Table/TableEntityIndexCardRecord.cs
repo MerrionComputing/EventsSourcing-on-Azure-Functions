@@ -7,14 +7,20 @@ using System.Collections.Generic;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table
 {
     /// <summary>
-    /// The lowest record in an event stream that holds the stream meta data
+    /// An index-card to allow rapid lookup of the entities in any domain/entity type
     /// </summary>
-    public sealed class TableEntityKeyRecord
+    /// <remarks>
+    /// This is only used to speed up "all entities" queries as a cross-partition query is
+    /// slower
+    /// </remarks>
+    public sealed class TableEntityIndexCardRecord
         : ITableEntity,
         IEventStreamIdentity
     {
 
-        private  string _domainName;
+        public const string INDEX_CARD_PARTITION = "INDEX-CARD";
+
+        private string _domainName;
         /// <summary>
         /// The domain in which this event stream is set
         /// </summary>
@@ -30,7 +36,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
-        private  string _entityTypeName;
+        private string _entityTypeName;
         /// <summary>
         /// The type of entity for which this event stream pertains
         /// </summary>
@@ -46,7 +52,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
-        private  string _instanceKey;
+        private string _instanceKey;
         /// <summary>
         /// The specific uniquely identitified instance of the entity to which this event stream pertains
         /// </summary>
@@ -67,11 +73,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             get
             {
-                return InstanceKey;
+                return INDEX_CARD_PARTITION;
             }
             set
             {
-                _instanceKey  = value;
+                if (!string.Equals(value, INDEX_CARD_PARTITION))
+                {
+                    throw new EventStreamReadException(this ,
+                        0,
+                        "Invalid index card record read");
+                }
             }
         }
 
@@ -80,56 +91,31 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             get
             {
-                return TableEventStreamBase.RECORDID_SEQUENCE;
+                return InstanceKey;
             }
             set
             {
-                if (!string.Equals(value, TableEventStreamBase.RECORDID_SEQUENCE ) )
-                {
-                   throw new EventStreamReadException(this,
-                       0, 
-                       "Invalid record sequence for key record");
-                }
+                _instanceKey = value;
             }
         }
 
-
+        /// <summary>
+        /// The time the record was last updated
+        /// </summary>
         public DateTimeOffset Timestamp { get; set; }
-
-        /// <summary>
-        /// The last sequence number for this event stream
-        /// </summary>
-        public int LastSequence { get; set; }
-
-        /// <summary>
-        /// Additional context information / commentary for this event stream
-        /// </summary>
-        public string Context { get; set; }
-
-        /// <summary>
-        /// This flag is set to indicate that an event stream is being deleted
-        /// </summary>
-        public bool Deleting { get; set; }
 
         /// <summary>
         /// The special concurrency protection tag used to make sure no update has occured since the last read
         /// </summary>
-        public string ETag { get ; set; }
+        public string ETag { get; set; }
+
 
         public void ReadEntity(IDictionary<string, EntityProperty> properties,
-            OperationContext operationContext)
+          OperationContext operationContext)
         {
-            if (null != properties )
+            if (null != properties)
             {
-                if (properties.ContainsKey(nameof(LastSequence)) )
-                {
-                    LastSequence = properties[nameof(LastSequence)].Int32Value.GetValueOrDefault(0);
-                }
-                if (properties.ContainsKey(nameof(Context )) )
-                {
-                    Context = properties[nameof(Context)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(DomainName) ))
+                if (properties.ContainsKey(nameof(DomainName)))
                 {
                     DomainName = properties[nameof(DomainName)].StringValue;
                 }
@@ -137,43 +123,22 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     EntityTypeName = properties[nameof(EntityTypeName)].StringValue;
                 }
-                if (properties.ContainsKey(nameof(InstanceKey )) )
+                if (properties.ContainsKey(nameof(InstanceKey)))
                 {
                     InstanceKey = properties[nameof(InstanceKey)].StringValue;
                 }
-                if (properties.ContainsKey(nameof(Deleting )))
-                {
-                    Deleting = properties[nameof(Deleting )].BooleanValue.GetValueOrDefault(false) ;
-                }
             }
         }
+
 
         public IDictionary<string, EntityProperty> WriteEntity(OperationContext operationContext)
         {
             IDictionary<string, EntityProperty> ret = new Dictionary<string, EntityProperty>();
             // Add the custom properties here
-            ret.Add(nameof(LastSequence), EntityProperty.GeneratePropertyForInt(LastSequence) );
-            ret.Add(nameof(Context), EntityProperty.GeneratePropertyForString(Context));
             ret.Add(nameof(DomainName), EntityProperty.GeneratePropertyForString(DomainName));
             ret.Add(nameof(EntityTypeName), EntityProperty.GeneratePropertyForString(EntityTypeName));
             ret.Add(nameof(InstanceKey), EntityProperty.GeneratePropertyForString(InstanceKey));
-            ret.Add(nameof(Deleting), EntityProperty.GeneratePropertyForBool(Deleting));
             return ret;
-        }
-
-
-        /// <summary>
-        /// Parameter-less constructor for serialisation
-        /// </summary>
-        public TableEntityKeyRecord()
-        {
-        }
-
-        public TableEntityKeyRecord(IEventStreamIdentity identity)
-        {
-            _domainName = identity.DomainName;
-            _entityTypeName = identity.EntityTypeName;
-            _instanceKey = identity.InstanceKey;
         }
     }
 }

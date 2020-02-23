@@ -163,6 +163,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        public async Task WriteIndex()
+        {
+            if (null != _writer )
+            {
+                await _writer.WriteIndex(); 
+            }
+        }
+
         public override string ToString()
         {
             return $"EventStream({DomainName}::{EntityTypeName }::{InstanceKey })";
