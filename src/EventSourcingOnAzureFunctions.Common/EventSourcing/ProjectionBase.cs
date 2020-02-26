@@ -68,13 +68,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
-        private string MakePropertyName(string propertyName, int rowNumber)
-        {
-            if ((rowNumber == ProjectionSnapshotProperty.NO_ROW_NUMBER))
-                return propertyName;
-            else
-                return propertyName + "(" + rowNumber.ToString() + ")";
-        }
 
         // Snapshots not implemented yet
         public bool SupportsSnapshots => false;

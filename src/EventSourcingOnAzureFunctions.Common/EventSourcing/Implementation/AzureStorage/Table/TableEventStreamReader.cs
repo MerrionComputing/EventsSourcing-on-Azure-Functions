@@ -253,9 +253,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             return new TableQuery()
                 .Where(
-                    TableQuery.GenerateFilterCondition("RowKey",
-                         QueryComparisons.GreaterThanOrEqual,
-                         SequenceNumberAsString(0)
+                    TableQuery.GenerateFilterCondition("PartitionKey",
+                         QueryComparisons.Equal,
+                         TableEntityIndexCardRecord.INDEX_CARD_PARTITION 
                     )
                 );
         }
@@ -314,12 +314,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 TableContinuationToken token = new TableContinuationToken();
 
-                TableQuery getEventsQuery = GetKeysQuery();
+                TableQuery getKeysQuery = GetKeysQuery();
 
                 do
                 {
                     // create the query to be executed..
-                    var segment = await Table.ExecuteQuerySegmentedAsync(getEventsQuery,
+                    var segment = await Table.ExecuteQuerySegmentedAsync(getKeysQuery,
                          token,
                          requestOptions: GetDefaultRequestOptions(),
                          operationContext: GetDefaultOperationContext());

@@ -455,7 +455,7 @@ namespace RetailBank.AzureFunctionApp
                 var rebuildIndexTasks = new List<Task>();
                 foreach (string accountNumber in allAccounts)
                 {
-                    Task overdraftTask = context.CallSubOrchestratorAsync(nameof(RebuildAccountIndexForSpecificAccount),
+                    Task overdraftTask = context.CallActivityAsync(nameof(RebuildAccountIndexForSpecificAccount),
                         accountNumber);
                     rebuildIndexTasks.Add(overdraftTask);
                 }
