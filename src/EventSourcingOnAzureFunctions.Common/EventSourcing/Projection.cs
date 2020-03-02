@@ -13,6 +13,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         private readonly IEventStreamSettings _settings = null;
         private readonly IProjectionProcessor _projectionProcessor = null;
         private readonly INotificationDispatcher _notificationDispatcher = null;
+        private readonly IProjectionSnapshotWriter _snapshortWriter = null;
+        private readonly IProjectionSnapshotReader _snapshotReader = null;
 
         private readonly string _domainName;
         /// <summary>
@@ -87,6 +89,26 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        /// <summary>
+        /// Save the current state of the projection as a snapshot
+        /// </summary>
+        /// <typeparam name="TProjection">
+        /// The type of the projection for which the snapshot is being taken
+        /// </typeparam>
+        /// <param name="snapshot">
+        /// The effective snapshot as of which the snapshot is being taken
+        /// </param>
+        /// <param name="state">
+        /// The state of the projection when snapshotted
+        /// </param>
+        public async Task WriteSnapshot<TProjection>(ISnapshot snapshot, TProjection state) where TProjection : IProjection
+        {
+            // If there is a snapshot writer, use it...
+            if (null != _snapshortWriter)
+            {
+                await _snapshortWriter.WriteSnapshot(snapshot, state); 
+            }
+        }
 
         private readonly string _connectionStringName;
         public string ConnectionStringName
@@ -98,6 +120,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         }
 
         /// <summary>
+        /// Does the underlying event stream for this projection exist ?
+        /// </summary>
+        public async Task<bool> Exists()
+        {
+            if (null != _projectionProcessor)
+            {
+                return await _projectionProcessor.Exists();
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Create the projection from the attribute linked to the function parameter
         /// </summary>
         /// <param name="attribute">
@@ -105,7 +139,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// </param>
         public Projection(ProjectionAttribute attribute,
             IEventStreamSettings settings = null,
-            INotificationDispatcher dispatcher = null)
+            INotificationDispatcher dispatcher = null,
+            IProjectionSnapshotReader snapshotReader = null,
+            IProjectionSnapshotWriter snapshotWriter = null)
         {
 
             _domainName = attribute.DomainName;
@@ -140,15 +176,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 _notificationDispatcher = dispatcher;
             }
 
+            if (null != snapshotReader )
+            {
+                _snapshotReader = snapshotReader;
+            }
+
+            if (null != snapshotWriter )
+            {
+                _snapshortWriter = snapshotWriter;
+            }
+
         }
 
-        public async Task<bool> Exists()
-        {
-            if (null != _projectionProcessor)
-            {
-                return await _projectionProcessor.Exists();
-            }
-            return false;
-        }
+
     }
 }

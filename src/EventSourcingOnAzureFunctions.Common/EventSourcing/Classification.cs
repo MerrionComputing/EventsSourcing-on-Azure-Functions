@@ -21,9 +21,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         private readonly IEventStreamSettings _settings = null;
         private readonly IClassificationProcessor _classificationProcessor = null;
         private readonly INotificationDispatcher _notificationDispatcher = null;
-
-
-
+        private readonly IClassificationSnapshotReader _snapshotReader = null;
+        private readonly IClassificationSnapshotWriter _snapshotWriter = null;
+               
         private readonly string _domainName;
         /// <summary>
         /// The domain in which the event stream the classifier will run over is located
@@ -151,7 +151,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// </param>
         public Classification(ClassificationAttribute attribute,
             IEventStreamSettings settings = null,
-            INotificationDispatcher dispatcher = null)
+            INotificationDispatcher dispatcher = null,
+            IClassificationSnapshotReader snapshotReader = null,
+            IClassificationSnapshotWriter snapshotWriter = null)
         {
 
             _domainName = attribute.DomainName;
@@ -184,6 +186,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             else
             {
                 _notificationDispatcher = dispatcher;
+            }
+
+            if (null != snapshotReader )
+            {
+                _snapshotReader = snapshotReader;
+            }
+
+            if (null != snapshotWriter )
+            {
+                _snapshotWriter = snapshotWriter;
             }
         }
     }
