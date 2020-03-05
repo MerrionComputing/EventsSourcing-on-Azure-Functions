@@ -50,6 +50,9 @@ namespace RetailBank.AzureFunctionApp
         }
 
 
+        /// <summary>
+        /// This function is used by SignalR clients looking to connect
+        /// </summary>
         [FunctionName("negotiate")]
         public static SignalRConnectionInfo Negotiate(
                [HttpTrigger(AuthorizationLevel.Anonymous)]HttpRequest req,

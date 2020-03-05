@@ -291,7 +291,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             _asOfSequence = asofSequence;
 
             _wasEverIncluded = wasEverIncluded;
-            _wasEverExcluded = WasEverIncluded;
+            _wasEverExcluded = wasEverExcluded;
 
             if (_result == ClassificationResults.Include )
             {

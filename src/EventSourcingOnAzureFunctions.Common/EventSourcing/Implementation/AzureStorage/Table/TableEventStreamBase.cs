@@ -26,7 +26,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         #endregion
 
 
-        public const string RECORDID_SEQUENCE = "0000000000"; // To fint maxint32 = 2147483647
+        public const string RECORDID_SEQUENCE = "0000000000"; // To fit maxint32 = 2147483647
 
 
         public const int MAX_FREE_DATA_FIELDS = 240;
@@ -219,7 +219,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             OperationContext ret = new OperationContext();
             // Debugging requests sent
-            ret.SendingRequest += DebugSendingRequest;
+            // ret.SendingRequest += DebugSendingRequest;
             return ret;
         }
 

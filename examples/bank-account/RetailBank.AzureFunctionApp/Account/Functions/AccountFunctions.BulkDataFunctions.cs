@@ -11,11 +11,14 @@ using System.Threading.Tasks;
 
 namespace RetailBank.AzureFunctionApp
 {
+
+#if BULK_LOAD
     /// <summary>
     /// Functions that perform bulk operations from files
     /// </summary>
     public partial class AccountFunctions
     {
+
 
 
         // Bulk load new accounts from the folder bank/onboarding
@@ -113,4 +116,7 @@ namespace RetailBank.AzureFunctionApp
             return Task<string>.FromResult($"{Convert.ToChar(rnd.Next(65, 90))}{Convert.ToChar(rnd.Next(65, 90))}-{datepart}-{Convert.ToChar(rnd.Next(65, 90))}{Convert.ToChar(rnd.Next(65, 90))}");
         }
     }
+
+#endif
+
 }
