@@ -119,9 +119,6 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <summary>
         /// A new entity was created - notify the world
         /// </summary>
-        /// <param name="hubName">
-        /// The name of the Event Grid hub to use to send out the notification
-        /// </param>
         /// <param name="newEntity">
         /// The new entity that has been created
         /// </param>
@@ -161,6 +158,49 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 return;
             }
         }
+
+        /// <summary>
+        /// An entity was deleyed - notify the world
+        /// </summary>
+        /// <param name="newEntity">
+        /// The new entity that has been created
+        /// </param>
+        public async Task ExistingEntityDeleted(IEventStreamIdentity deletedEntity, 
+            string commentary = "", 
+            IWriteContext context = null)
+        {
+            if (this._options.Value.RaiseEntityCreationNotification)
+            {
+
+                // Create the notification
+                DeletedEntityEventGridPayload payload = DeletedEntityEventGridPayload.Create(deletedEntity,
+                    commentary: commentary,
+                    context: context);
+
+                // Create an event grid message to send
+                EventGridEvent[] message = new EventGridEvent[]
+                {
+                    new EventGridEvent()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EventType = DeletedEntityEventGridPayload.MakeEventTypeName(deletedEntity ) ,
+                        Subject = MakeEventGridSubject(deletedEntity) ,
+                        DataVersion = DeletedEntityEventGridPayload.DATA_VERSION,
+                        Data = payload,
+                        EventTime = DateTime.UtcNow
+                    }
+                };
+
+                // Send it off asynchronously
+                await SendNotificationAsync(message);
+            }
+            else
+            {
+                // Nothing to do as config doesn't want notifications sent out for new entity creation
+                return;
+            }
+        }
+
 
         /// <summary>
         /// A new event was appended to an event stream - notify the world
@@ -429,7 +469,6 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 }
             }
         }
-
 
 
         internal class HttpRetryMessageHandler :

@@ -157,9 +157,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// </remarks>
         public void DeleteStream()
         {
-            if (null != _writer )
+            if (null != _writer)
             {
-                _writer.DeleteStream(); 
+                _writer.DeleteStream();
+                // Send a notificatioin that this has occured
+                if (null != this._notificationDispatcher)
+                {
+                    //await this._notificationDispatcher.
+
+                }
             }
         }
 

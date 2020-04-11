@@ -60,5 +60,13 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             // do nothing
             return Task.CompletedTask;
         }
+
+        public Task ExistingEntityDeleted(IEventStreamIdentity deletedEntity, 
+            string commentary = "", 
+            IWriteContext context = null)
+        {
+            // do nothing
+            return Task.CompletedTask;
+        }
     }
 }

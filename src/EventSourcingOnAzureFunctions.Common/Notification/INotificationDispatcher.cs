@@ -116,5 +116,22 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             ClassificationResponse response,
             string commentary = @"");
 
+
+        /// <summary>
+        /// Notify that a new entity (or event stream) instance was deleted
+        /// </summary>
+        /// <param name="deletedEntity">
+        /// The new entity that was deleted
+        /// </param>
+        /// <param name="commentary">
+        /// (Optional) Additional commentary for the new entity deletion for logging / diagnostics
+        /// </param>
+        /// <param name="context">
+        /// (Optional) The additional context with which the entity was deleted
+        /// </param>
+        Task ExistingEntityDeleted(IEventStreamIdentity deletedEntity,
+            string commentary = @"",
+            IWriteContext context = null);
+
     }
 }
