@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
@@ -17,5 +17,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Product\" />
   </ItemGroup>
 </Project>

@@ -1,8 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
-    <RootNamespace>BankBranch_AzureFunctionApp</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.1" />
@@ -18,5 +17,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Branch\" />
+    <Folder Include="Staff\" />
   </ItemGroup>
 </Project>

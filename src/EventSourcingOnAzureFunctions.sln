@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EventSourcingOnAzureFunctio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RetailBank.AzureFunctionApp", "..\examples\bank-account\RetailBank.AzureFunctionApp\RetailBank.AzureFunctionApp.csproj", "{1677A237-055A-4B84-9CEC-56D4F0775A0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankBranch,AzureFunctionApp", "..\examples\bank-account\BankBranch,AzureFunctionApp\BankBranch,AzureFunctionApp.csproj", "{439D3E4A-A596-4313-8739-3DBFACDB8766}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankBranch.AzureFunctionApp", "..\examples\bank-account\BankBranch,AzureFunctionApp\BankBranch.AzureFunctionApp.csproj", "{439D3E4A-A596-4313-8739-3DBFACDB8766}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankingProduct.AzureFunctionApp", "..\examples\bank-account\BankingProduct.AzureFunctionApp\BankingProduct.AzureFunctionApp.csproj", "{D1740ED2-DC7C-4258-90E7-7B7A473D1EBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankingProduct.AzureFunctionApp", "..\examples\bank-account\BankingProduct.AzureFunctionApp\BankingProduct.AzureFunctionApp.csproj", "{D1740ED2-DC7C-4258-90E7-7B7A473D1EBB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

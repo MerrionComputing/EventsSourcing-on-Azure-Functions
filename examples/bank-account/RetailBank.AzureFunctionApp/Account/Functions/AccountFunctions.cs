@@ -19,13 +19,14 @@ namespace RetailBank.AzureFunctionApp
     public partial class AccountFunctions
     {
 
+        #region Open a new account
         /// <summary>
         /// Open a new bank account
         /// </summary>
         /// <param name="accountnumber">
-        /// The account number to use for the account.  If this already exists this command will return an error.
+        /// The account number to use for the account.  
+        /// If this already exists this command will return an error.
         /// </param>
-        /// <returns></returns>
         [FunctionName("OpenAccount")]
         public static async Task<HttpResponseMessage> OpenAccountRun(
                       [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"OpenAccount/{accountnumber}")]HttpRequestMessage req,
@@ -99,8 +100,9 @@ namespace RetailBank.AzureFunctionApp
 
             }
         }
+        #endregion 
 
-        //DeleteAccount...
+        #region Delete an account
         [FunctionName("DeleteAccount")]
         public static async Task<HttpResponseMessage> DeleteAccountRun(
                       [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"DeleteAccount/{accountnumber}")]HttpRequestMessage req,
@@ -142,17 +144,19 @@ namespace RetailBank.AzureFunctionApp
             }
         }
 
+        #endregion 
+
+        #region Get Account Balance
+
         /// <summary>
         /// Get the current balance of a bank account
         /// </summary>
-        /// <param name="req"></param>
         /// <param name="accountnumber">
         /// The account number of the account for which we want the balance
         /// </param>
         /// <param name="prjBankAccountBalance">
         /// The projection instance that is run to get the current account balance
         /// </param>
-        /// <returns></returns>
         [FunctionName("GetBalance")]
         public static async Task<HttpResponseMessage> GetBalanceRun(
           [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetBalance/{accountnumber}/{asOfDate?}" )]HttpRequestMessage req,
@@ -215,39 +219,18 @@ namespace RetailBank.AzureFunctionApp
                 FunctionResponse.MEDIA_TYPE);
 
         }
+#endregion
 
-
-        [FunctionName("GetAllAccounts")]
-        public static async Task<HttpResponseMessage> GetAllAccountsRun(
-          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetAllAccounts/{asOfDate?}")]HttpRequestMessage req,
-           string asOfDate,
-          [Classification("Bank", "Account", "ALL", nameof(InterestAccruedToday))] Classification clsAllAccounts)
-        {
-
-            // Set the start time for how long it took to process the message
-            DateTime startTime = DateTime.UtcNow;
-
-            IEnumerable<string> allAccounts = await clsAllAccounts.GetAllInstanceKeys(null);
-            System.Text.StringBuilder sbRet = new System.Text.StringBuilder(); 
-            if (null != allAccounts )
-            {
-                foreach (string accountNumber in allAccounts)
-                {
-                    if (! (sbRet.Length == 0))
-                    {
-                        sbRet.Append(",");  
-                    }
-                    sbRet.Append(accountNumber);  
-                }
-            }
-
-            return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.OK,
-                    FunctionResponse.CreateResponse(startTime,
-                    false,
-                    $"Account numbers: {sbRet.ToString()}  "),
-                    FunctionResponse.MEDIA_TYPE);
-        }
-
+        #region Deposit money
+        /// <summary>
+        /// Add money to the selected bank account
+        /// </summary>
+        /// <param name="accountnumber">
+        /// The unique identifier of the account we are depositing money to
+        /// </param>
+        /// <param name="bankAccountEvents">
+        /// The event stream to append the account event(s) onto
+        /// </param>
         [FunctionName("DepositMoney")]
         public static async Task<HttpResponseMessage> DepositMoneyRun(
               [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"DepositMoney/{accountnumber}")]HttpRequestMessage req,
@@ -291,9 +274,25 @@ namespace RetailBank.AzureFunctionApp
 
             }
         }
+        #endregion 
 
-
-        // WithdrawMoney
+        #region Withdraw Money
+        /// <summary>
+        /// Withdraw money from the given bank account
+        /// </summary>
+        /// <param name="accountnumber">
+        /// The account number to use
+        /// </param>
+        /// <param name="bankAccountEvents">
+        /// The event stream to add events to the end of
+        /// </param>
+        /// <param name="prjBankAccountBalance">
+        /// The projection to get the current bank balance
+        /// </param>
+        /// <param name="prjBankAccountOverdraft">
+        /// The projection to get the current overdraft for
+        /// </param>
+        /// <returns></returns>
         [FunctionName("WithdrawMoney")]
         public static async Task<HttpResponseMessage> WithdrawMoneyRun(
               [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"WithdrawMoney/{accountnumber}")]HttpRequestMessage req,
@@ -403,7 +402,9 @@ namespace RetailBank.AzureFunctionApp
             }
         }
 
+        #endregion
 
+        #region Set account owner
         /// <summary>
         /// Set or change who is the beneficial owner of this account
         /// </summary>
@@ -445,7 +446,42 @@ namespace RetailBank.AzureFunctionApp
             }
         }
 
+        #endregion
 
+        #region Get all account numbers
+        [FunctionName("GetAllAccounts")]
+        public static async Task<HttpResponseMessage> GetAllAccountsRun(
+  [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetAllAccounts/{asOfDate?}")]HttpRequestMessage req,
+   string asOfDate,
+  [Classification("Bank", "Account", "ALL", nameof(InterestAccruedToday))] Classification clsAllAccounts)
+        {
+
+            // Set the start time for how long it took to process the message
+            DateTime startTime = DateTime.UtcNow;
+
+            IEnumerable<string> allAccounts = await clsAllAccounts.GetAllInstanceKeys(null);
+            System.Text.StringBuilder sbRet = new System.Text.StringBuilder();
+            if (null != allAccounts)
+            {
+                foreach (string accountNumber in allAccounts)
+                {
+                    if (!(sbRet.Length == 0))
+                    {
+                        sbRet.Append(",");
+                    }
+                    sbRet.Append(accountNumber);
+                }
+            }
+
+            return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.OK,
+                    FunctionResponse.CreateResponse(startTime,
+                    false,
+                    $"Account numbers: {sbRet.ToString()}  "),
+                    FunctionResponse.MEDIA_TYPE);
+        }
+        #endregion
+
+        #region Overdrafts
         /// <summary>
         /// Set a new overdraft limit for the account
         /// </summary>
@@ -534,6 +570,7 @@ namespace RetailBank.AzureFunctionApp
             }
         }
 
+        #endregion 
 
         #region Interest accrual and payment
 
@@ -749,7 +786,7 @@ namespace RetailBank.AzureFunctionApp
           )
         {
 
-            // Bolierplate: Set the start time for how long it took to process the message
+            // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
             // Check the balance is negative
