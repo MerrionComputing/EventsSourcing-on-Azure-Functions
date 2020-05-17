@@ -9,6 +9,7 @@ namespace RetailBank.AzureFunctionApp.Account.Classifications
     /// A classification of a bank account to state whether that account has had interest 
     /// accrued today
     /// </summary>
+    [ClassificationName("Interest Accrued Today")]
     public class InterestAccruedToday
         : ClassificationBase,
         IClassifyEventType<InterestAccrued>

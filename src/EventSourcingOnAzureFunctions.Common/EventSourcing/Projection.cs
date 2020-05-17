@@ -76,7 +76,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 {
                     // Dispatch a projection-completed notification
                     await _notificationDispatcher.ProjectionCompleted(this,
-                        _projectionTypeName,
+                        ProjectionNameAttribute.GetProjectionName(typeof(TProjection)) ,
                         ret.CurrentSequenceNumber,
                         asOfDate,
                         ret);

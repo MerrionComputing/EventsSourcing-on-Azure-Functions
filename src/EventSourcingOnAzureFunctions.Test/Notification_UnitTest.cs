@@ -1,5 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.Listener;
+using EventSourcingOnAzureFunctions.Common.Notification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EventSourcingOnAzureFunctions.Test
@@ -52,6 +53,21 @@ namespace EventSourcingOnAzureFunctions.Test
             actual = testObj.MatchesFilter(Notification.NotificationType.NewEntity, "Domain Test", "Entity Type Test Two", "Instance 123", "Test Event Occured");
 
             Assert.AreEqual(expected, actual);
+        }
+
+
+        //StringToByteArray
+        [TestMethod]
+        public void StringToByteArray_Empty_TestMethod()
+        {
+
+            string expected = "00-00000000000000000000000000000000-0000000000000000-00";
+            string actual = "Not set";
+
+            actual = NotificationHelper.MakeTraceParent("", "");
+
+            Assert.AreEqual(expected, actual);
+            
         }
     }
 }

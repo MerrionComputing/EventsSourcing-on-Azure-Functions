@@ -108,7 +108,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 if (null != _notificationDispatcher )
                 {
                     await _notificationDispatcher.ClassificationCompleted(this,
-                        ClassifierTypeName,
+                        ClassificationNameAttribute.GetClassificationName(typeof(TClassification)) ,
                         _classificationProcessor.Parameters,
                         ret.AsOfSequence ,
                         asOfDate,

@@ -13,6 +13,7 @@ namespace RetailBank.AzureFunctionApp.Account.Classifications
     /// <remarks>
     /// This is an example of a classifier that uses a parameter
     /// </remarks>
+    [ClassificationName("Balance Below Threshold")]
     public class BalanceBelowGivenThreshold
         : ClassificationBase,
           IClassifyEventType<MoneyDeposited>,

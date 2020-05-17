@@ -10,6 +10,7 @@
     <RepositoryUrl>https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Event sourcing,serverless,azure functions</PackageTags>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

@@ -42,6 +42,10 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         private static HttpClient httpClient = null;
         private static HttpMessageHandler httpMessageHandler = null;
 
+        // trade http header constants
+        public const string TRACE_HEADER_PARENT = "traceparent";
+        public const string TRACE_HEADER_STATE = "tracestate";
+
         public NotificationHelper(IOptions<EventSourcingOnAzureOptions> options,
             INameResolver nameResolver,
             ILogger logger )
@@ -149,8 +153,18 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     }
                 };
 
+                // get any context to add as headers
+                string correlationId = "";
+                string causationId = "";
+
+                if (context != null)
+                {
+                    correlationId = context.CorrelationIdentifier;
+                    causationId = context.CausationIdentifier;
+                }
+
                 // Send it off asynchronously
-                await SendNotificationAsync(message);
+                await SendNotificationAsync(message, correlationId, causationId );
             }
             else
             {
@@ -191,8 +205,18 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     }
                 };
 
+                // get any context to add as headers
+                string correlationId = "";
+                string causationId = "";
+
+                if (context != null)
+                {
+                    correlationId = context.CorrelationIdentifier;
+                    causationId = context.CausationIdentifier;
+                }
+
                 // Send it off asynchronously
-                await SendNotificationAsync(message);
+                await SendNotificationAsync(message, correlationId, causationId );
             }
             else
             {
@@ -248,8 +272,18 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     }
                 };
 
+                // get any context to add as headers
+                string correlationId = "";
+                string causationId = "";
+
+                if (context != null)
+                {
+                    correlationId = context.CorrelationIdentifier;
+                    causationId = context.CausationIdentifier;
+                }
+
                 // Send it off asynchronously
-                await SendNotificationAsync(message);
+                await SendNotificationAsync(message, correlationId , causationId );
             }
             else
             {
@@ -373,7 +407,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     new EventGridEvent()
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = ClassificationCompleteEventGridPayload.MakeEventTypeName(targetEntity, classificationType  )   ,
+                        EventType = ClassificationCompleteEventGridPayload.MakeEventTypeName(targetEntity, 
+                        classificationType  )   ,
                         Subject = MakeEventGridSubject(targetEntity, classificationType ) ,
                         DataVersion = NewEventEventGridPayload.DATA_VERSION ,
                         Data = payload,
@@ -430,13 +465,21 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         }
 
         private async Task SendNotificationAsync(
-                EventGridEvent[] eventGridEventArray)
+                EventGridEvent[] eventGridEventArray,
+                string correlationIdentifier = "",
+                string causationIdentifier = "")
         {
             string json = JsonConvert.SerializeObject(eventGridEventArray);
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
             HttpResponseMessage result = null;
             try
             {
+                if ( (!string.IsNullOrWhiteSpace(correlationIdentifier ) ) ||
+                    (!string.IsNullOrWhiteSpace(causationIdentifier )))
+                {
+                    // Add a W3C Trace header
+                    content.Headers.Add(TRACE_HEADER_PARENT, MakeTraceParent(correlationIdentifier, causationIdentifier));
+                }
                 result = await httpClient.PostAsync(this.eventGridTopicEndpoint, content);
             }
             catch (Exception e)
@@ -535,6 +578,69 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     return null;
                 }
             }
+        }
+
+        /// <summary>
+        /// Make a string that can be passed to the W3C Trace header as a trace paren
+        /// </summary>
+        /// <param name="correlationIdentifier">
+        /// The string we used as our correlation identifier 
+        /// </param>
+        /// <param name="causationIdentifier">
+        /// The string we used as our causation identifier
+        /// </param>
+        /// <returns>
+        /// 
+        /// </returns>
+        /// <remarks>
+        /// See https://www.w3.org/TR/trace-context/#examples-of-http-traceparent-headers
+        /// </remarks>
+        public static string MakeTraceParent(string correlationIdentifier, string causationIdentifier)
+        {
+
+            string version = "00";
+            string traceFlags = "00"; //not sampled
+
+            if (! string.IsNullOrWhiteSpace(correlationIdentifier ) )
+            {
+                // turn it into an 16-byte array of lowercase hex
+                correlationIdentifier = StringToByteArray(16, correlationIdentifier);
+            }
+
+            if (! string.IsNullOrWhiteSpace(causationIdentifier ) )
+            {
+                // turn it into an 8-byte array of lowercase hex
+                causationIdentifier = StringToByteArray(8, causationIdentifier);
+            }
+
+            // If not able to make a header, return a "null" one
+            return $"{version}-00000000000000000000000000000000-0000000000000000-{traceFlags}";
+        }
+
+
+        /// <summary>
+        /// Turn a string into a byte array to make a correlation/causation ID useful for W3C tracing
+        /// </summary>
+        /// <param name="length">
+        /// The length of array we need
+        /// </param>
+        /// <param name="input">
+        /// The source string we are turning into an array
+        /// </param>
+        public static string StringToByteArray(int length, string input)
+        {
+            if (length <= 0)
+            {
+                throw new ArgumentException("Length must be greater than zero"); 
+            }
+
+            if (! string.IsNullOrWhiteSpace(input ) )
+            {
+
+            }
+
+            return new string('0', length);
+            
         }
     }
 }

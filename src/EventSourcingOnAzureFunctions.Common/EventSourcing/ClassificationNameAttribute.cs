@@ -5,14 +5,14 @@ using System.Text;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
     /// <summary>
-    /// Attribute to allow an event class to be tagged with the event name
+    /// Attribute to allow a classification class to be tagged with the classification name
     /// </summary>
     /// <remarks>
-    /// This allows the event name to be independent of the language used to read/write it for shared event streams
+    /// This allows the classification name to be independent of the language used to read/write it for notifications
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class EventNameAttribute
-        : Attribute 
+    public sealed class ClassificationNameAttribute
+        : Attribute
     {
 
         /// <summary>
@@ -21,24 +21,22 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         public string Name { get; private set; }
 
 
-        public EventNameAttribute(string eventName)
+        public ClassificationNameAttribute(string eventName)
         {
             Name = eventName;
         }
 
 
-        public static string GetEventName(Type eventType)
+        public static string GetClassificationName(Type classificationType)
         {
-            foreach (EventNameAttribute item in eventType.GetCustomAttributes(typeof(EventNameAttribute), true))
+            foreach (ClassificationNameAttribute item in classificationType.GetCustomAttributes(typeof(ClassificationNameAttribute), true))
             {
                 return item.Name;
             }
 
             // fall back on type full name
-            return eventType.FullName;
+            return classificationType.FullName;
         }
-
-
 
     }
 }
