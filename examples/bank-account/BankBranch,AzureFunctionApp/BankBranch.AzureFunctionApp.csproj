@@ -5,7 +5,7 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.1" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\EventSourcingOnAzureFunctions.Common\EventSourcingOnAzureFunctions.Common.csproj" />

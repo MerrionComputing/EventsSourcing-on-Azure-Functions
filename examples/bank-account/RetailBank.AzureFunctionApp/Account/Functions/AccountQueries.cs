@@ -34,6 +34,12 @@ namespace RetailBank.AzureFunctionApp
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
+            // add all the targets...
+            
+            // add all parameters..
+
+            // kick off the query..
+
             return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.Forbidden,
                     FunctionResponse.CreateResponse(startTime,
                     true,

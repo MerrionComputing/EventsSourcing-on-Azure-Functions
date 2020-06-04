@@ -8,6 +8,9 @@ using System.Text;
 namespace EventSourcingOnAzureFunctions.Common.Notification
 {
 
+    /// <summary>
+    /// Content to send in a notification message when a classification completes
+    /// </summary>
     public class ClassificationCompleteEventGridPayload
         : IEventStreamIdentity
     {
@@ -85,6 +88,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         public bool WasEverExcluded { get; set; }
 
         /// <summary>
+        /// The parameters that were passed to the classification
+        /// </summary>
+        [JsonExtensionData]
+        public Dictionary<string, object> Parameters { get; private set; }
+
+        /// <summary>
         /// Empty constructor for serialisation
         /// </summary>
         public ClassificationCompleteEventGridPayload()
@@ -97,6 +106,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             int asOfSequenceNumber, 
             DateTime? asOfDate, 
             ClassificationResponse response,
+            Dictionary<string, object> parameters,
             string notificationId = @"",
             string commentary = @"")
         {
@@ -137,6 +147,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 ret.Result  = response.Result ;
                 ret.WasEverExcluded = response.WasEverExcluded;
                 ret.WasEverIncluded = response.WasEverIncluded;
+            }
+
+            if (null != parameters )
+            {
+                // add them to the response
+                ret.Parameters = parameters;
             }
 
             return ret;

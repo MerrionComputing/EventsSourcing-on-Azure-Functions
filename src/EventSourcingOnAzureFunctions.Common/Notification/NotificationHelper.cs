@@ -397,6 +397,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     asOfSequenceNumber,
                     asOfDate,
                     response,
+                    parameters,
                     commentary
                     );
 
