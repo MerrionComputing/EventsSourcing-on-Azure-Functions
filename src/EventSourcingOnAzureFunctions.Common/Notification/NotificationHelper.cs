@@ -479,7 +479,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     (!string.IsNullOrWhiteSpace(causationIdentifier )))
                 {
                     // Add a W3C Trace header
-                    content.Headers.Add(TRACE_HEADER_PARENT, MakeTraceParent(correlationIdentifier, causationIdentifier));
+                    content.Headers.Add(TRACE_HEADER_PARENT, 
+                        MakeTraceParent(correlationIdentifier, causationIdentifier));
                 }
                 result = await httpClient.PostAsync(this.eventGridTopicEndpoint, content);
             }
