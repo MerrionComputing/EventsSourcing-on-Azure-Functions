@@ -42,6 +42,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </param>
         Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification , new();
 
+        /// <summary>
+        /// Run the given classification over the underlying event stream
+        /// </summary>
+        /// <param name="classificationToRun">
+        /// The instance of the classification to run
+        /// </typeparam>
+        /// <param name="asOfDate">
+        /// If set, only run the classification up until this date/time
+        /// </param>
+        Task<ClassificationResponse> Classify(IClassification classificationToRun, DateTime? asOfDate = null);
 
         /// <summary>
         /// Get all of the unique instances of this domain/entity type

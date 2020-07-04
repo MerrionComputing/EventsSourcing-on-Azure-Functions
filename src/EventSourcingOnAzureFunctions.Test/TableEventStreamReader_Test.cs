@@ -65,7 +65,7 @@ namespace EventSourcingOnAzureFunctions.Test
             bool actual = true;
 
             TableEventStreamReader testReader = new TableEventStreamReader(
-                new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance not existing abc.def"),
+                new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance is not existing abc.def"),
                 "RetailBank");
 
             ProjectionProcessor testObj = new ProjectionProcessor(testReader);

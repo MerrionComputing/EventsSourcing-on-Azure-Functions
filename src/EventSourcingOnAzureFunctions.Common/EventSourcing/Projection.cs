@@ -2,6 +2,7 @@
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.Notification;
 using System;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
@@ -69,14 +70,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         public async Task<TProjection> Process<TProjection>(Nullable<DateTime> asOfDate = null) where TProjection : IProjection, new()
         {
-            if (null != _projectionProcessor )
+            TProjection projectionToRun = new TProjection();
+            return await Process(projectionToRun, asOfDate);
+        }
+
+
+        public async Task<TProjection> Process<TProjection>(TProjection projectionToRun, Nullable<DateTime> asOfDate = null) where TProjection : IProjection
+        {
+            if (null != _projectionProcessor)
             {
-                TProjection ret= await _projectionProcessor.Process<TProjection>(asOfDate);
+                TProjection ret = await _projectionProcessor.Process<TProjection>(projectionToRun, asOfDate);
                 if (null != _notificationDispatcher)
                 {
                     // Dispatch a projection-completed notification
                     await _notificationDispatcher.ProjectionCompleted(this,
-                        ProjectionNameAttribute.GetProjectionName(typeof(TProjection)) ,
+                        ProjectionNameAttribute.GetProjectionName(typeof(TProjection)),
                         ret.CurrentSequenceNumber,
                         asOfDate,
                         ret);
@@ -88,6 +96,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 return await Task.FromException<TProjection>(new Exception("Projection processor not initialised"));
             }
         }
+
 
         /// <summary>
         /// Save the current state of the projection as a snapshot

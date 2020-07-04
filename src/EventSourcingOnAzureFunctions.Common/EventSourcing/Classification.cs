@@ -84,6 +84,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         }
 
         /// <summary>
+        /// Get a new instance of the named classifier by name
+        /// </summary>
+        /// <param name="classifierTypeName">
+        /// The human-readable classifier name
+        /// </param>
+        /// <returns>
+        /// A new classifier instance
+        /// </returns>
+        public  static IClassification GetClassifierByName(string classifierTypeName)
+        {
+            // TODO : Return a new classifier
+            return null;
+        }
+
+        /// <summary>
         /// Set a parameter to be used when running the classifier
         /// </summary>
         /// <param name="parameterName">
@@ -102,15 +117,22 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         public async Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification, new()
         {
-            if (null != _classificationProcessor )
+            TClassification classificationToRun = new TClassification();
+            return await Classify(classificationToRun, asOfDate);
+        }
+
+        public async Task<ClassificationResponse> Classify(IClassification classificationToRun, 
+            DateTime? asOfDate = null)
+        {
+            if (null != _classificationProcessor)
             {
-                ClassificationResponse ret=  await _classificationProcessor.Classify<TClassification>(asOfDate);
-                if (null != _notificationDispatcher )
+                ClassificationResponse ret = await _classificationProcessor.Classify(classificationToRun, asOfDate);
+                if (null != _notificationDispatcher)
                 {
                     await _notificationDispatcher.ClassificationCompleted(this,
-                        ClassificationNameAttribute.GetClassificationName(typeof(TClassification)) ,
+                        ClassificationNameAttribute.GetClassificationName(classificationToRun.GetType()),
                         _classificationProcessor.Parameters,
-                        ret.AsOfSequence ,
+                        ret.AsOfSequence,
                         asOfDate,
                         ret);
                 }
@@ -121,6 +143,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 return await Task.FromException<ClassificationResponse>(new Exception("Classification processor not initialised"));
             }
         }
+
 
         /// <summary>
         /// Get all of the unique instances of this domain/entity type
@@ -235,7 +258,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
-        public readonly int _asOfSequence;
+        private readonly int _asOfSequence;
         /// <summary>
         /// The last sequence number read to get this classification result
         /// </summary>
@@ -244,6 +267,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             get
             {
                 return _asOfSequence;
+            }
+        }
+
+        private readonly DateTime? _asOfDate;
+        public DateTime? AsOfDate
+        {
+            get
+            {
+                return _asOfDate;
             }
         }
 
@@ -282,6 +314,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         public ClassificationResponse(ClassificationResults result,
             int asofSequence,
+            DateTime? asOfDate,
             bool wasEverIncluded,
             bool wasEverExcluded,
             Dictionary<string, object> parameters = null)
@@ -289,6 +322,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
             _result = result;
             _asOfSequence = asofSequence;
+            _asOfDate = asOfDate;
 
             _wasEverIncluded = wasEverIncluded;
             _wasEverExcluded = wasEverExcluded;

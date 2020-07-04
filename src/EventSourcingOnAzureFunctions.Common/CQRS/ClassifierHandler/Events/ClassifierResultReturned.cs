@@ -1,6 +1,7 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
+using static EventSourcingOnAzureFunctions.Common.EventSourcing.ClassificationResponse;
 
 namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events
 {
@@ -49,7 +50,7 @@ namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events
         /// The result of the classification - is this instance a member of whatever
         /// group clause the classification represents
         /// </summary>
-        public bool Result { get; set; }
+        public ClassificationResults Result { get; set; }
 
 
         /// <summary>

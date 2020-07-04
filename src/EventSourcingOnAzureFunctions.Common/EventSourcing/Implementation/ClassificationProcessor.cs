@@ -14,9 +14,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
 
         private readonly IEventStreamReader eventStreamReader = null;
 
-        public async Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification, new()
+
+        public async Task<ClassificationResponse> Classify(IClassification classificationToRun, DateTime? asOfDate = null)
         {
-            TClassification classificationToRun = new TClassification();
             ClassificationResponse.ClassificationResults ret = ClassificationResponse.ClassificationResults.Unchanged;
 
             bool wasEverIncluded = false;
@@ -33,15 +33,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
                     if (classificationToRun.HandlesEventType(wrappedEvent.EventInstance.EventTypeName))
                     {
                         var stepResult = classificationToRun.HandleEvent(wrappedEvent.EventInstance.EventTypeName, wrappedEvent.EventInstance.EventPayload);
-                        if (stepResult != ClassificationResponse.ClassificationResults.Unchanged )
+                        if (stepResult != ClassificationResponse.ClassificationResults.Unchanged)
                         {
                             // The classification state changed so store it as the current result
                             ret = stepResult;
-                            if (ret == ClassificationResponse.ClassificationResults.Include )
+                            if (ret == ClassificationResponse.ClassificationResults.Include)
                             {
                                 wasEverIncluded = true;
                             }
-                            if (ret == ClassificationResponse.ClassificationResults.Exclude )
+                            if (ret == ClassificationResponse.ClassificationResults.Exclude)
                             {
                                 wasEverIncluded = true;
                             }
@@ -51,16 +51,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
                     // mark the event as handled
                     classificationToRun.MarkEventHandled(wrappedEvent.SequenceNumber);
                 }
+
             }
+                return new ClassificationResponse(ret,
+                    classificationToRun.CurrentSequenceNumber,
+                    classificationToRun.CurrentAsOfDate,
+                    wasEverIncluded,
+                    wasEverExcluded,
+                    Parameters);
 
-            
+        }
 
-            return new ClassificationResponse(ret, 
-                classificationToRun.CurrentSequenceNumber,
-                wasEverIncluded ,
-                wasEverExcluded,
-                Parameters ) ;
-
+        public async Task<ClassificationResponse> Classify<TClassification>(DateTime? asOfDate = null) where TClassification : IClassification, new()
+        {
+            TClassification classificationToRun = new TClassification();
+            return await Classify(classificationToRun, asOfDate); 
         }
 
         /// <summary>

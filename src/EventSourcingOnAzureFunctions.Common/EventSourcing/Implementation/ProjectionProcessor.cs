@@ -16,26 +16,32 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
         public async Task<TProjection> Process<TProjection>(DateTime? asOfDate = null) where TProjection : IProjection, new()
         {
             TProjection ret = new TProjection();
+            return await Process(ret, asOfDate);
+        }
+
+
+        public async Task<TProjection> Process<TProjection>(TProjection projectionToRun, DateTime? asOfDate = null) where TProjection : IProjection
+        {
 
             if (null != eventStreamReader)
             {
-                foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext(effectiveDateTime: asOfDate ))
+                foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext(effectiveDateTime: asOfDate))
                 {
-                  
-                    ret.OnEventRead(wrappedEvent.SequenceNumber, null);
+
+                    projectionToRun.OnEventRead(wrappedEvent.SequenceNumber, null);
 
 
-                    if (ret.HandlesEventType(wrappedEvent.EventInstance.EventTypeName))
+                    if (projectionToRun.HandlesEventType(wrappedEvent.EventInstance.EventTypeName))
                     {
-                        ret.HandleEvent(wrappedEvent.EventInstance.EventTypeName, wrappedEvent.EventInstance.EventPayload);
+                        projectionToRun.HandleEvent(wrappedEvent.EventInstance.EventTypeName, wrappedEvent.EventInstance.EventPayload);
                     }
 
                     // mark the event as handled
-                    ret.MarkEventHandled(wrappedEvent.SequenceNumber);
+                    projectionToRun.MarkEventHandled(wrappedEvent.SequenceNumber);
                 }
             }
 
-            return  ret;
+            return projectionToRun;
         }
 
         /// <summary>

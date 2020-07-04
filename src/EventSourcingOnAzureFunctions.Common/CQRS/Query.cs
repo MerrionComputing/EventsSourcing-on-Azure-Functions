@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using static EventSourcingOnAzureFunctions.Common.EventSourcing.ClassificationResponse;
 
 namespace EventSourcingOnAzureFunctions.Common.CQRS
 {
@@ -189,7 +190,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                         Nullable<DateTime> asOfDate,
                         string correlationIdentifier,
                         int asOfSequenceNumber,
-                        bool result)
+                        ClassificationResults result)
         {
 
             EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
@@ -398,6 +399,28 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
+        public Query(string domainName,
+            string queryName,
+            string queryUniqueIdentifier,
+            WriteContext context = null )
+        {
+            _domainName = domainName;
+            _queryName = queryName;
+            _uniqueIdentifier = queryUniqueIdentifier;
+            // Make a query 
+            if (context == null)
+            {
+                _queryContext = new WriteContext()
+                {
+                    Source = _queryName,
+                    CausationIdentifier = _uniqueIdentifier
+                };
+            }
+            else
+            {
+                _queryContext = context;
+            }
+        }
 
         /// <summary>
         /// Make a "queries" domain for the given top level domain

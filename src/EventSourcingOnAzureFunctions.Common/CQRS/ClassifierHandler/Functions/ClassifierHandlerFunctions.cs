@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.EventGrid.Models;
+﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using System;
@@ -26,7 +29,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
         /// classification to be run
         /// </param>
         [FunctionName(nameof(OnQueryClassificationHandler))]
-        public static Task OnQueryClassificationHandler([EventGridTrigger] EventGridEvent eventGridEvent)
+        public static async Task OnQueryClassificationHandler([EventGridTrigger] EventGridEvent eventGridEvent)
         {
             if (eventGridEvent != null)
             {
@@ -34,11 +37,51 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
                 ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data as ClassifierRequestedEventGridEventData;
                 if (classifierRequestData!= null)
                 {
+                    // handle the classifier request
+                    ClassificationResponse response = null;
+                    Classification classifier = new Classification(
+                        new ClassificationAttribute(
+                            classifierRequestData.ClassifierRequest.DomainName,
+                            classifierRequestData.ClassifierRequest.EntityTypeName,
+                            classifierRequestData.ClassifierRequest.InstanceKey ,
+                            classifierRequestData.ClassifierRequest.ClassifierTypeName 
+                            ));
 
+                    if (classifier != null)
+                    {
+                        // get the classifier class - must implement TClassification : IClassification, new()
+                        IClassification classificationToRun = Classification.GetClassifierByName(classifier.ClassifierTypeName);
+                        if (classificationToRun != null)
+                        {
+                            response = await classifier.Classify(classificationToRun, null);  
+                        }
+                    }
+
+                    if (response != null)
+                    {
+                        // and post the result back to the query that asked for it
+                        Query qrySource = new Query(classifierRequestData.DomainName,
+                            classifierRequestData.EntityTypeName,
+                            classifierRequestData.InstanceKey);
+
+
+                        if (qrySource != null)
+                        {
+
+                            await qrySource.PostClassifierResponse(classifierRequestData.ClassifierRequest.DomainName,
+                                 classifierRequestData.ClassifierRequest.EntityTypeName,
+                                 classifierRequestData.ClassifierRequest.InstanceKey,
+                                 classifierRequestData.ClassifierRequest.ClassifierTypeName,
+                                 response.AsOfDate, 
+                                 classifierRequestData.ClassifierRequest.CorrelationIdentifier,
+                                 response.AsOfSequence,
+                                 response.Result
+                                 );
+                            
+                        }
+                    }
                 }
             }
-
-            throw new NotImplementedException();
         }
 
         /// <summary>

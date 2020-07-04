@@ -1,6 +1,7 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
+using System.Collections.Generic;
 
 namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events
 {
@@ -48,5 +49,9 @@ namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events
         public string CorrelationIdentifier { get; set; }
 
 
+        /// <summary>
+        /// Any parameters included in the classifier request
+        /// </summary>
+        Dictionary<string, object> Parameters { get; set; }
     }
 }
