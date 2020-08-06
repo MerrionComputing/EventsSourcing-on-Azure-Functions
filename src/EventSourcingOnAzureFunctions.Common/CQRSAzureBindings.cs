@@ -33,6 +33,9 @@ namespace EventSourcingOnAzureFunctions.Common
         /// </param>
         public static void InitializeServices(IServiceCollection services)
         {
+
+             
+
             // Add logging services 
             services.AddLogging();
   

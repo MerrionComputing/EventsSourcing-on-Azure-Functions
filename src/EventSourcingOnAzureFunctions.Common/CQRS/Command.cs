@@ -1,8 +1,11 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.CQRS.Common.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
@@ -12,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using static EventSourcingOnAzureFunctions.Common.EventSourcing.ClassificationResponse;
 
 namespace EventSourcingOnAzureFunctions.Common.CQRS
 {
@@ -252,6 +256,224 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
                 await esCmd.AppendEvent(evStep);
             }
+        }
+
+
+        //Classifier request
+        /// <summary>
+        /// Request a classification to be performed as part of this query
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain name of the entity over which the classification is to run
+        /// </param>
+        /// <param name="entityTypeName">
+        /// The entity type over which to run the classification
+        /// </param>
+        /// <param name="instanceKey">
+        /// The specific instance over which to run the classification
+        /// </param>
+        /// <param name="classifierTypeName">
+        /// The specific type of classification process to run over the event stream
+        /// </param>
+        /// <param name="asOfDate">
+        /// (Optional) The date up to which to run the classification
+        /// </param>
+        /// <param name="classificationParameters">
+        /// (Optional) Any additional parameters to use in the classification process
+        /// </param>
+        public async Task RequestClassification(string domainName,
+                        string entityTypeName,
+                        string instanceKey,
+                        string classifierTypeName,
+                        Nullable<DateTime> asOfDate,
+                        IEnumerable<KeyValuePair<string, object>> classificationParameters)
+        {
+
+            // Correlation to link the parameters to the classification 
+            Guid correlationId = Guid.NewGuid();
+
+            EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
+                CommandName,
+                UniqueIdentifier),
+                context: _commandContext);
+
+            if (null != classificationParameters)
+            {
+                // add a classification request parameter for each...
+                foreach (KeyValuePair<string, object> parameter in classificationParameters)
+                {
+                    ClassifierRequestParameterSet evParam = new ClassifierRequestParameterSet()
+                    {
+                        CorrelationIdentifier = correlationId.ToString(),
+                        ParameterName = parameter.Key,
+                        ParameterValue = parameter.Value
+                    };
+
+                    await esCmd.AppendEvent(evParam);
+                }
+            }
+
+            // add the classification request
+            ClassifierRequested evRequest = new ClassifierRequested()
+            {
+                CorrelationIdentifier = correlationId.ToString(),
+                DomainName = domainName,
+                EntityTypeName = entityTypeName,
+                InstanceKey = instanceKey,
+                ClassifierTypeName = classifierTypeName,
+                AsOfDate = asOfDate
+            };
+
+            await esCmd.AppendEvent(evRequest);
+
+        }
+
+        // Classifier response...
+        /// <summary>
+        /// Post a response from a classifier onto the given query event stream
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain name of the entity over which the classification was run
+        /// </param>
+        /// <param name="entityTypeName">
+        /// The entity type over which the classification was run
+        /// </param>
+        /// <param name="instanceKey">
+        /// The specific instance over which the classification was run
+        /// </param>
+        /// <param name="classifierTypeName">
+        /// The specific type of classification process to run over the event stream
+        /// </param>
+        /// <param name="asOfDate">
+        /// (Optional) The date up to which to run the classification
+        /// </param>
+        /// <param name="correlationIdentifier">
+        /// The unique identifier for this classification instance
+        /// </param>
+        /// <param name="asOfSequenceNumber">
+        /// The sequence number of the last event read when running the classifier
+        /// (This can be used to determine if the classification is still valid)
+        /// </param> 
+        /// <param name="result">
+        /// The result of running the classifier
+        /// </param>
+        /// <returns></returns>
+        public async Task PostClassifierResponse(string domainName,
+                        string entityTypeName,
+                        string instanceKey,
+                        string classifierTypeName,
+                        Nullable<DateTime> asOfDate,
+                        string correlationIdentifier,
+                        int asOfSequenceNumber,
+                        ClassificationResults result)
+        {
+
+            EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
+                CommandName,
+                UniqueIdentifier),
+                context: _commandContext);
+
+            ClassifierResultReturned evRet = new ClassifierResultReturned()
+            {
+                DomainName = domainName,
+                EntityTypeName = entityTypeName,
+                InstanceKey = instanceKey,
+                ClassifierTypeName = classifierTypeName,
+                AsOfDate = asOfDate,
+                AsOfSequenceNumber = asOfSequenceNumber,
+                CorrelationIdentifier = correlationIdentifier,
+                Result = result
+            };
+
+
+            await esCmd.AppendEvent(evRet);
+        }
+
+
+        // Projection request
+        /// <summary>
+        /// Request a projection to be performed
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain name of the entity over which the classification is to run
+        /// </param>
+        /// <param name="entityTypeName">
+        /// The entity type over which to run the classification
+        /// </param>
+        /// <param name="instanceKey">
+        /// The specific instance over which to run the classification
+        /// </param>
+        /// <param name="classifierTypeName">
+        /// The specific type of classification process to run over the event stream
+        /// </param>
+        /// <param name="asOfDate">
+        /// (Optional) The date up to which to run the classification
+        /// </param>
+        public async Task RequestProjection(string domainName,
+                        string entityTypeName,
+                        string instanceKey,
+                        string projectionTypeName,
+                        Nullable<DateTime> asOfDate)
+        {
+            Guid correlationId = Guid.NewGuid();
+
+            EventStream esCmd = new EventStream(new EventStreamAttribute(
+                       MakeDomainCommandName(DomainName),
+                       CommandName,
+                       UniqueIdentifier),
+                       context: _commandContext);
+
+            ProjectionRequested evPrj = new ProjectionRequested()
+            {
+                CorrelationIdentifier = correlationId.ToString(),
+                DomainName = domainName,
+                EntityTypeName = entityTypeName,
+                InstanceKey = instanceKey,
+                ProjectionTypeName = projectionTypeName,
+                AsOfDate = asOfDate,
+                DateLogged = DateTime.UtcNow
+            };
+
+            await esCmd.AppendEvent(evPrj);
+        }
+
+        public async Task PostProjectionResponse(string domainName,
+                        string entityTypeName,
+                        string instanceKey,
+                        string projectionTypeName,
+                        Nullable<DateTime> asOfDate,
+                        string correlationIdentifier,
+                        int asOfSequenceNumber,
+                        object projectionResult)
+        {
+
+            EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
+                CommandName,
+                UniqueIdentifier),
+                context: _commandContext);
+
+            ProjectionValueReturned evRet = new ProjectionValueReturned()
+            {
+                DomainName = domainName,
+                EntityTypeName = entityTypeName,
+                InstanceKey = instanceKey,
+                AsOfDate = asOfDate,
+                AsOfSequenceNumber = asOfSequenceNumber,
+                CorrelationIdentifier = correlationIdentifier,
+                ProjectionTypeName = projectionTypeName,
+                DateLogged = DateTime.UtcNow,
+                Value = projectionResult
+            };
+
+            await esCmd.AppendEvent(evRet);
+        }
+
+
+        public Command (string domainName,
+            string commandName,
+            string uniqueIdentifier)
+            : this(new CommandAttribute(domainName, commandName, uniqueIdentifier ) )
+        {
         }
 
         public Command(CommandAttribute attribute)

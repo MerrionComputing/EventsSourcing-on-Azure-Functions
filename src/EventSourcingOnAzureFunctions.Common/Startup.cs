@@ -14,7 +14,7 @@ namespace EventSourcingOnAzureFunctions.Common
 
             builder.AddAppSettingsToConfiguration();
  
-            // Initialise any common services
+            // Initialise any common servicesconfigureservices
             CQRSAzureBindings.InitializeServices(builder.Services);
 
             // Initialise any outbound notifications

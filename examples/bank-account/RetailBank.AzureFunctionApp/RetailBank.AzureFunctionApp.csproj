@@ -1,22 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AzureFunctionsVersion>v2</AzureFunctionsVersion>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DotNetEnv" Version="1.2.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask.Analyzers" Version="0.1.2" />
+    <PackageReference Include="DotNetEnv" Version="1.4.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="3.0.6" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.2.2" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask.Analyzers" Version="0.3.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="2.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SignalRService" Version="1.0.2" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.10" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SignalRService" Version="1.2.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.2" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Host.Storage" Version="3.0.14" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.1.2" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.1.8" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
   </ItemGroup>
   <ItemGroup>
     <None Update=".env">
