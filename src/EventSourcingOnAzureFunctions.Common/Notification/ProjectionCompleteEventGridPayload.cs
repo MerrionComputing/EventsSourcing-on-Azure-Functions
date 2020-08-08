@@ -137,7 +137,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 return EVENT_TYPE;
             }
 
-            return $"{targetEntity.DomainName}.{targetEntity.EntityTypeName}.{projectionType }";
+            return $"{targetEntity.DomainName}.{targetEntity.EntityTypeName}.{projectionType}";
         }
     }
 }
