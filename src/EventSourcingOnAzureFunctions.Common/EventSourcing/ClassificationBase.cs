@@ -88,8 +88,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         // Snapshots not implemented yet
         public bool SupportsSnapshots => false;
 
-        // As of date not implemented yet
-        public DateTime CurrentAsOfDate => throw new NotImplementedException();
+        // As of date not implemented yet - default to now...
+        public DateTime CurrentAsOfDate => DateTime.UtcNow ;
 
         /// <summary>
         /// Allow parameters to be passed to the classification class
