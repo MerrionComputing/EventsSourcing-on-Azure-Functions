@@ -7,6 +7,7 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
     /// <summary>
     /// The overdraft limit in force for this account
     /// </summary>
+    [ProjectionName("Overdraft Limit") ]
     public class OverdraftLimit
         : ProjectionBase,
         IHandleEventType<OverdraftLimitSet>

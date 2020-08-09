@@ -166,7 +166,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 return EVENT_TYPE;
             }
 
-            return $"{targetEntity.DomainName}.{targetEntity.EntityTypeName}.{classificationType }";
+            return $"{targetEntity.DomainName}.{targetEntity.EntityTypeName}.{classificationType}";
 
         }
     }

@@ -7,6 +7,7 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
     /// <summary>
     /// The running balance of the account
     /// </summary>
+    [ProjectionName("Balance")]
     public class Balance
         : ProjectionBase,
         IHandleEventType<MoneyDeposited>,

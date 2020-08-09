@@ -34,8 +34,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 return item.Name;
             }
 
-            // fall back on type full name
-            return projectionType.FullName;
+            // fall back on type name
+            return projectionType.Name ;
         }
 
 
