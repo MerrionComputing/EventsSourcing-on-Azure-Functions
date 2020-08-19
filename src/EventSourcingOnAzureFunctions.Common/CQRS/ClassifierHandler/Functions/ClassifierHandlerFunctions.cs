@@ -15,9 +15,125 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
     /// <remarks>
     /// There are separate functions for handling classifications for commands and queries as,
     /// although they are very similar, we might want to separate them completely
+    ///     
+    /// Note that the functions runtime cannot discover functions declared in an imported library
+    /// so you will need to add a stub to your domain function app that calls into these
+    /// functions.
     /// </remarks>
-    public class ClassifierHandlerFunctions
+    public static class ClassifierHandlerFunctions
     {
+
+        /// <summary>
+        /// A classification has been requested in processing a query.  
+        /// This function will run it and attach the result back to the query
+        /// event stream when complete.
+        /// </summary>
+        public static async Task RunClassificationForQuery(ClassifierRequestedEventGridEventData classifierRequestData)
+        {
+            if (classifierRequestData != null)
+            {
+                // handle the classifier request
+                ClassificationResponse response = null;
+                Classification classifier = new Classification(
+                    new ClassificationAttribute(
+                        classifierRequestData.ClassifierRequest.DomainName,
+                        classifierRequestData.ClassifierRequest.EntityTypeName,
+                        classifierRequestData.ClassifierRequest.InstanceKey,
+                        classifierRequestData.ClassifierRequest.ClassifierTypeName
+                        ));
+
+                if (classifier != null)
+                {
+                    // get the classifier class - must implement TClassification : IClassification, new()
+                    IClassification classificationToRun = Classification.GetClassifierByName(classifier.ClassifierTypeName);
+                    if (classificationToRun != null)
+                    {
+                        response = await classifier.Classify(classificationToRun, null);
+                    }
+                }
+
+                if (response != null)
+                {
+                    // and post the result back to the query that asked for it
+                    Query qrySource = new Query(classifierRequestData.DomainName,
+                        classifierRequestData.EntityTypeName,
+                        classifierRequestData.InstanceKey);
+
+
+                    if (qrySource != null)
+                    {
+
+                        await qrySource.PostClassifierResponse(classifierRequestData.ClassifierRequest.DomainName,
+                             classifierRequestData.ClassifierRequest.EntityTypeName,
+                             classifierRequestData.ClassifierRequest.InstanceKey,
+                             classifierRequestData.ClassifierRequest.ClassifierTypeName,
+                             response.AsOfDate,
+                             classifierRequestData.ClassifierRequest.CorrelationIdentifier,
+                             response.AsOfSequence,
+                             response.Result
+                             );
+
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// A classification has been requested in processing a command.  
+        /// This function will run it and attach the result back to the command
+        /// event stream when complete.
+        /// </summary>
+        public static async Task RunClassificationForCommand(ClassifierRequestedEventGridEventData classifierRequestData)
+        {
+            if (classifierRequestData != null)
+            {
+                // handle the classifier request
+                ClassificationResponse response = null;
+                Classification classifier = new Classification(
+                    new ClassificationAttribute(
+                        classifierRequestData.ClassifierRequest.DomainName,
+                        classifierRequestData.ClassifierRequest.EntityTypeName,
+                        classifierRequestData.ClassifierRequest.InstanceKey,
+                        classifierRequestData.ClassifierRequest.ClassifierTypeName
+                        ));
+
+                if (classifier != null)
+                {
+                    // get the classifier class - must implement TClassification : IClassification, new()
+                    IClassification classificationToRun = Classification.GetClassifierByName(classifier.ClassifierTypeName);
+                    if (classificationToRun != null)
+                    {
+                        response = await classifier.Classify(classificationToRun, null);
+                    }
+                }
+
+                if (response != null)
+                {
+                    // and post the result back to the query that asked for it
+                    Command cmdSource = new Command(classifierRequestData.DomainName,
+                        classifierRequestData.EntityTypeName,
+                        classifierRequestData.InstanceKey);
+
+
+                    if (cmdSource != null)
+                    {
+
+                        await cmdSource.PostClassifierResponse(classifierRequestData.ClassifierRequest.DomainName,
+                             classifierRequestData.ClassifierRequest.EntityTypeName,
+                             classifierRequestData.ClassifierRequest.InstanceKey,
+                             classifierRequestData.ClassifierRequest.ClassifierTypeName,
+                             response.AsOfDate,
+                             classifierRequestData.ClassifierRequest.CorrelationIdentifier,
+                             response.AsOfSequence,
+                             response.Result
+                             );
+
+                    }
+                }
+
+            }
+        }
+
 
         /// <summary>
         /// A classification has been requested in processing a query.  This
@@ -35,52 +151,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
             {
                 // Get the data from the event that describes what classification is requested
                 ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data as ClassifierRequestedEventGridEventData;
-                if (classifierRequestData!= null)
-                {
-                    // handle the classifier request
-                    ClassificationResponse response = null;
-                    Classification classifier = new Classification(
-                        new ClassificationAttribute(
-                            classifierRequestData.ClassifierRequest.DomainName,
-                            classifierRequestData.ClassifierRequest.EntityTypeName,
-                            classifierRequestData.ClassifierRequest.InstanceKey ,
-                            classifierRequestData.ClassifierRequest.ClassifierTypeName 
-                            ));
-
-                    if (classifier != null)
-                    {
-                        // get the classifier class - must implement TClassification : IClassification, new()
-                        IClassification classificationToRun = Classification.GetClassifierByName(classifier.ClassifierTypeName);
-                        if (classificationToRun != null)
-                        {
-                            response = await classifier.Classify(classificationToRun, null);  
-                        }
-                    }
-
-                    if (response != null)
-                    {
-                        // and post the result back to the query that asked for it
-                        Query qrySource = new Query(classifierRequestData.DomainName,
-                            classifierRequestData.EntityTypeName,
-                            classifierRequestData.InstanceKey);
-
-
-                        if (qrySource != null)
-                        {
-
-                            await qrySource.PostClassifierResponse(classifierRequestData.ClassifierRequest.DomainName,
-                                 classifierRequestData.ClassifierRequest.EntityTypeName,
-                                 classifierRequestData.ClassifierRequest.InstanceKey,
-                                 classifierRequestData.ClassifierRequest.ClassifierTypeName,
-                                 response.AsOfDate, 
-                                 classifierRequestData.ClassifierRequest.CorrelationIdentifier,
-                                 response.AsOfSequence,
-                                 response.Result
-                                 );
-                            
-                        }
-                    }
-                }
+                await ClassifierHandlerFunctions.RunClassificationForQuery(classifierRequestData);
             }
         }
 
@@ -101,54 +172,12 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
             {
                 // Get the data from the event that describes what classification is requested
                 ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data as ClassifierRequestedEventGridEventData;
-                if (classifierRequestData != null)
-                {
-                    // handle the classifier request
-                    ClassificationResponse response = null;
-                    Classification classifier = new Classification(
-                        new ClassificationAttribute(
-                            classifierRequestData.ClassifierRequest.DomainName,
-                            classifierRequestData.ClassifierRequest.EntityTypeName,
-                            classifierRequestData.ClassifierRequest.InstanceKey,
-                            classifierRequestData.ClassifierRequest.ClassifierTypeName
-                            ));
 
-                    if (classifier != null)
-                    {
-                        // get the classifier class - must implement TClassification : IClassification, new()
-                        IClassification classificationToRun = Classification.GetClassifierByName(classifier.ClassifierTypeName);
-                        if (classificationToRun != null)
-                        {
-                            response = await classifier.Classify(classificationToRun, null);
-                        }
-                    }
-
-                    if (response != null)
-                    {
-                        // and post the result back to the query that asked for it
-                        Command cmdSource = new Command(classifierRequestData.DomainName,
-                            classifierRequestData.EntityTypeName,
-                            classifierRequestData.InstanceKey);
-
-
-                        if (cmdSource != null)
-                        {
-
-                            await cmdSource.PostClassifierResponse(classifierRequestData.ClassifierRequest.DomainName,
-                                 classifierRequestData.ClassifierRequest.EntityTypeName,
-                                 classifierRequestData.ClassifierRequest.InstanceKey,
-                                 classifierRequestData.ClassifierRequest.ClassifierTypeName,
-                                 response.AsOfDate,
-                                 classifierRequestData.ClassifierRequest.CorrelationIdentifier,
-                                 response.AsOfSequence,
-                                 response.Result
-                                 );
-
-                        }
-                    }
-                }
+                await ClassifierHandlerFunctions.RunClassificationForCommand(classifierRequestData);
             }
         }
+
+
 
     }
 }

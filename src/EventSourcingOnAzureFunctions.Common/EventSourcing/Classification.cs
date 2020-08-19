@@ -94,7 +94,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// </returns>
         public  static IClassification GetClassifierByName(string classifierTypeName)
         {
-            // TODO : Return a new classifier
+            // TODO : Return a new classifier (similar to ProjectionMaps)
             return null;
         }
 

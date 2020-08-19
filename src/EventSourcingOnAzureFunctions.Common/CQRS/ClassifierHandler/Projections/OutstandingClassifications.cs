@@ -11,6 +11,7 @@ namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Projections
     /// The projection to get the list of all classification requests outstanding for a
     /// given command or query
     /// </summary>
+    [ProjectionName("Classifications To Run") ]
     public class OutstandingClassifications
         : ProjectionBase,
         IHandleEventType<ClassifierRequested>,
