@@ -37,7 +37,7 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
 
         public override string ToString()
         {
-            return $"Overdraft limit {CurrentOverdraftLimit}");
+            return $"Overdraft limit {CurrentOverdraftLimit}";
         }
     }
 }
