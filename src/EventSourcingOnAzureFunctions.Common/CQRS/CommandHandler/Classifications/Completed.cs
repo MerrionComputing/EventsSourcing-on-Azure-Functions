@@ -10,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Classificatio
     /// <summary>
     /// A classification to denote that a command execution has completed
     /// </summary>
+    [ClassificationName("Command Completed") ]
     public class Completed
         : ClassificationBase,
         IClassifyEventType<Completed>

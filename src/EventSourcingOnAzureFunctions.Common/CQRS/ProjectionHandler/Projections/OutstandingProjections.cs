@@ -11,6 +11,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Projection
     /// The projection to get the list of all projection requests outstanding for a
     /// given command or query
     /// </summary>
+    [ProjectionName("Outstanding Projections") ]
     public sealed class OutstandingProjections
         : ProjectionBase,
         IHandleEventType<ProjectionRequested>,

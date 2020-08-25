@@ -38,9 +38,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
                 // Process the projection
                 Projection projection = new Projection(
                     new ProjectionAttribute(
-                        projectionRequestData.ProjectionRequest.DomainName,
-                        projectionRequestData.ProjectionRequest.EntityTypeName,
-                        projectionRequestData.ProjectionRequest.InstanceKey,
+                        projectionRequestData.ProjectionRequest.ProjectionDomainName,
+                        projectionRequestData.ProjectionRequest.ProjectionEntityTypeName,
+                        projectionRequestData.ProjectionRequest.ProjectionInstanceKey,
                         projectionRequestData.ProjectionRequest.ProjectionTypeName
                         ));
 
@@ -72,9 +72,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
                         CurrentSequenceNumber = completedProjection.CurrentSequenceNumber;
                     }
 
-                    await qrySource.PostProjectionResponse(projectionRequestData.ProjectionRequest.DomainName,
-                        projectionRequestData.ProjectionRequest.EntityTypeName,
-                        projectionRequestData.ProjectionRequest.InstanceKey,
+                    await qrySource.PostProjectionResponse(projectionRequestData.ProjectionRequest.ProjectionDomainName,
+                        projectionRequestData.ProjectionRequest.ProjectionEntityTypeName,
+                        projectionRequestData.ProjectionRequest.ProjectionInstanceKey,
                         projectionRequestData.ProjectionRequest.ProjectionTypeName,
                         projectionRequestData.ProjectionRequest.AsOfDate,
                         projectionRequestData.ProjectionRequest.CorrelationIdentifier,
@@ -96,9 +96,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
                 // Process the projection
                 Projection projection = new Projection(
                     new ProjectionAttribute(
-                        projectionRequestData.ProjectionRequest.DomainName,
-                        projectionRequestData.ProjectionRequest.EntityTypeName,
-                        projectionRequestData.ProjectionRequest.InstanceKey,
+                        projectionRequestData.ProjectionRequest.ProjectionDomainName,
+                        projectionRequestData.ProjectionRequest.ProjectionEntityTypeName,
+                        projectionRequestData.ProjectionRequest.ProjectionInstanceKey,
                         projectionRequestData.ProjectionRequest.ProjectionTypeName
                         ));
 
@@ -130,9 +130,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
                         CurrentSequenceNumber = completedProjection.CurrentSequenceNumber;
                     }
 
-                    await cmdSource.PostProjectionResponse(projectionRequestData.ProjectionRequest.DomainName,
-                        projectionRequestData.ProjectionRequest.EntityTypeName,
-                        projectionRequestData.ProjectionRequest.InstanceKey,
+                    await cmdSource.PostProjectionResponse(projectionRequestData.ProjectionRequest.ProjectionDomainName,
+                        projectionRequestData.ProjectionRequest.ProjectionEntityTypeName,
+                        projectionRequestData.ProjectionRequest.ProjectionInstanceKey,
                         projectionRequestData.ProjectionRequest.ProjectionTypeName,
                         projectionRequestData.ProjectionRequest.AsOfDate,
                         projectionRequestData.ProjectionRequest.CorrelationIdentifier,

@@ -10,8 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events
     /// </summary>
     [EventName("Projection Value Returned")]
     public class ProjectionValueReturned
-        : IEventStreamIdentity,
-        IProjectionRequest,
+        : IProjectionRequest,
         IEquatable<IProjectionRequest>,
         IEquatable<ProjectionRequested>,
         IEquatable<ProjectionValueReturned>
@@ -20,18 +19,18 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events
         /// <summary>
         /// The domain name of the event stream over which the projection was run
         /// </summary>
-        public string DomainName { get; set; }
+        public string ProjectionDomainName { get; set; }
 
         /// <summary>
         /// The entity type for which the projection was run
         /// </summary>
-        public string EntityTypeName { get; set; }
+        public string ProjectionEntityTypeName { get; set; }
 
         /// <summary>
         /// The unique instance of the event stream over which the 
         /// projection was run
         /// </summary>
-        public string InstanceKey { get; set; }
+        public string ProjectionInstanceKey { get; set; }
 
         /// <summary>
         /// The name of the projection we ran over that event stream
@@ -52,10 +51,11 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events
         /// </remarks>
         public int AsOfSequenceNumber { get; set; }
 
+
         /// <summary>
         /// The value returned from the projection
         /// </summary>
-        public object Value { get; set; }
+        public string Value { get; set; }
 
 
         /// <summary>
@@ -74,11 +74,11 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events
         {
             if (null != other)
             {
-                if (other.DomainName.Equals(DomainName))
+                if (other.ProjectionDomainName.Equals(ProjectionDomainName))
                 {
-                    if (other.EntityTypeName.Equals(EntityTypeName))
+                    if (other.ProjectionEntityTypeName.Equals(ProjectionEntityTypeName))
                     {
-                        if (other.InstanceKey.Equals(InstanceKey))
+                        if (other.ProjectionInstanceKey.Equals(ProjectionInstanceKey))
                         {
                             if (other.AsOfDate.HasValue)
                             {
@@ -107,11 +107,11 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events
         {
             if (null != other)
             {
-                if (other.DomainName.Equals(DomainName))
+                if (other.ProjectionDomainName.Equals(ProjectionDomainName))
                 {
-                    if (other.EntityTypeName.Equals(EntityTypeName))
+                    if (other.ProjectionEntityTypeName.Equals(ProjectionEntityTypeName))
                     {
-                        if (other.InstanceKey.Equals(InstanceKey))
+                        if (other.ProjectionInstanceKey.Equals(ProjectionInstanceKey))
                         {
                             if (other.AsOfSequenceNumber.Equals(AsOfSequenceNumber))
                             {
@@ -143,11 +143,11 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events
         {
             if (null != other)
             {
-                if (other.DomainName.Equals(DomainName))
+                if (other.ProjectionDomainName.Equals(ProjectionDomainName))
                 {
-                    if (other.EntityTypeName.Equals(EntityTypeName))
+                    if (other.ProjectionEntityTypeName.Equals(ProjectionEntityTypeName))
                     {
-                        if (other.InstanceKey.Equals(InstanceKey))
+                        if (other.ProjectionInstanceKey.Equals(ProjectionInstanceKey))
                         {
                             if (other.AsOfDate.HasValue)
                             {

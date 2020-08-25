@@ -25,6 +25,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         }
 
         /// <summary>
+        /// The default connection string to fall back on if nothing else is found
+        /// </summary>
+        public const string DefaultConnectionStringName = "EventStreamConnectionString";
+
+        /// <summary>
         /// The name of the default connection string to use for the domain
         /// </summary>
         protected internal string StorageConnectionStringSettingName
@@ -63,9 +68,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             if (null != config)
             {
-                if (! string.IsNullOrWhiteSpace(connectionStringName) )
-                {
-                    _storageAccount = CloudStorageAccount.Parse(config.GetConnectionString(connectionStringName));
+                if (!string.IsNullOrWhiteSpace(connectionStringName))
+                { 
+                    string connectionString = config.GetConnectionString(connectionStringName);
+                    if (string.IsNullOrWhiteSpace(connectionString) )
+                    {
+                        // Drop back on the storage level connection string
+                        connectionString = config.GetConnectionString(StorageConnectionStringSettingName);
+                        if (string.IsNullOrWhiteSpace(connectionString))
+                        {
+                            // Drop back on the default connection string
+                            connectionString = config.GetConnectionString(DefaultConnectionStringName);
+                        }
+                    }
+                    _storageAccount = CloudStorageAccount.Parse(connectionString);
                 }
             }
         }

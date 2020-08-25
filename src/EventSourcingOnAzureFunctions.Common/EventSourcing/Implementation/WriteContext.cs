@@ -31,6 +31,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             return new WriteContext();
         }
 
+
+
         internal static IWriteContext CreateFunctionContext(FunctionBindingContext functionContext)
         {
             WriteContext ret = DefaultWriterContext();

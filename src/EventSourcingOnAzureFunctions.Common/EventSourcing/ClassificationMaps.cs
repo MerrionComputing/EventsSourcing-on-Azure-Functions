@@ -8,12 +8,11 @@ using System.Text;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
-
-    public sealed class ProjectionMaps
-        : IProjectionMaps
+    public sealed class ClassificationMaps
+        : IClassificationMaps
     {
 
-        private Dictionary<string, ProjectionMap> AllMaps = new Dictionary<string, ProjectionMap>();
+        private Dictionary<string, ClassificationMap> AllMaps = new Dictionary<string, ClassificationMap>();
 
         /// <summary>
         /// Load the projection maps as stored in any configuration files
@@ -44,26 +43,26 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             IConfigurationRoot config = builder.Build();
 
             // Get the [ProjectionMaps] section
-            IConfigurationSection projectionMapSection = config.GetSection("ProjectionMaps");
-            if (null != projectionMapSection)
+            IConfigurationSection classificationMapSection = config.GetSection("ClassificationMaps");
+            if (null != classificationMapSection)
             {
-                if (projectionMapSection.Exists())
+                if (classificationMapSection.Exists())
                 {
-                    var configProjectionMaps = projectionMapSection.Get<List<ProjectionMap>>(c => c.BindNonPublicProperties = true);
+                    var configClassificationMaps = classificationMapSection.Get<List<ClassificationMap>>(c => c.BindNonPublicProperties = true);
 
-                    if (null != configProjectionMaps)
+                    if (null != configClassificationMaps)
                     {
-                        foreach (ProjectionMap map in configProjectionMaps)
+                        foreach (ClassificationMap map in configClassificationMaps)
                         {
                             if (null != map)
                             {
-                                if (!AllMaps.ContainsKey(map.ProjectionName ))
+                                if (!AllMaps.ContainsKey(map.ClassificationName ))
                                 {
                                     Type eventType = null;
-                                    if (EventMaps.TryFindType(map.ProjectionImplementationClassName , out eventType))
+                                    if (EventMaps.TryFindType(map.ClassificationImplementationClassName , out eventType))
                                     {
-                                        AllMaps.Add(map.ProjectionName ,
-                                            new ProjectionMap(map.ProjectionName, eventType.FullName ));
+                                        AllMaps.Add(map.ClassificationName ,
+                                            new ClassificationMap(map.ClassificationName , eventType.FullName));
                                     }
                                 }
                             }
@@ -71,6 +70,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                     }
                 }
             }
+        }
+
+
+        private static ClassificationMaps _defaultClassificationMaps;
+        internal static IClassificationMaps CreateDefaultClassificationMaps()
+        {
+            if (null == _defaultClassificationMaps)
+            {
+                _defaultClassificationMaps = new ClassificationMaps();
+                _defaultClassificationMaps.LoadFromConfig();
+                _defaultClassificationMaps.LoadByReflection();
+            }
+            return _defaultClassificationMaps;
         }
 
         /// <summary>
@@ -101,13 +113,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 }
                 foreach (Type eventType in loadedAssembly.GetExportedTypes())
                 {
-                    // does it have an ProjectionName() attribute
-                    foreach (ProjectionNameAttribute item in eventType.GetCustomAttributes(typeof(ProjectionNameAttribute), true))
+                    // does it have an ClassificationName() attribute
+                    foreach (ClassificationNameAttribute item in eventType.GetCustomAttributes(typeof(ClassificationNameAttribute), true))
                     {
                         if (!AllMaps.ContainsKey(item.Name))
                         {
-                            AllMaps.Add(item.Name, 
-                                new ProjectionMap(item.Name, eventType.FullName ));
+                            AllMaps.Add(item.Name,
+                                new ClassificationMap(item.Name, eventType.FullName));
                         }
                     }
                 }
@@ -115,31 +127,31 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         }
 
         /// <summary>
-        /// Create the .NET class for a particular projection type from its name
+        /// Create the .NET class for a particular classification type from its name
         /// </summary>
-        /// <param name="projectionName">
-        /// The "business" name of the projection to map to a .NET class
+        /// <param name="classificationName">
+        /// The "business" name of the classification to map to a .NET class
         /// </param>
-        public IProjection CreateProjectionClass(string projectionName)
+        public IClassification CreateClassificationClass(string classificationName)
         {
 
-            if (string.IsNullOrWhiteSpace(projectionName) )
+            if (string.IsNullOrWhiteSpace(classificationName))
             {
-                // No idea what projection is being sought
+                // No idea what classification is being sought
                 return null;
             }
 
-            if (AllMaps.ContainsKey(projectionName))
+            if (AllMaps.ContainsKey(classificationName))
             {
-                return AllMaps[projectionName].CreateProjectionClass();
+                return AllMaps[classificationName].CreateClassificationClass();
             }
             else
             {
                 // maybe the projection name already is the .NET class (bad practice)
-                var type = Type.GetType(projectionName, false);
+                var type = Type.GetType(classificationName, false);
                 if (null == type)
                 {
-                    if (!EventMaps.TryFindType(projectionName, out type))
+                    if (!EventMaps.TryFindType(classificationName, out type))
                     {
                         // Unable to create an event class for the name
                         return null;
@@ -147,63 +159,42 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 }
                 if (null != type)
                 {
-                    return (IProjection)Activator.CreateInstance(type);
+                    return (IClassification)Activator.CreateInstance(type);
                 }
             }
             // Unable to create an event class for the name
             return null;
-
-        }
-
-
-        private static ProjectionMaps _defaultProjectionMaps;
-        /// <summary>
-        /// Create a projections map that is the default for this application
-        /// </summary>
-        /// <remarks>
-        /// This uses both the configuration and reflection to build the maps - if you need faster
-        /// spin-up you should create a hard-coded map and use dependency injection to load it
-        /// </remarks>
-        public static IProjectionMaps CreateDefaultProjectionMaps()
-        {
-            if (null == _defaultProjectionMaps)
-            {
-                _defaultProjectionMaps = new ProjectionMaps();
-                _defaultProjectionMaps.LoadFromConfig();
-                _defaultProjectionMaps.LoadByReflection();
-            }
-            return _defaultProjectionMaps;
         }
     }
 
     /// <summary>
-    /// Mapping between a projection name and the class that implements it
+    /// Mapping between a classification name and the class that implements it
     /// </summary>
     /// <remarks>
-    /// Projection names can be domain qualified {domain}.{entity type}.{projection name} if
+    /// Classification names can be domain qualified {domain}.{entity type}.{projection name} if
     /// needed for uniqueness
     /// </remarks>
-    public sealed class ProjectionMap
+    public sealed class ClassificationMap
     {
 
         /// <summary>
-        /// The unique projection name as it is known to the application
+        /// The unique classification name as it is known to the application
         /// </summary>
-        public string ProjectionName { get; internal set; }
+        public string ClassificationName { get; internal set; }
 
         /// <summary>
         /// The name of the CLR class that implements that projection
         /// </summary>
-        public string ProjectionImplementationClassName { get; internal set; }
+        public string ClassificationImplementationClassName { get; internal set; }
 
-        public IProjection CreateProjectionClass()
+        public IClassification  CreateClassificationClass()
         {
-            if (!string.IsNullOrWhiteSpace(ProjectionImplementationClassName))
+            if (!string.IsNullOrWhiteSpace(ClassificationImplementationClassName))
             {
                 Type typeRet;
-                if (EventMaps.TryFindType(ProjectionImplementationClassName, out typeRet))
+                if (EventMaps.TryFindType(ClassificationImplementationClassName, out typeRet))
                 {
-                    return (IProjection)(Activator.CreateInstance(typeRet));
+                    return (IClassification)(Activator.CreateInstance(typeRet));
                 }
             }
 
@@ -211,19 +202,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             return null;
         }
 
-        public ProjectionMap(string projectionNameIn,
-            string classImplementationIn)
+
+        public ClassificationMap(string classificationNameIn,
+           string classImplementationIn)
         {
-            ProjectionName = projectionNameIn;
-            ProjectionImplementationClassName = classImplementationIn;
+            ClassificationName = classificationNameIn;
+            ClassificationImplementationClassName = classImplementationIn;
         }
+
 
         /// <summary>
         /// Parameter-less constructor for serialisation
         /// </summary>
-        public ProjectionMap()
+        public ClassificationMap()
         {
         }
-
     }
 }

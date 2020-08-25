@@ -426,9 +426,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             ProjectionRequested evPrj = new ProjectionRequested()
             {
                 CorrelationIdentifier = correlationId.ToString(),
-                DomainName = domainName,
-                EntityTypeName = entityTypeName,
-                InstanceKey = instanceKey,
+                ProjectionDomainName = domainName,
+                ProjectionEntityTypeName = entityTypeName,
+                ProjectionInstanceKey = instanceKey,
                 ProjectionTypeName = projectionTypeName,
                 AsOfDate = asOfDate,
                 DateLogged = DateTime.UtcNow
@@ -444,7 +444,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                         Nullable<DateTime> asOfDate,
                         string correlationIdentifier,
                         int asOfSequenceNumber,
-                        object projectionResult)
+                        IProjection projectionResult)
         {
 
             EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
@@ -452,17 +452,18 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                 UniqueIdentifier),
                 context: _commandContext);
 
+
             ProjectionValueReturned evRet = new ProjectionValueReturned()
             {
-                DomainName = domainName,
-                EntityTypeName = entityTypeName,
-                InstanceKey = instanceKey,
+                ProjectionDomainName = domainName,
+                ProjectionEntityTypeName = entityTypeName,
+                ProjectionInstanceKey = instanceKey,
                 AsOfDate = asOfDate,
                 AsOfSequenceNumber = asOfSequenceNumber,
                 CorrelationIdentifier = correlationIdentifier,
                 ProjectionTypeName = projectionTypeName,
                 DateLogged = DateTime.UtcNow,
-                Value = projectionResult
+                Value = projectionResult.ToString()
             };
 
             await esCmd.AppendEvent(evRet);
@@ -521,7 +522,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         {
             if (!string.IsNullOrWhiteSpace(domainName))
             {
-                return domainName.Trim() + @".Command";
+                return domainName.Trim() + @"_Command";
             }
             else
             {

@@ -10,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections
     /// A projection to get the current set of parameters and their values 
     /// for any given command
     /// </summary>
+    [ProjectionName("Command Parameter Values")]
     public sealed class ParameterValues
         : ProjectionBase,
         IHandleEventType<Common.Events.ParameterValueSet >   

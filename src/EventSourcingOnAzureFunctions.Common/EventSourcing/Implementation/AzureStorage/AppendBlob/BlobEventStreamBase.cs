@@ -151,6 +151,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 }
                 else
                 {
+                    exists = await EventStreamBlob.Container.ExistsAsync();
+                    if (! exists )
+                    {
+                        await EventStreamBlob.Container.CreateAsync(); 
+                    }
                     await EventStreamBlob.CreateOrReplaceAsync();
                     // Set the original metadata
                     EventStreamBlob.Metadata[METATDATA_DOMAIN] = DomainName;

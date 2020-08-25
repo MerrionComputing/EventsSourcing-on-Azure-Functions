@@ -10,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Projections
     /// <summary>
     /// The set of all the output locations for a query results to be sent to
     /// </summary>
+    [ProjectionName("Output Locations") ]
     public sealed class OutputLocations
         : ProjectionBase,
         IHandleEventType<OutputLocationSet>

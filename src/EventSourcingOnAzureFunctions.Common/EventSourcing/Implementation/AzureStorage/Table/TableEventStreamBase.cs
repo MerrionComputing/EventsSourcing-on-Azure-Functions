@@ -187,7 +187,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 if (!string.IsNullOrWhiteSpace(connectionStringName))
                 {
-                    _storageAccount = CloudStorageAccount.Parse(config.GetConnectionString(connectionStringName));
+                    string connectionString = config.GetConnectionString(connectionStringName);
+                    if (string.IsNullOrWhiteSpace(connectionString ) )
+                    {
+                        throw new NullReferenceException($"No connection string configured for {connectionStringName}");  
+                    }
+                    _storageAccount = CloudStorageAccount.Parse(connectionString );
                 }
             }
 

@@ -83,20 +83,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
-        /// <summary>
-        /// Get a new instance of the named classifier by name
-        /// </summary>
-        /// <param name="classifierTypeName">
-        /// The human-readable classifier name
-        /// </param>
-        /// <returns>
-        /// A new classifier instance
-        /// </returns>
-        public  static IClassification GetClassifierByName(string classifierTypeName)
-        {
-            // TODO : Return a new classifier (similar to ProjectionMaps)
-            return null;
-        }
+
 
         /// <summary>
         /// Set a parameter to be used when running the classifier

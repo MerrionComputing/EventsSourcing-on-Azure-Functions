@@ -11,18 +11,18 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events
         /// The domain name of the event stream over which the projection is 
         /// to be run
         /// </summary>
-        string DomainName { get; set; }
+        string ProjectionDomainName { get; set; }
 
         /// <summary>
         /// The entity type for which the projection will be run
         /// </summary>
-        string EntityTypeName { get; set; }
+        string ProjectionEntityTypeName { get; set; }
 
         /// <summary>
         /// The unique instance of the event stream over which the 
         /// projection should run
         /// </summary>
-        string InstanceKey { get; set; }
+        string ProjectionInstanceKey { get; set; }
 
         /// <summary>
         /// The name of the projection to run over that event stream

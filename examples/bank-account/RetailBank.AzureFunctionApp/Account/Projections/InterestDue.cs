@@ -44,6 +44,10 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
             }
         }
 
+        public override string ToString()
+        {
+            return $"Interest due or payable {Due}";
+        }
 
     }
 }

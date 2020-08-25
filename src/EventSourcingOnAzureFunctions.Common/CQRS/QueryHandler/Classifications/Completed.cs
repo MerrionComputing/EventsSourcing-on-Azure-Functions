@@ -9,6 +9,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Classifications
     /// <summary>
     /// A classification to denote that a query execution has completed
     /// </summary>
+    [ClassificationName("Query Completed") ]
     public class Completed: 
         ClassificationBase,
         IClassifyEventType<Completed>

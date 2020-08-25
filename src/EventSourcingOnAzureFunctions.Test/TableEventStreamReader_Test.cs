@@ -114,6 +114,7 @@ namespace EventSourcingOnAzureFunctions.Test
 namespace Mocking
 {
 
+    [ProjectionName("Mock Projection One") ]
     public class MockProjectionOne
         : ProjectionBase,
         IHandleEventType<MockEventOnePayload>
@@ -137,6 +138,11 @@ namespace Mocking
             {
                 return intCount;
             }
+        }
+
+        public override string ToString()
+        {
+            return $"Total : {intCount}, {lastMessage}";
         }
     }
 

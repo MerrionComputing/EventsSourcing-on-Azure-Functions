@@ -23,6 +23,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
     public static class ClassifierHandlerFunctions
     {
 
+        private static IClassificationMaps _classificationMap;
+
         /// <summary>
         /// A classification has been requested in processing a query.  
         /// This function will run it and attach the result back to the query
@@ -44,8 +46,12 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
 
                 if (classifier != null)
                 {
+                    if (_classificationMap == null)
+                    {
+                        _classificationMap = ClassificationMaps.CreateDefaultClassificationMaps();
+                    }
                     // get the classifier class - must implement TClassification : IClassification, new()
-                    IClassification classificationToRun = Classification.GetClassifierByName(classifier.ClassifierTypeName);
+                    IClassification classificationToRun = _classificationMap.CreateClassificationClass(classifier.ClassifierTypeName);
                     if (classificationToRun != null)
                     {
                         response = await classifier.Classify(classificationToRun, null);
@@ -99,8 +105,12 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
 
                 if (classifier != null)
                 {
+                    if (_classificationMap == null)
+                    {
+                        _classificationMap = ClassificationMaps.CreateDefaultClassificationMaps();
+                    }
                     // get the classifier class - must implement TClassification : IClassification, new()
-                    IClassification classificationToRun = Classification.GetClassifierByName(classifier.ClassifierTypeName);
+                    IClassification classificationToRun = _classificationMap.CreateClassificationClass(classifier.ClassifierTypeName);
                     if (classificationToRun != null)
                     {
                         response = await classifier.Classify(classificationToRun, null);

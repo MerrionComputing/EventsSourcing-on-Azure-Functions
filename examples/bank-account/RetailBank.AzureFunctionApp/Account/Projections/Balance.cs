@@ -58,5 +58,10 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
         {
             
         }
+
+        public override string ToString()
+        {
+            return $"Balance : {CurrentBalance}";
+        }
     }
 }

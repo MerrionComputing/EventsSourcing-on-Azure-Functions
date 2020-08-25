@@ -10,6 +10,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections
     /// A projection to get the execution state (Running, Error, Completed) 
     /// for a given command instance
     /// </summary>
+    [ProjectionName("Command Execution State") ]
     public sealed class ExecutionState
         : ProjectionBase,
         IHandleEventType<Created>,

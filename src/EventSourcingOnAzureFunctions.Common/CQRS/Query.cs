@@ -51,7 +51,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         private readonly string _uniqueIdentifier;
         /// <summary>
-        /// The unique instance of the command to run
+        /// The unique instance of the query to run
         /// </summary>
         public string UniqueIdentifier
         {
@@ -237,7 +237,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                         string entityTypeName,
                         string instanceKey,
                         string projectionTypeName,
-                        Nullable<DateTime> asOfDate)
+                        Nullable<DateTime> asOfDate = null)
         {
             Guid correlationId = Guid.NewGuid();
 
@@ -250,9 +250,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             ProjectionRequested evPrj = new ProjectionRequested()
             { 
                 CorrelationIdentifier = correlationId.ToString(),
-                DomainName = domainName,
-                EntityTypeName = entityTypeName ,
-                InstanceKey = instanceKey ,
+                ProjectionDomainName = domainName,
+                ProjectionEntityTypeName = entityTypeName ,
+                ProjectionInstanceKey = instanceKey ,
                 ProjectionTypeName = projectionTypeName ,
                 AsOfDate = asOfDate ,
                 DateLogged = DateTime.UtcNow 
@@ -277,16 +277,16 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                 context: _queryContext);
 
             ProjectionValueReturned evRet = new ProjectionValueReturned()
-            { 
-                DomainName = domainName ,
-                EntityTypeName = entityTypeName,
-                InstanceKey = instanceKey ,
+            {
+                ProjectionDomainName = domainName ,
+                ProjectionEntityTypeName = entityTypeName,
+                ProjectionInstanceKey = instanceKey ,
                 AsOfDate = asOfDate ,
                 AsOfSequenceNumber = asOfSequenceNumber ,
                 CorrelationIdentifier = correlationIdentifier ,
                 ProjectionTypeName = projectionTypeName ,
                 DateLogged = DateTime.UtcNow ,
-                Value = projectionResult 
+                Value = projectionResult.ToString() 
             };
 
             await esQry.AppendEvent(evRet);  
@@ -384,19 +384,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         }
 
         public Query(QueryAttribute attribute)
+            : this(attribute.DomainName ,
+                  attribute.QueryName ,
+                  attribute.UniqueIdentifier )
         {
-            if (null != attribute )
-            {
-                _domainName = attribute.DomainName;
-                _queryName = attribute.QueryName;
-                _uniqueIdentifier = attribute.UniqueIdentifier;
-                // Make a query context
-                _queryContext = new WriteContext()
-                {
-                    Source = _queryName ,
-                    CausationIdentifier = _uniqueIdentifier
-                };
-            }
         }
 
         public Query(string domainName,
@@ -413,7 +404,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                 _queryContext = new WriteContext()
                 {
                     Source = _queryName,
-                    CausationIdentifier = _uniqueIdentifier
+                    CausationIdentifier = _uniqueIdentifier,
+                    Commentary = _queryName
                 };
             }
             else
@@ -436,7 +428,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         {
             if (!string.IsNullOrWhiteSpace(domainName))
             {
-                return domainName.Trim() + @".Query";
+                return domainName.Trim() + @"_Query";
             }
             else
             {
