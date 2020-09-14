@@ -264,35 +264,45 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 // We need a continuation token as this is done in batches of 100...
                 TableContinuationToken token = new TableContinuationToken();
 
-                TableQuery getEventsToDeleteQuery = DeleteRowsQuery();
+                TableQuery getEventsToDeleteQuery = DeleteRowsQuery().Take(MAX_BATCH_SIZE);
 
-                //TableOperation.Delete();
                 do
                 {
+
+                    var batches = new List<TableBatchOperation>();
+                    int nextBatch = 0;
+
                     // create the query to be executed..
                     var segment = Table.ExecuteQuerySegmented(getEventsToDeleteQuery,
                          token,
-                         requestOptions: new TableRequestOptions()
-                         {
-                             PayloadFormat = TablePayloadFormat.Json,
-                             TableQueryMaxItemCount = MAX_BATCH_SIZE
-                         },
                          operationContext: GetDefaultOperationContext());
-
-                    TableBatchOperation deleteBatch = new TableBatchOperation();
-
-                    foreach (DynamicTableEntity dteRow in segment)
-                    {
-                        deleteBatch.Add(TableOperation.Delete(dteRow));
-                    }
-                    Table.ExecuteBatch(deleteBatch);
 
                     // update the continuation token to get the next chunk of records
                     token = segment.ContinuationToken;
 
+                    int currentRow = 0;
+                    batches.Add(new TableBatchOperation());
+                    foreach (DynamicTableEntity dteRow in segment)
+                    {
+                        if (currentRow % MAX_BATCH_SIZE == 0)
+                        {
+                            nextBatch += 1;
+                            batches.Add(new TableBatchOperation());
+                        }
+                        batches[nextBatch].Add(TableOperation.Delete(dteRow));
+                        currentRow += 1;
+                    }
+
+                    foreach (var batchExecute  in batches )
+                    {
+                        if (batchExecute.Count  > 0)
+                        {
+                            Table.ExecuteBatch(batchExecute);
+                        }
+                    }
+                    
+
                 } while (null != token);
-
-
             }
         }
 

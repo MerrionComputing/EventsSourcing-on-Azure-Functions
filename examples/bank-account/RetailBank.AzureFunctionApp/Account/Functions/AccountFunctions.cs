@@ -124,7 +124,7 @@ namespace RetailBank.AzureFunctionApp
             {
                 try
                 {
-                    bankAccountEvents.DeleteStream(); 
+                    await bankAccountEvents.DeleteStream(); 
                 }
                 catch (EventStreamWriteException exWrite)
                 {

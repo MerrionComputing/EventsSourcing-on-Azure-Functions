@@ -155,16 +155,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// This is included for short-lived entities (like commands, queries, sagas) but is 
         /// not a good idea for real business entities.
         /// </remarks>
-        public void DeleteStream()
+        public async Task DeleteStream()
         {
             if (null != _writer)
             {
                 _writer.DeleteStream();
-                // Send a notificatioin that this has occured
+                // Send a notification that this has occured
                 if (null != this._notificationDispatcher)
                 {
-                    //await this._notificationDispatcher.
-
+                    await this._notificationDispatcher.ExistingEntityDeleted(this,
+                            commentary: _context?.Commentary,
+                            context: _context); 
                 }
             }
         }
