@@ -23,6 +23,12 @@ namespace EventSourcingOnAzureFunctions.Common
 
 
         /// <summary>
+        /// Should this function app raise notifications when a new entity instance
+        /// is deleted
+        /// </summary>
+        public bool RaiseEntityDeletionNotification { get; set; } = false;
+
+        /// <summary>
         /// Should this function app raise notifications when an event is persisted
         /// to an event stream
         /// </summary>
@@ -104,6 +110,7 @@ namespace EventSourcingOnAzureFunctions.Common
                         this.RaiseEventNotification = ret.RaiseEventNotification;
                         this.RaiseProjectionCompletedNotification = ret.RaiseProjectionCompletedNotification;
                         this.RaiseClassificationCompletedNotification = ret.RaiseClassificationCompletedNotification;
+                        this.RaiseEntityDeletionNotification = ret.RaiseEntityDeletionNotification;
                         if (string.IsNullOrWhiteSpace(ret.EventGridKeyValue))
                         {
                             if (!string.IsNullOrWhiteSpace(ret.EventGridKeySettingName))
@@ -284,6 +291,16 @@ namespace EventSourcingOnAzureFunctions.Common
                 if (bool.TryParse(envRaiseEntityCreationNotification, out raiseEntityCreate))
                 {
                     ret.RaiseEntityCreationNotification = raiseEntityCreate;
+                }
+            }
+
+            string envRaiseEntityDeletionNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEntityDeletionNotification));
+            if (!string.IsNullOrWhiteSpace(envRaiseEntityDeletionNotification))
+            {
+                bool raiseEntityDelete = false;
+                if (bool.TryParse(envRaiseEntityCreationNotification, out raiseEntityDelete))
+                {
+                    ret.RaiseEntityDeletionNotification  = raiseEntityDelete;
                 }
             }
 

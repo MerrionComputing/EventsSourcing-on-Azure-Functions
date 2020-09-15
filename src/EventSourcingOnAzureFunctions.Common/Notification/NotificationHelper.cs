@@ -183,7 +183,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             string commentary = "", 
             IWriteContext context = null)
         {
-            if (this._options.Value.RaiseEntityCreationNotification)
+            if (this._options.Value.RaiseEntityDeletionNotification)
             {
 
                 // Create the notification
