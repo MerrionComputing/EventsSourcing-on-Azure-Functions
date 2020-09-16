@@ -195,6 +195,16 @@ namespace EventSourcingOnAzureFunctions.Common
                     }
                 }
 
+                string envRaiseEntityDeletionNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseEntityDeletionNotification));
+                if (!string.IsNullOrWhiteSpace(envRaiseEntityDeletionNotification))
+                {
+                    bool raiseEntityDelete = false;
+                    if (bool.TryParse(envRaiseEntityDeletionNotification, out raiseEntityDelete))
+                    {
+                        this.RaiseEntityDeletionNotification = raiseEntityDelete;
+                    }
+                }
+
                 //RaiseProjectionCompletedNotification
                 string envRaiseProjectionCompletedNotification = Environment.GetEnvironmentVariable(nameof(EventSourcingOnAzureOptions.RaiseProjectionCompletedNotification));
                 if (!string.IsNullOrWhiteSpace(envRaiseEventNotification))
@@ -298,7 +308,7 @@ namespace EventSourcingOnAzureFunctions.Common
             if (!string.IsNullOrWhiteSpace(envRaiseEntityDeletionNotification))
             {
                 bool raiseEntityDelete = false;
-                if (bool.TryParse(envRaiseEntityCreationNotification, out raiseEntityDelete))
+                if (bool.TryParse(envRaiseEntityDeletionNotification, out raiseEntityDelete))
                 {
                     ret.RaiseEntityDeletionNotification  = raiseEntityDelete;
                 }
