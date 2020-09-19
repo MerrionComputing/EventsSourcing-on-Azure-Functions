@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using ImpromptuInterface;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
@@ -7,6 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,9 +37,18 @@ namespace RetailBank.AzureFunctionApp
                 log.LogInformation($"{eventGridEvent.EventType} :: {eventGridEvent.Subject}");
                 log.LogInformation(eventGridEvent.Data.ToString());
 
+                // Get the signalR group from the event stream identity
+                string groupName = string.Empty;
+                IEventStreamIdentity eventTarget = eventGridEvent.Data as IEventStreamIdentity;
+                if (eventTarget != null)
+                {
+                    groupName = MakeSignalRGroupName(eventTarget);
+                }
+
                 return signalRMessages.AddAsync(
                     new SignalRMessage
                     {
+                        GroupName = groupName,
                         Target = eventGridEvent.EventType,
                         Arguments = new[] { eventGridEvent.Data }
                     });
@@ -47,6 +59,37 @@ namespace RetailBank.AzureFunctionApp
                 log.LogError($"Event grid event is null");
                 return Task.CompletedTask; 
             }
+        }
+
+        /// <summary>
+        /// Convert an event stream identity into a SignalR valid group name
+        /// </summary>
+        /// <param name="eventTarget">
+        /// The entity we are raising an event notification about
+        /// </param>
+        /// <remarks>
+        /// Group name should be less than or equals to 64 characters.
+        /// Group name may only have alphanumeric characters and underscores
+        /// </remarks>
+        private static string MakeSignalRGroupName(IEventStreamIdentity eventTarget)
+        {
+            if (eventTarget != null)
+            {
+                string longGroupName = $"{eventTarget.DomainName}_{eventTarget.EntityTypeName}_{eventTarget.InstanceKey}";
+                // replace any illegal characters
+                char[] arr = longGroupName.Where(c => (char.IsLetterOrDigit(c) ||
+                             char.IsWhiteSpace(c) ||
+                             c == '_')).ToArray();
+
+                longGroupName = new string(arr);
+                // check length
+                if (longGroupName.Length > 64)
+                {
+                    longGroupName = longGroupName.Substring(longGroupName.Length - 64); 
+                }
+                return longGroupName;
+            }
+            return string.Empty;
         }
 
 
