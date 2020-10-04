@@ -1,4 +1,5 @@
-﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
+﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
@@ -25,6 +26,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
 
             if (null != eventStreamReader)
             {
+                if (projectionToRun == null)
+                {
+                    throw new EventStreamReadException(eventStreamReader,
+                        0,
+                        "Projection to run was not specified"); 
+                }
+
                 foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext(
                     effectiveDateTime: asOfDate, 
                     StartingSequenceNumber:  projectionToRun.CurrentSequenceNumber ))
