@@ -207,4 +207,34 @@ namespace Mocking
         /// </summary>
         public object EventPayload { get; set; }
     }
+
+    [EventName("Money Deposited")]
+    public class MockDeposit
+    {
+        /// <summary>
+        /// The amount of money deposited into the account
+        /// </summary>
+        public decimal AmountDeposited { get; set; }
+
+        /// <summary>
+        /// The commentary attached to the deposit 
+        /// </summary>
+        public string Commentary { get; set; }
+    }
+
+    [EventName("Money Withdrawn")]
+    public class MockWithdrawal
+    {
+
+        /// <summary>
+        /// The amount of money to be withdrawn into the account
+        /// </summary>
+        public decimal AmountWithdrawn { get; set; }
+
+        /// <summary>
+        /// The commentary attached to the money withdrawal 
+        /// </summary>
+        public string Commentary { get; set; }
+
+    }
 }

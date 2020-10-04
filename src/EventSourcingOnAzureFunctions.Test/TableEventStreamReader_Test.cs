@@ -14,6 +14,12 @@ namespace EventSourcingOnAzureFunctions.Test
     public class TableEventStreamReader_UnitTest
     {
 
+        [TestInitialize]
+        public void InitialiseEnvironmentVariables()
+        {
+            DotNetEnv.Env.Load();
+        }
+
         [TestMethod]
         public void Constructor_TestMethod()
         {
@@ -47,7 +53,7 @@ namespace EventSourcingOnAzureFunctions.Test
             bool actual = false;
 
             TableEventStreamReader testReader = new TableEventStreamReader(
-                new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                new EventStreamAttribute("Bank", "Account", "Instance 1234"),
                 "RetailBank");
 
             ProjectionProcessor testObj = new ProjectionProcessor(testReader);
@@ -84,13 +90,38 @@ namespace EventSourcingOnAzureFunctions.Test
             int actual = 0;
 
             TableEventStreamReader testReader = new TableEventStreamReader(
-                new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+                new EventStreamAttribute("Bank", "Account", "Instance 1234"),
                 "RetailBank");
 
             ProjectionProcessor testObj = new ProjectionProcessor(testReader);
 
             var result = testObj.Process<MockProjectionOne>();
             actual = result.Result.TotalCount;
+
+            Assert.AreNotEqual(notexpected, actual);
+
+        }
+
+        [TestMethod]
+        public void Projection_MockBalanceProjection_TestMethod()
+        {
+
+            decimal notexpected = 0;
+            decimal actual = 0;
+
+            TableEventStreamReader testReader = new TableEventStreamReader(
+                new EventStreamAttribute("Bank", "Account", "Instance 1234"),
+                "RetailBank");
+
+            ProjectionProcessor testObj = new ProjectionProcessor(testReader);
+
+            MockBalanceProjection prior = new MockBalanceProjection();
+            // start from event # 2
+            prior.SetLastEventSequence(274);
+            prior.SetInitialBalance(123.45M);
+
+            var result = testObj.Process<MockBalanceProjection>(prior);
+            actual = result.Result.CurrentBalance ;
 
             Assert.AreNotEqual(notexpected, actual);
 
@@ -146,4 +177,86 @@ namespace Mocking
         }
     }
 
+
+    [ProjectionName("Balance")]
+    public class MockBalanceProjection
+        : ProjectionBase,
+        IHandleEventType<MockWithdrawal >,
+        IHandleEventType<MockDeposit >
+    {
+
+        decimal _currentBalance = 0.00M;
+
+        /// <summary>
+        /// The current balance after the projection has run over a bank account event stream
+        /// </summary>
+        public decimal CurrentBalance
+        {
+            get
+            {
+                return _currentBalance;
+            }
+        }
+
+        string _lastMessage = "";
+
+        public string LastMessage
+        {
+            get
+            {
+                return _lastMessage;
+            }
+        }
+
+        /// <summary>
+        /// Pretend the projection has run to a biven event number
+        /// </summary>
+        /// <param name="sequenceNumber">
+        /// The sequence number we have run up to
+        /// </param>
+        /// <remarks>
+        /// This is to allow failing tests to check concurrency protection and out-of-sequence
+        /// event checks
+        /// </remarks>
+        public void SetLastEventSequence(int sequenceNumber)
+        {
+            base.OnEventRead(sequenceNumber, null);
+            base.MarkEventHandled(sequenceNumber); 
+        }
+
+        /// <summary>
+        /// Set a starting balance to "pretend" we have already run some of the projection
+        /// </summary>
+        /// <param name="startingBalance">
+        /// The initial balance to set
+        /// </param>
+        public void SetInitialBalance(decimal startingBalance)
+        {
+            _currentBalance = startingBalance;
+        }
+
+        public void HandleEventInstance(MockWithdrawal eventInstance)
+        {
+            if (eventInstance != null)
+            {
+                _currentBalance -= eventInstance.AmountWithdrawn;
+                if (!string.IsNullOrWhiteSpace(eventInstance.Commentary))
+                {
+                    _lastMessage = eventInstance.Commentary;
+                }
+            }
+        }
+
+        public void HandleEventInstance(MockDeposit eventInstance)
+        {
+            if (eventInstance != null)
+            {
+                _currentBalance += eventInstance.AmountDeposited;
+                if (!string.IsNullOrWhiteSpace(eventInstance.Commentary))
+                {
+                    _lastMessage = eventInstance.Commentary;
+                }
+            }
+        }
+    }
 }

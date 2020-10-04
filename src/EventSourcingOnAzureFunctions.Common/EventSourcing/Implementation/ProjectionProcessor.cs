@@ -25,7 +25,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
 
             if (null != eventStreamReader)
             {
-                foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext(effectiveDateTime: asOfDate))
+                foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext(
+                    effectiveDateTime: asOfDate, 
+                    StartingSequenceNumber:  projectionToRun.CurrentSequenceNumber ))
                 {
 
                     projectionToRun.OnEventRead(wrappedEvent.SequenceNumber, null);

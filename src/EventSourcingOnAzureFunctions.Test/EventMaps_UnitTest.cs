@@ -40,5 +40,30 @@ namespace EventSourcingOnAzureFunctions.Test
             Assert.IsNotNull(evtClass);
 
         }
+
+        [TestMethod]
+        public void LoadFrom_Reflection_Deposit_TestMethod()
+        {
+
+            EventMaps testObj = new EventMaps();
+            testObj.LoadByReflection();
+
+            var evtClass = testObj.CreateEventClass("Money Deposited");
+            Assert.IsNotNull(evtClass);
+
+        }
+
+        [TestMethod]
+        public void LoadFrom_Reflection_Withdrawal_TestMethod()
+        {
+
+            EventMaps testObj = new EventMaps();
+            testObj.LoadByReflection();
+
+            var evtClass = testObj.CreateEventClass("Money Withdrawn");
+            Assert.IsNotNull(evtClass);
+
+        }
+
     }
 }

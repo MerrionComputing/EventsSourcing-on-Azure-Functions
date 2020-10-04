@@ -7,6 +7,11 @@ namespace EventSourcingOnAzureFunctions.Test
     public class ProjectionSnapshot_UnitTest
     {
 
+        [TestInitialize]
+        public void InitialiseEnvironmentVariables()
+        {
+            DotNetEnv.Env.Load();
+        }
 
     }
 

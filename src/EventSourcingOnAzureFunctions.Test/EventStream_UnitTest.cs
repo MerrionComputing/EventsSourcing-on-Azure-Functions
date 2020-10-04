@@ -18,9 +18,9 @@ namespace EventSourcingOnAzureFunctions.Test
         //EventStream
 
         [TestInitialize]
-        public void EventStream_UnitTest_Initialise()
+        public void InitialiseEnvironmentVariables()
         {
-            Environment.SetEnvironmentVariable("Bank.Account", "Table;RetailBank");
+            DotNetEnv.Env.Load();
         }
 
         [TestMethod]

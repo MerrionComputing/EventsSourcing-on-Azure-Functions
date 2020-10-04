@@ -3,6 +3,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Serialization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mocking;
 using System;
@@ -13,6 +14,12 @@ namespace EventSourcingOnAzureFunctions.Test
     [TestClass]
     public class TableEventStreamWriter_UnitTest
     {
+
+        [TestInitialize]
+        public void InitialiseEnvironmentVariables()
+        {
+            DotNetEnv.Env.Load();
+        }
 
         [TestMethod]
         public void Constructor_TestMethod()
@@ -71,6 +78,34 @@ namespace EventSourcingOnAzureFunctions.Test
         }
 
         [TestMethod]
+        public async Task AppendEvent_Deposit_MustExist_TestMethod()
+        {
+
+            EventStream testObj = new EventStream(new EventStreamAttribute( "Bank", "Account", "Instance 1234"));
+
+            MockDeposit  testEvent = new MockDeposit() { AmountDeposited = 22.99M, Commentary = "Unit testing" };
+ 
+            await testObj.AppendEvent(testEvent,
+                streamConstraint: Common.EventSourcing.Implementation.EventStreamBase.EventStreamExistenceConstraint.MustExist);
+
+            Assert.IsNotNull(testObj);
+        }
+
+        [TestMethod]
+        public async Task AppendEvent_Withdrawal_MustExist_TestMethod()
+        {
+
+            EventStream testObj = new EventStream(new EventStreamAttribute("Bank", "Account", "Instance 1234"));
+
+            MockWithdrawal  testEvent = new MockWithdrawal() { AmountWithdrawn  = 10.99M, Commentary = "Unit testing withdrawal" };
+
+            await testObj.AppendEvent(testEvent,
+                streamConstraint: Common.EventSourcing.Implementation.EventStreamBase.EventStreamExistenceConstraint.MustExist);
+
+            Assert.IsNotNull(testObj);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(EventStreamWriteException))]
         public async Task AppendEvent_MustExist_Fail_TestMethod()
         {
@@ -92,7 +127,7 @@ namespace EventSourcingOnAzureFunctions.Test
         public async Task AppendEvent_ConcurrencyCrocodile_Fail_TestMethod()
         {
 
-            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Bank", "Account", "Instance 1234"),
                 "RetailBank");
 
             MockEventOne testEvent = new MockEventOne() { EventTypeName = "Test Event Happened" };
@@ -109,7 +144,7 @@ namespace EventSourcingOnAzureFunctions.Test
         public async Task AppendEvent_MustNotExist_Fail_TestMethod()
         {
 
-            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Domain Test", "Entity Type Test", "Instance 123"),
+            TableEventStreamWriter testObj = new TableEventStreamWriter(new EventStreamAttribute("Bank", "Account", "Instance 1234"),
                 "RetailBank");
 
             MockEventOne testEvent = new MockEventOne() { EventTypeName = "Test Event Happened" };
