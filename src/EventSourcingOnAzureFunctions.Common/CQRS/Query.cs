@@ -261,6 +261,34 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             await esQry.AppendEvent(evPrj);
         }
 
+        /// <summary>
+        /// Post the response from running the requested projection onto the query 
+        /// event stream so it can be used for further processing
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain the projection was run in
+        /// </param>
+        /// <param name="entityTypeName">
+        /// The entity type for which the projection was run
+        /// </param>
+        /// <param name="instanceKey">
+        /// The unique identifier of the entity for which the projection was run
+        /// </param>
+        /// <param name="projectionTypeName">
+        /// The type of projection that was run over that entity
+        /// </param>
+        /// <param name="asOfDate">
+        /// The as-of date for which the projection response was valid
+        /// </param>
+        /// <param name="correlationIdentifier">
+        /// Unique identifier correlating projection requests/responses
+        /// </param>
+        /// <param name="asOfSequenceNumber">
+        /// The sequence number of the last event read running this projection
+        /// </param>
+        /// <param name="projectionResult">
+        /// The actual result of running the projection
+        /// </param>
         public async Task PostProjectionResponse(string domainName,
                         string entityTypeName,
                         string instanceKey,
@@ -383,6 +411,13 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         }
 
+
+        /// <summary>
+        /// Create a new query instance from the parameter attribute
+        /// </summary>
+        /// <param name="attribute">
+        /// The attribute to use to new up the query instance
+        /// </param>
         public Query(QueryAttribute attribute)
             : this(attribute.DomainName ,
                   attribute.QueryName ,
