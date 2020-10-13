@@ -5,6 +5,16 @@ A library to demonstrate doing Event Sourcing as a data persistence mechanism fo
 
 At its very simplest, event sourcing is a way of storing state (for an entity) which works by storing the sequential history of all the events that have occurred to that entity.  Changes to the entity are written as new events appended to the end of the event stream for the entity. 
 
+```puml
+@startuml
+start
+:Hello world;
+:This is defined on
+several **lines**;
+stop
+@enduml
+```
+
 When a query or business process needs to use the current state of the entity it gets this by running a projection over the event stream which is a very simple piece of code which, for each event, decides (a) do I care about this type of event and (b) if so what do I do when I receive it.
 
 There is a 50 minute talk that covers this on [YouTube](https://www.youtube.com/watch?v=kpM5gCLF1Zc), or if you already have an understanding of event sourcing you can go straight to the [Getting started](https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions/wiki/Getting-started) wiki page
