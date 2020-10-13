@@ -11,6 +11,10 @@ When a query or business process needs to use the current state of the entity it
 
 There is a 50 minute talk that covers this on [YouTube](https://www.youtube.com/watch?v=kpM5gCLF1Zc), or if you already have an understanding of event sourcing you can go straight to the [Getting started](https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions/wiki/Getting-started) wiki page
 
+## Example
+
+There is a rudimentary "retail ban accounts" example (as a Blazore front end) [here](https://retailbank.z6.web.core.windows.net/) that demonstrates the different types of operation on an event stream and the source code for that is included in this repository.
+
 ## End goal
 
 The goal is to be able to interact with the event streams for entities without any extra plumbing in the azure function itself - with both access to event streams and to run projections being via bound variables that are instantiated when the azure function is executed.
