@@ -13,7 +13,7 @@ There is a 50 minute talk that covers this on [YouTube](https://www.youtube.com/
 
 ## Example
 
-There is a rudimentary "retail ban accounts" example (as a Blazor front end) [here](https://retailbank.z6.web.core.windows.net/) that demonstrates the different types of operation on an event stream and the source code for that is included in this repository.
+There is a rudimentary "retail bank accounts" example (as a Blazor front end) [here](https://retailbank.z6.web.core.windows.net/) that demonstrates the different types of operation on an event stream and the source code for that is included in this repository.  This is an entirely serverless system with no underlying database which does "scale to zero".
 
 ## End goal
 
