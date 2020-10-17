@@ -64,7 +64,7 @@ namespace EventSourcingOnAzureFunctions.Test
             string expected = "00-00000000000000000000000000000000-0000000000000000-00";
             string actual = "Not set";
 
-            actual = NotificationHelper.MakeTraceParent("", "");
+            actual = EventGridNotificationDispatcher.MakeTraceParent("", "");
 
             Assert.AreEqual(expected, actual);
             

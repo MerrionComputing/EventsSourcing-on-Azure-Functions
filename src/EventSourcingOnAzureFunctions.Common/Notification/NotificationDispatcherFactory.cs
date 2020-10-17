@@ -42,10 +42,10 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
 
                 if (null == options )
                 {
-                    // make a default
+                    // make a default set of options
                 }
 
-                NotificationDispatcher = new NotificationHelper(options, nameResolver, logger ); 
+                NotificationDispatcher = new EventGridNotificationDispatcher(options, nameResolver, logger ); 
             }
         }
 

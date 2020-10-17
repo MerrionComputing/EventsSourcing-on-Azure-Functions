@@ -26,7 +26,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     /// Notifications are raised when a new entity is created (i.e. when a new event strem is created) and
     /// when a new evenmt is appended to an event stream
     /// </remarks>
-    public sealed class NotificationHelper
+    public sealed class EventGridNotificationDispatcher
         : INotificationDispatcher
     {
 
@@ -46,7 +46,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         public const string TRACE_HEADER_PARENT = "traceparent";
         public const string TRACE_HEADER_STATE = "tracestate";
 
-        public NotificationHelper(IOptions<EventSourcingOnAzureOptions> options,
+        public EventGridNotificationDispatcher(IOptions<EventSourcingOnAzureOptions> options,
             INameResolver nameResolver,
             ILogger logger )
         {

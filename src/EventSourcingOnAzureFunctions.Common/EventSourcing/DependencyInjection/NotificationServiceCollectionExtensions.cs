@@ -16,7 +16,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.DependencyInjection
         {
 
             // Create the notification dispatcher singleton
-            services.AddSingleton<INotificationDispatcher, NotificationHelper >();
+            services.AddSingleton<INotificationDispatcher, EventGridNotificationDispatcher >();
 
             return services;
         }

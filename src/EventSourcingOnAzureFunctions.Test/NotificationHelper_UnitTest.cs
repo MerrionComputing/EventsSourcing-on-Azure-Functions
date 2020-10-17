@@ -27,7 +27,7 @@ namespace EventSourcingOnAzureFunctions.Test
             string actual = @"not set";
             string expected = @"ValidSubjectPart";
 
-            actual = NotificationHelper.MakeEventGridSubjectPart(expected);
+            actual = EventGridNotificationDispatcher.MakeEventGridSubjectPart(expected);
 
             Assert.AreEqual(expected, actual); 
         }
@@ -38,7 +38,7 @@ namespace EventSourcingOnAzureFunctions.Test
             string actual = @"not set";
             string expected = @"Valid/Subject/Part";
 
-            actual = NotificationHelper.MakeEventGridSubjectPart(@"Valid.Subject.Part");
+            actual = EventGridNotificationDispatcher.MakeEventGridSubjectPart(@"Valid.Subject.Part");
 
             Assert.AreEqual(expected, actual);
         }
@@ -67,7 +67,7 @@ namespace EventSourcingOnAzureFunctions.Test
 
             options = Options.Create<EventSourcingOnAzureOptions>(optionConfig);
 
-            NotificationHelper testNotifier = new NotificationHelper(options, nameResolver, null);
+            EventGridNotificationDispatcher testNotifier = new EventGridNotificationDispatcher(options, nameResolver, null);
 
             await testNotifier.NewEntityCreated(new EventStreamAttribute("Domain Test", "Entity Type Test Two", "Instance 1234"));
 
@@ -98,7 +98,7 @@ namespace EventSourcingOnAzureFunctions.Test
 
             options = Options.Create<EventSourcingOnAzureOptions>(optionConfig);
 
-            NotificationHelper testNotifier = new NotificationHelper(options, nameResolver, null);
+            EventGridNotificationDispatcher testNotifier = new EventGridNotificationDispatcher(options, nameResolver, null);
 
             await testNotifier.NewEventAppended(new EventStreamAttribute("Domain Test", "Entity Type Test Two", "Instance 1234"),
                 "Event Happened",
