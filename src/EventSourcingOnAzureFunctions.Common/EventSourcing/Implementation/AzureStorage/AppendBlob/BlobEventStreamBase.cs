@@ -1,10 +1,11 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Storage.Blob;
+using Azure.Storage.Blobs;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob
 {

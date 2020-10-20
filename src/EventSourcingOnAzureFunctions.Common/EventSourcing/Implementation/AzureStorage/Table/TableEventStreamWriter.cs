@@ -188,7 +188,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// <summary>
         /// Delete all the records in the table linked to this event stream
         /// </summary>
-        public void DeleteStream()
+        public async Task  DeleteStream()
         {
             // 1- mark the stream footer as "Deleting"
             bool recordUpdated = false;
@@ -215,7 +215,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 try
                 {
-                    TableResult tres = Table.Execute(TableOperation.InsertOrReplace(streamFooter),
+                    TableResult tres = await Table.ExecuteAsync (TableOperation.InsertOrReplace(streamFooter),
                           null,
                           new OperationContext
                           {

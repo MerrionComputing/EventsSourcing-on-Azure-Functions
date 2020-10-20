@@ -15,7 +15,11 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// </summary>
         public static INotificationDispatcher NotificationDispatcher { get; private set; }
 
-        public static void CreateDispatcher(IServiceCollection services)
+        /// <summary>
+        /// Create any static classes used to dispatch notifications 
+        /// </summary>
+        /// <param name="services"></param>
+        public static void CreateDispatchers(IServiceCollection services)
         {
             if (null != services )
             {

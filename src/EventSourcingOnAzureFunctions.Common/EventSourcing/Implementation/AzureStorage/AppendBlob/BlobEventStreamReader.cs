@@ -1,6 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Storage;
+using Microsoft.Azure.Cosmos.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,7 +59,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             if (null != EventStreamBlob)
             {
-                if (EventStreamBlob.Exists())
+                if (await EventStreamBlob.ExistsAsync())
                 {
                     using (System.IO.Stream rawStream = await GetUnderlyingStream())
                     {

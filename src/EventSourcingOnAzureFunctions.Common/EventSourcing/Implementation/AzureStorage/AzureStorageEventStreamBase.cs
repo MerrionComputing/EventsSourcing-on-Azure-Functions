@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using Microsoft.Azure.Storage;
 using Microsoft.Extensions.Configuration;
-
+using Microsoft.WindowsAzure.Storage;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage
 {

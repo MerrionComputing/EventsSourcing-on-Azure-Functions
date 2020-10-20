@@ -14,11 +14,11 @@ namespace EventSourcingOnAzureFunctions.Common
 
             builder.AddAppSettingsToConfiguration();
  
-            // Initialise any common servicesconfigureservices
+            // Initialise any common services for CQRS
             CQRSAzureBindings.InitializeServices(builder.Services);
 
             // Initialise any outbound notifications
-            NotificationDispatcherFactory.CreateDispatcher(builder.Services); 
+            NotificationDispatcherFactory.CreateDispatchers(builder.Services); 
 
             // Initialise any inbound listeners
 

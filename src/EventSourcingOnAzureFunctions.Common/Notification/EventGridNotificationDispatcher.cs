@@ -24,7 +24,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     /// </summary>
     /// <remarks> 
     /// Notifications are raised when a new entity is created (i.e. when a new event strem is created) and
-    /// when a new evenmt is appended to an event stream
+    /// when a new event is appended to an event stream
     /// </remarks>
     public sealed class EventGridNotificationDispatcher
         : INotificationDispatcher
