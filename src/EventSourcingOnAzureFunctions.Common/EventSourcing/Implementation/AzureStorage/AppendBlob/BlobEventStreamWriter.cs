@@ -1,7 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Cosmos.Table;
-using Microsoft.WindowsAzure.Storage;
+using Microsoft.Azure.Storage;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -99,7 +98,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     await base.Refresh();
 
 
-                    Microsoft.WindowsAzure.Storage.OperationContext context = new Microsoft.WindowsAzure.Storage.OperationContext()
+                    Microsoft.Azure.Storage.OperationContext context = new Microsoft.Azure.Storage.OperationContext()
                     {  };
 
                     await EventStreamBlob.AppendBlockAsync(new System.IO.MemoryStream(Encoding.UTF8.GetBytes(evtToWrite.ToJSonText())),
@@ -109,7 +108,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                         context 
                         );
                 }
-                catch (Microsoft.WindowsAzure.Storage.StorageException exBlob)
+                catch (Microsoft.Azure.Storage.StorageException exBlob)
                 {
                     throw new EventStreamWriteException(this,
                             (nextSequence - 1),
@@ -163,7 +162,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                         {
                             condition.LeaseId = writeStreamLeaseId;
                         }
-                        await EventStreamBlob.SetMetadataAsync(condition, null, new Microsoft.WindowsAzure.Storage.OperationContext() );
+                        await EventStreamBlob.SetMetadataAsync(condition, null, new Microsoft.Azure.Storage.OperationContext() );
 
                     }
                 }
@@ -205,10 +204,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             if (null != EventStreamBlob)
             {
                 AccessCondition condition = AccessCondition.GenerateEmptyCondition();
-                await EventStreamBlob.DeleteAsync(Microsoft.WindowsAzure.Storage.Blob.DeleteSnapshotsOption.IncludeSnapshots, 
+                await EventStreamBlob.DeleteAsync(Microsoft.Azure.Storage.Blob.DeleteSnapshotsOption.IncludeSnapshots, 
                     condition , 
                     null,
-                    new Microsoft.WindowsAzure.Storage.OperationContext());
+                    new Microsoft.Azure.Storage.OperationContext());
             }
         }
 

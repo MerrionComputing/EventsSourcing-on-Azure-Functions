@@ -73,7 +73,7 @@ namespace RetailBank.AzureFunctionApp
         /// The event grid event that gets sent to this command step
         /// </param>
         [FunctionName(nameof(SetOverdraftForInterestCommandStep))]
-        public static async void SetOverdraftForInterestCommandStep
+        public static async Task SetOverdraftForInterestCommandStep
             ([EventGridTrigger]EventGridEvent egStepTriggered
              )
         {
@@ -182,7 +182,7 @@ namespace RetailBank.AzureFunctionApp
         /// The event grid event that gets sent to this command step
         /// </param>
         [FunctionName(nameof(PayInterestCommandStep))]
-        public static async void PayInterestCommandStep
+        public static async Task PayInterestCommandStep
             ([EventGridTrigger]EventGridEvent egStepTriggered)
         {
             // Get the parameters from the event grid trigger

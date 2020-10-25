@@ -120,7 +120,7 @@ namespace EventSourcingOnAzureFunctions.Common
             IWriteContext writeContext = WriteContext.CreateFunctionContext( context.FunctionContext);
 
             // If possible, get the notification dipatcher to use
-            INotificationDispatcher dispatcher = NotificationDispatcherFactory.NotificationDispatcher;
+            INotificationDispatcher dispatcher = NotificationDispatcherFactory.NotificationDispatchers.FirstOrDefault() ;
 
             // Use this and the attribute to create a new event stream instance
             return Task<EventStream>.FromResult(new EventStream(attribute, 

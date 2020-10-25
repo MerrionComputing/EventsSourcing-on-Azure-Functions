@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -16,7 +17,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         : IEventMaps
     {
 
-        private Dictionary<string, EventMap> AllMaps = new Dictionary<string, EventMap>();
+        private ConcurrentDictionary<string, EventMap> AllMaps = new ConcurrentDictionary<string, EventMap>();
 
 
 
@@ -67,7 +68,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                                     Type eventType = null;
                                     if (TryFindType(map.EventImplementationClassName, out eventType))
                                     {
-                                        AllMaps.Add(map.EventName,
+                                        AllMaps.TryAdd(map.EventName,
                                             new EventMap(map.EventName, eventType));
                                     }
                                 }
@@ -111,7 +112,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                     {
                         if (!AllMaps.ContainsKey(item.Name))
                         {
-                            AllMaps.Add(item.Name, new EventMap(item.Name, eventType));
+                            AllMaps.TryAdd(item.Name, new EventMap(item.Name, eventType));
                         }
                     }
                 }

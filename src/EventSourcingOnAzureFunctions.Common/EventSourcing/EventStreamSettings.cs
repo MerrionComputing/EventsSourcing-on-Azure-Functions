@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -6,7 +7,6 @@ using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
@@ -18,7 +18,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         : IEventStreamSettings
     {
 
-        private Dictionary<string, EventStreamSetting> AllSettings = new Dictionary<string, EventStreamSetting>();
+        private ConcurrentDictionary<string, EventStreamSetting> AllSettings = new ConcurrentDictionary<string, EventStreamSetting>();
 
 
         public void LoadFromConfig(string basePath = null)
@@ -61,7 +61,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                         {
                             if (!AllSettings.ContainsKey(setting.DomainQualifiedEntityTypeName))
                             {
-                                AllSettings.Add(setting.DomainQualifiedEntityTypeName, setting);
+                                AllSettings.TryAdd(setting.DomainQualifiedEntityTypeName, setting);
                             }
                         }
                     }
@@ -139,7 +139,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                     EventStreamSetting newSetting = EventStreamSetting.SettingsFromEnvironmentStringValue(attribute, envValue);
                     if (null != newSetting)
                     {
-                        AllSettings.Add(EventStreamSetting.MakeDomainQualifiedEntityName(attribute),
+                        AllSettings.TryAdd(EventStreamSetting.MakeDomainQualifiedEntityName(attribute),
                             newSetting);
                     }
                 }

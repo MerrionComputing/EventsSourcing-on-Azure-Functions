@@ -3,6 +3,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.Notification;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
@@ -191,7 +192,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             if (null == dispatcher)
             {
                 // Create a new dispatcher 
-                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatcher;
+                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatchers.FirstOrDefault();
             }
             else
             {

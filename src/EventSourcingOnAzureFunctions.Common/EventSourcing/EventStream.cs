@@ -5,6 +5,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.Notification;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.EventStreamBase;
@@ -21,7 +22,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         private readonly INotificationDispatcher _notificationDispatcher = null;
         private readonly IEventStreamSettings _settings = null;
         private readonly IEventStreamWriter _writer = null;
-        private string _connectionStringName;
 
         private readonly string _domainName;
         /// <summary>
@@ -159,7 +159,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         {
             if (null != _writer)
             {
-                _writer.DeleteStream();
+                await _writer.DeleteStream();
                 // Send a notification that this has occured
                 if (null != this._notificationDispatcher)
                 {
@@ -204,8 +204,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 _settings = settings;
             }
 
-            _connectionStringName = _settings.GetConnectionStringName(attribute);  
-
             // wire up the event stream writer 
             _writer = _settings.CreateWriterForEventStream(attribute);
 
@@ -221,7 +219,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             if (null == dispatcher)
             {
                 // Create a new dispatcher 
-                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatcher; 
+                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatchers.FirstOrDefault(); 
             }
             else
             {
