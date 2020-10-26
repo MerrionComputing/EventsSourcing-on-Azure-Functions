@@ -179,7 +179,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             if (null == dispatcher)
             {
                 // Create a new dispatcher 
-                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatchers.FirstOrDefault();
+                _notificationDispatcher = NotificationDispatcherFactory.GetDefaultDispatcher();
             }
             else
             {

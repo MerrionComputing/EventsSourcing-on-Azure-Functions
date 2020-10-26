@@ -7,6 +7,14 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutputPath>D:\Source\AzureFunctions\Deploy\</OutputPath>
+    <DocumentationFile>D:\Source\AzureFunctions\Event Sourcing on Azure Functions\EventsSourcing-on-Azure-Functions\examples\bank-account\RetailBank.AzureFunctionApp\RetailBank.AzureFunctionApp.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutputPath>D:\Source\AzureFunctions\Deploy\</OutputPath>
+    <DocumentationFile>D:\Source\AzureFunctions\Event Sourcing on Azure Functions\EventsSourcing-on-Azure-Functions\examples\bank-account\RetailBank.AzureFunctionApp\RetailBank.AzureFunctionApp.xml</DocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="1.4.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" />
@@ -19,6 +27,7 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Host.Storage" Version="4.0.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.2.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update=".env">

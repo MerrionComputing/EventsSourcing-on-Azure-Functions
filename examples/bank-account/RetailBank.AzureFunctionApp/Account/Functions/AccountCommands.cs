@@ -31,6 +31,9 @@ namespace RetailBank.AzureFunctionApp
         /// <param name="accountnumber">
         /// The account number to use for the account to have any accrued interest applied.
         /// </param>
+        /// <param name="cmdApplyAccruedInterest">
+        /// The command orchestration that will perform the steps in turn
+        /// </param>
         /// <remarks>
         /// This is a multi-step command, first -if needed- extend an overdraft to cover the 
         /// accrued interest then apply the interest itself

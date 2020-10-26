@@ -47,6 +47,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         private readonly IOptions<EventSourcingOnAzureOptions> _options;
         private readonly ILogger _logger;
 
+
+        /// <summary>
+        /// The name by which this notification dispatcher is known
+        /// </summary>
+        public string Name => nameof(QueueNotificationDispatcher);
+
         public async Task NewEntityCreated(IEventStreamIdentity newEntity, 
             string commentary = "", 
             IWriteContext context = null)

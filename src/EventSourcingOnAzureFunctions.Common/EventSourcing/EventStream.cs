@@ -218,8 +218,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
             if (null == dispatcher)
             {
-                // Create a new dispatcher 
-                _notificationDispatcher = NotificationDispatcherFactory.NotificationDispatchers.FirstOrDefault(); 
+                if (!string.IsNullOrWhiteSpace(attribute.NotificationDispatcherName))
+                {
+                    _notificationDispatcher = NotificationDispatcherFactory.GetDispatcher(attribute.NotificationDispatcherName);
+                }
+                else
+                {
+                    // Create a new dispatcher 
+                    _notificationDispatcher = NotificationDispatcherFactory.GetDefaultDispatcher();
+                }
             }
             else
             {

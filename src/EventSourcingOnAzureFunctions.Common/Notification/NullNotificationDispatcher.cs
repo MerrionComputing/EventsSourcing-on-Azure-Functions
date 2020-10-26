@@ -18,6 +18,10 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         : INotificationDispatcher
     {
 
+        /// <summary>
+        /// The name by which this notification dispatcher is known
+        /// </summary>
+        public string Name => nameof(NullNotificationDispatcher);
 
         public Task NewEntityCreated(IEventStreamIdentity newEntity,
             string commentary=@"",

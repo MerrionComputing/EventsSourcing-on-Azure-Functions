@@ -54,15 +54,27 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
             }
         }
 
+        private readonly string _notificationDispatcherName;
+        [AutoResolve ]
+        public string NotificationDispatcherName
+        {
+            get
+            {
+                return _notificationDispatcherName;
+            }
+        }
+
         // Note: The parameter names need to match the property names (except for the camelCase) because the autoresolve
-        // uses this fact to perform the instatntiation
+        // uses this fact to perform the instantiation
         public EventStreamAttribute(string domainName,
             string entityTypeName,
-            string instanceKey)
+            string instanceKey,
+            string notificationDispatcherName = "")
         {
             _domainName = domainName;
             _entityTypeName = entityTypeName;
             _instanceKey = instanceKey;
+            _notificationDispatcherName = notificationDispatcherName;
         }
 
     }

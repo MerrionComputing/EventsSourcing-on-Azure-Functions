@@ -51,6 +51,28 @@ namespace EventSourcingOnAzureFunctions.Test
         }
 
         [TestMethod]
+        public async Task Append_Event_Queue_TestMethod()
+        {
+
+            bool expected = true;
+            bool actual = false;
+
+            EventStream testObj = new EventStream(new EventStreamAttribute("Bank",
+                "Account", 
+                "Instance 1234",
+                notificationDispatcherName: nameof(QueueNotificationDispatcher ))
+                );
+
+            MockEventOne testEvent = new MockEventOne() { EventTypeName = "Test Event Happened" };
+
+            await testObj.AppendEvent(testEvent);
+
+            actual = await testObj.Exists();
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
         public async Task CreateNew_TestMethod()
         {
 

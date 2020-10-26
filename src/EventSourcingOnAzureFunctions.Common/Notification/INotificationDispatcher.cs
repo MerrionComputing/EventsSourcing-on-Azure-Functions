@@ -13,6 +13,15 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
     public interface INotificationDispatcher
     {
 
+
+        /// <summary>
+        /// The unique name of this notification dispatcher
+        /// </summary>
+        /// <remarks>
+        /// This allows them to be accessed by name in calling code
+        /// </remarks>
+        string Name { get; }
+
         /// <summary>
         /// Notify that a new entity (or event stream) instance was created
         /// </summary>

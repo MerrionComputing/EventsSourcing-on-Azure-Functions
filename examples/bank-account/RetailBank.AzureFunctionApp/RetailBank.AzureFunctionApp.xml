@@ -1,0 +1,552 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>RetailBank.AzureFunctionApp</name>
+    </assembly>
+    <members>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Classifications.BalanceBelowGivenThreshold">
+            <summary>
+            True if the current balance of this account is below a given threshold
+            </summary>
+            <remarks>
+            This is an example of a classifier that uses a parameter
+            </remarks>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Classifications.InterestAccruedToday">
+            <summary>
+            A classification of a bank account to state whether that account has had interest 
+            accrued today
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Events.BeneficiarySet">
+            <summary>
+            The person who owns the account has been set 
+            </summary>
+            <remarks>
+            This is used for the anti-money laundering functions and also to link 
+            a contact with the bank account
+            </remarks>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.BeneficiarySet.BeneficiaryName">
+            <summary>
+            The name of the person or entity that is the beneficiary of this account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.BeneficiarySet.CountryOfResidence">
+            <summary>
+            The country of residence of the beneficiary
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.BeneficiarySet.ExistingCustomerIdentifier">
+            <summary>
+            The unique identifier of the beneficiary if they are an existing customer of the bank
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Events.BranchSet">
+            <summary>
+            The branch that an account belongs to / is managed by has been set
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.BranchSet.BranchIdentifier">
+            <summary>
+            The unique identifier of the branch that has been set as the "owner"
+            of this account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.BranchSet.Commentary">
+            <summary>
+            Additional commentary on the change of branch owner
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.BranchSet.EffectiveDate">
+            <summary>
+            As of when was this branch onwership effective
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.InterestAccrued.AmountAccrued">
+            <summary>
+            The amount of money interest accrued for the account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.InterestAccrued.Commentary">
+            <summary>
+            The commentary attached to the interest 
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.InterestAccrued.InterestRateInEffect">
+            <summary>
+            How much was the interest rate when this accrual happened
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.InterestAccrued.AccrualEffectiveDate">
+            <summary>
+            As of when was this accrual effective
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.InterestPaid.AmountPaid">
+            <summary>
+            The amount of money interest paid for the account
+            </summary>
+            <remarks>
+            This can be negative interest was charged
+            </remarks>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.InterestPaid.Commentary">
+            <summary>
+            The commentary attached to the interest 
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Events.MoneyDeposited">
+            <summary>
+            Money was deposited into a customer account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyDeposited.AmountDeposited">
+            <summary>
+            The amount of money deposited into the account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyDeposited.Commentary">
+            <summary>
+            The commentary attached to the deposit 
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyDeposited.Source">
+            <summary>
+            Where did the deposit originate from 
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyDeposited.TransactionCorrelationIdentifier">
+            <summary>
+            If this deposit is part of a business transaction, this is the correlation identifier
+            that links together all the component parts
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyDeposited.LoggedDepositDate">
+            <summary>
+            The date/time this deposit was recorded in our system
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyDeposited.ExpectedFundsClearedDate">
+            <summary>
+            When the funds should expect to be cleared
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Events.MoneyWithdrawn">
+            <summary>
+            Money was withdrawn from a customer account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyWithdrawn.AmountWithdrawn">
+            <summary>
+            The amount of money to be withdrawn into the account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyWithdrawn.Commentary">
+            <summary>
+            The commentary attached to the money withdrawal 
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyWithdrawn.Target">
+            <summary>
+            Where did the withdrawal go to 
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyWithdrawn.TransactionCorrelationIdentifier">
+            <summary>
+            If this withdrawal is part of a business transaction, this is the correlation identifier
+            that links together all the component parts
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.MoneyWithdrawn.LoggedWithdrawalDate">
+            <summary>
+            The date/time this withdrawal was recorded in our system
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Events.Opened">
+            <summary>
+            An account was opened
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.Opened.LoggedOpeningDate">
+            <summary>
+            The date/time this account was opened in our system
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.Opened.Commentary">
+            <summary>
+            The commentary attached to the account being opened 
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.OverdraftLimitSet.OverdraftLimit">
+            <summary>
+            The maximum amount the account can be overdrawn
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.OverdraftLimitSet.Commentary">
+            <summary>
+            Additional notes on the overdraft being set
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Events.OverdraftLimitSet.Unauthorised">
+            <summary>
+            Is the overdraft unauthorized (due to a mandatory withdrawal exceeding
+            the current overdraft limit)
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Projections.Balance">
+            <summary>
+            The running balance of the account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Projections.Balance.CurrentBalance">
+            <summary>
+            The current balance after the projection has run over a bank account event stream
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Projections.InterestDue">
+            <summary>
+            How much interest is due for an account
+            </summary>
+            <remarks>
+            A negative amount means that the bank is owed interest from the accont
+            </remarks>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.Account.Projections.OverdraftLimit">
+            <summary>
+            The overdraft limit in force for this account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.Account.Projections.OverdraftLimit.CurrentOverdraftLimit">
+            <summary>
+            The overdraft limit found for a bank account event stream
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.AccountCommands">
+            <summary>
+            Commands related to the Account entity
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountCommands.ApplyAccruedInterestCommand(System.Net.Http.HttpRequestMessage,System.String,EventSourcingOnAzureFunctions.Common.CQRS.Command)">
+            <summary>
+            Apply accrued interest to an account
+            </summary>
+            <param name="accountnumber">
+            The account number to use for the account to have any accrued interest applied.
+            </param>
+            <remarks>
+            This is a multi-step command, first -if needed- extend an overdraft to cover the 
+            accrued interest then apply the interest itself
+            </remarks>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountCommands.SetOverdraftForInterestCommandStep(Microsoft.Azure.EventGrid.Models.EventGridEvent)">
+            <summary>
+            Set any overdraft required if the interest accrued exceeds the current requirement
+            </summary>
+            <param name="egStepTriggered">
+            The event grid event that gets sent to this command step
+            </param>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountCommands.PayInterestCommandStep(Microsoft.Azure.EventGrid.Models.EventGridEvent)">
+            <summary>
+            Pay any accrued interest
+            </summary>
+            <param name="egStepTriggered">
+            The event grid event that gets sent to this command step
+            </param>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.AccountFunctions">
+            <summary>
+            Functions that rely on the Durable Functions library for orchestration
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.OpenAccountRun(System.Net.Http.HttpRequestMessage,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.EventStream)">
+            <summary>
+            Open a new bank account
+            </summary>
+            <param name="accountnumber">
+            The account number to use for the account.  
+            If this already exists this command will return an error.
+            </param>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.GetBalanceRun(System.Net.Http.HttpRequestMessage,System.String,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection)">
+            <summary>
+            Get the current balance of a bank account
+            </summary>
+            <param name="accountnumber">
+            The account number of the account for which we want the balance
+            </param>
+            <param name="prjBankAccountBalance">
+            The projection instance that is run to get the current account balance
+            </param>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.DepositMoneyRun(System.Net.Http.HttpRequestMessage,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.EventStream)">
+            <summary>
+            Add money to the selected bank account
+            </summary>
+            <param name="accountnumber">
+            The unique identifier of the account we are depositing money to
+            </param>
+            <param name="bankAccountEvents">
+            The event stream to append the account event(s) onto
+            </param>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.WithdrawMoneyRun(System.Net.Http.HttpRequestMessage,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.EventStream,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection)">
+            <summary>
+            Withdraw money from the given bank account
+            </summary>
+            <param name="accountnumber">
+            The account number to use
+            </param>
+            <param name="bankAccountEvents">
+            The event stream to add events to the end of
+            </param>
+            <param name="prjBankAccountBalance">
+            The projection to get the current bank balance
+            </param>
+            <param name="prjBankAccountOverdraft">
+            The projection to get the current overdraft for
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.SetBeneficialOwnerRun(System.Net.Http.HttpRequestMessage,System.String,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.EventStream)">
+            <summary>
+            Set or change who is the beneficial owner of this account
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.SetOverdraftLimitRun(System.Net.Http.HttpRequestMessage,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.EventStream,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection)">
+            <summary>
+            Set a new overdraft limit for the account
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.AccrueInterestRun(System.Net.Http.HttpRequestMessage,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.EventStream,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection,EventSourcingOnAzureFunctions.Common.EventSourcing.Classification)">
+            <summary>
+            Calculate the accrued interest and post it to the account
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.PayInterestRun(System.Net.Http.HttpRequestMessage,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.EventStream,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection)">
+            <summary>
+            Pay the accrued interest and due to/from the account
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.ExtendOverdraftForInterestRun(System.Net.Http.HttpRequestMessage,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.EventStream,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection,EventSourcingOnAzureFunctions.Common.EventSourcing.Projection)">
+            <summary>
+            Extend the overdraft to cover the interest and due from the account
+            </summary>
+            <remarks>
+            If there is no extrension needed then this command does not do anything
+            </remarks>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.ApplyInterestForAllAccounts(Microsoft.Azure.WebJobs.Extensions.DurableTask.IDurableOrchestrationContext)">
+            <summary>
+            Apply interest to all of the bank accounts in the system
+            </summary>
+            <param name="context">
+            The durable functions orchestration for this command
+            </param>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountFunctions.ApplyInterestForSpecificAccount(Microsoft.Azure.WebJobs.Extensions.DurableTask.IDurableOrchestrationContext)">
+            <summary>
+            Apply the interest for a specific account
+            </summary>
+            <param name="context">
+            The sub orchestration context to use for the command
+            to apply interest to one account
+            </param>
+            <returns></returns>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.AccountOpeningData">
+            <summary>
+            The data payload that can be sent when opening a bank account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.AccountOpeningData.Commentary">
+            <summary>
+            The text commentary provided when opening the new bank account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.AccountOpeningData.OpeningBalance">
+            <summary>
+            The initial balance used to open the account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.AccountOpeningData.ClientName">
+            <summary>
+            The client in whose name the account is opened
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.AccountQueries">
+            <summary>
+            Queries related to the Account entity
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.AccountQueries.AccountsBelowThresholdQuery(System.Net.Http.HttpRequestMessage,EventSourcingOnAzureFunctions.Common.CQRS.Query)">
+            <summary>
+            List all accounts below a given threshold balance..
+            </summary>
+            <param name="req">
+            The HTTP request trigger with the parameters to use in the body as application/json
+            </param>
+            <remarks>
+            This sets up a new [Query], posts the 
+            </remarks>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.FunctionResponse">
+            <summary>
+            A wrapper for the response from the function
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.FunctionResponse.Message">
+            <summary>
+            The text message returned from the command
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.FunctionResponse.InError">
+            <summary>
+            If set the command was not executed because of an error
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.FunctionResponse.ExecutionTime">
+            <summary>
+            The amount of time it took for the command to execute
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.FunctionResponse.#ctor">
+            <summary>
+            Empty constructor for serialising
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.ProjectionFunctionResponse.SequenceNumber">
+            <summary>
+            The sequence number as of which the response was sent 
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.ProjectionFunctionResponse.#ctor">
+            <summary>
+            Empty constructor for serialising
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.GlobalFunctions">
+            <summary>
+            Utility, test and debugging functions
+            </summary>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.GlobalFunctions.EventGridEcho(Microsoft.Azure.EventGrid.Models.EventGridEvent,Microsoft.Extensions.Logging.ILogger,Microsoft.Azure.WebJobs.IAsyncCollector{Microsoft.Azure.WebJobs.Extensions.SignalRService.SignalRMessage})">
+            <summary>
+            Echo whatever is received from the event grid to log so that we can test the 
+            event grid messages are wired up and working
+            </summary>
+            <param name="eventGridEvent"></param>
+            <param name="log"></param>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.GlobalFunctions.MakeSignalRGroupName(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity)">
+            <summary>
+            Convert an event stream identity into a SignalR valid group name
+            </summary>
+            <param name="eventTarget">
+            The entity we are raising an event notification about
+            </param>
+            <remarks>
+            Group name should be less than or equals to 64 characters.
+            Group name may only have alphanumeric characters and underscores
+            </remarks>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.GlobalFunctions.Negotiate(Microsoft.AspNetCore.Http.HttpRequest,Microsoft.Azure.WebJobs.Extensions.SignalRService.SignalRConnectionInfo)">
+            <summary>
+            This function is used by SignalR clients looking to connect
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.InterestAccrualData">
+            <summary>
+            The data payload passed to an "accrue interest" command  
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.InterestAccrualData.Commentary">
+            <summary>
+            The text commentary provided when accruing interest
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.InterestAccrualData.DebitInterestRate">
+            <summary>
+            The interest rate to charge if the account is below zero
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.InterestAccrualData.CreditInterestRate">
+            <summary>
+            The interest rate to charge if the account is above zero
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.InterestPayData">
+            <summary>
+            The payload to pass to the "pay interest" command
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.InterestPayData.Commentary">
+            <summary>
+            The text commentary provided when paying the interest
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.MoneyDepositData.Commentary">
+            <summary>
+            The text commentary provided when depositing money in an account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.MoneyDepositData.DepositAmount">
+            <summary>
+            The amount deposited
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.MoneyDepositData.Source">
+            <summary>
+            Where did the deposit come from
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.MoneyWithdrawnData.AmountWithdrawn">
+            <summary>
+            The amount of money to be withdrawn into the account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.MoneyWithdrawnData.Commentary">
+            <summary>
+            The commentary attached to the money withdrawal 
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.NotificationFunctions">
+            <summary>
+            Functions triggered by the Event Grid notifications that come out of the 
+            event sourcing library to demonstrate how they could be used to wire together
+            microservices style applications
+            </summary>
+            <remarks>
+            These functions are wired-up to the notification event grid by configuration
+            </remarks>
+        </member>
+        <member name="M:RetailBank.AzureFunctionApp.NotificationFunctions.OnNewBankAccountNotification(Microsoft.Azure.EventGrid.Models.EventGridEvent,System.IO.TextWriter,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            This event is triggered whenever a new bank account entity notification is sent via EventGrid,
+            and just adds a row to the "all-bank-accounts.txt" file
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.OverdraftSetData">
+            <summary>
+            The data payload for a function to set the overdraft for an account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.OverdraftSetData.NewOverdraftLimit">
+            <summary>
+            The new overdraft limitthe account
+            </summary>
+        </member>
+        <member name="P:RetailBank.AzureFunctionApp.OverdraftSetData.Commentary">
+            <summary>
+            The commentary attached to the overdraft limit 
+            </summary>
+        </member>
+        <member name="T:RetailBank.AzureFunctionApp.AzureFunctionAppStartup">
+            <summary>
+            Start-up class to load all the dependency injection and startup configuration code
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -25,6 +25,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
     public class Command
     {
 
+        private readonly string _commandDispatcherName = nameof(QueueNotificationDispatcher);
         private readonly IWriteContext _commandContext;
 
         private readonly string _domainName;
@@ -73,7 +74,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
                 EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName( DomainName ),
                     CommandName,
-                    UniqueIdentifier),
+                    UniqueIdentifier,
+                    notificationDispatcherName: _commandDispatcherName),
                     context: _commandContext);
 
                 ParameterValueSet evParam = new ParameterValueSet()
@@ -107,7 +109,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                     new ProjectionAttribute(MakeDomainCommandName(DomainName),
                     CommandName,
                     UniqueIdentifier,
-                    nameof(CommandHandler.Projections.ParameterValues)));
+                    nameof(CommandHandler.Projections.ParameterValues),
+                    notificationDispatcherName: _commandDispatcherName));
                
                 if (null != prjCmdParams)
                 {
@@ -170,7 +173,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                 new ProjectionAttribute(MakeDomainCommandName(DomainName),
                 CommandName,
                 UniqueIdentifier,
-                nameof(CommandHandler.Projections.ExecutionState)));
+                nameof(CommandHandler.Projections.ExecutionState),
+                notificationDispatcherName:_commandDispatcherName ));
 
             if (null != prjCmdState)
             {
@@ -206,7 +210,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
                 EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
                     CommandName,
-                    UniqueIdentifier),
+                    UniqueIdentifier,
+                    notificationDispatcherName: _commandDispatcherName),
                     context: _commandContext);
 
                 CommandStepInitiated evStep = new CommandStepInitiated()
@@ -241,7 +246,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
                 EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
                     CommandName,
-                    UniqueIdentifier),
+                    UniqueIdentifier,
+                    notificationDispatcherName: _commandDispatcherName),
                     context: _commandContext);
 
                 StepCompleted evStep = new StepCompleted()
@@ -294,7 +300,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
             EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
                 CommandName,
-                UniqueIdentifier),
+                UniqueIdentifier,
+                notificationDispatcherName: _commandDispatcherName),
                 context: _commandContext);
 
             if (null != classificationParameters)
@@ -370,7 +377,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
             EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
                 CommandName,
-                UniqueIdentifier),
+                UniqueIdentifier,
+                notificationDispatcherName: _commandDispatcherName),
                 context: _commandContext);
 
             ClassifierResultReturned evRet = new ClassifierResultReturned()
@@ -420,7 +428,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             EventStream esCmd = new EventStream(new EventStreamAttribute(
                        MakeDomainCommandName(DomainName),
                        CommandName,
-                       UniqueIdentifier),
+                       UniqueIdentifier,
+                       notificationDispatcherName: _commandDispatcherName),
                        context: _commandContext);
 
             ProjectionRequested evPrj = new ProjectionRequested()
@@ -449,7 +458,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
             EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
                 CommandName,
-                UniqueIdentifier),
+                UniqueIdentifier,
+                notificationDispatcherName: _commandDispatcherName),
                 context: _commandContext);
 
 

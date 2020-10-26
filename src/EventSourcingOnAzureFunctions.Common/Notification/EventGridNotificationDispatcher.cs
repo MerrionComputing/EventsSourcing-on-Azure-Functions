@@ -46,6 +46,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         public const string TRACE_HEADER_PARENT = "traceparent";
         public const string TRACE_HEADER_STATE = "tracestate";
 
+
+        /// <summary>
+        /// The name by which this notification dispatcher is known
+        /// </summary>
+        public string Name => nameof(EventGridNotificationDispatcher);
+
         public EventGridNotificationDispatcher(IOptions<EventSourcingOnAzureOptions> options,
             INameResolver nameResolver,
             ILogger logger )
@@ -119,6 +125,8 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 httpClient.DefaultRequestHeaders.Add("aeg-sas-key", this.eventGridKeyValue);
             }
         }
+
+
 
         /// <summary>
         /// A new entity was created - notify the world

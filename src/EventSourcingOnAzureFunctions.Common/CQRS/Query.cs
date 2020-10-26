@@ -23,6 +23,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
     public class Query
     {
 
+        private readonly string _queryDispatcherName = nameof(QueueNotificationDispatcher);
         private readonly IWriteContext _queryContext;
 
         private readonly string _domainName;
@@ -69,7 +70,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
                 EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
                     QueryName,
-                    UniqueIdentifier),
+                    UniqueIdentifier,
+                    notificationDispatcherName: _queryDispatcherName),
                     context: _queryContext);
 
                 ParameterValueSet evParam = new ParameterValueSet()
@@ -119,7 +121,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
             EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
                 QueryName,
-                UniqueIdentifier),
+                UniqueIdentifier,
+                notificationDispatcherName: _queryDispatcherName),
                 context: _queryContext);
 
             if (null != classificationParameters )
@@ -195,7 +198,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
             EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
                 QueryName,
-                UniqueIdentifier),
+                UniqueIdentifier,
+                notificationDispatcherName: _queryDispatcherName),
                 context: _queryContext);
 
             ClassifierResultReturned evRet = new ClassifierResultReturned()
@@ -244,7 +248,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             EventStream esQry = new EventStream(new EventStreamAttribute(
                        MakeDomainQueryName(DomainName),
                        QueryName,
-                       UniqueIdentifier),
+                       UniqueIdentifier,
+                       notificationDispatcherName: _queryDispatcherName),
                        context: _queryContext);
 
             ProjectionRequested evPrj = new ProjectionRequested()
@@ -301,7 +306,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
             EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
                 QueryName,
-                UniqueIdentifier),
+                UniqueIdentifier,
+                notificationDispatcherName: _queryDispatcherName),
                 context: _queryContext);
 
             ProjectionValueReturned evRet = new ProjectionValueReturned()
@@ -333,7 +339,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
                 EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
                     QueryName,
-                    UniqueIdentifier),
+                    UniqueIdentifier,
+                    notificationDispatcherName: _queryDispatcherName),
                     context: _queryContext);
 
                 OutputLocationSet evParam = new OutputLocationSet()

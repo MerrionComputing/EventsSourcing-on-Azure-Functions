@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +16,32 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <summary>
         /// The static factory-created notification dispatcher
         /// </summary>
-        public static IEnumerable<INotificationDispatcher> NotificationDispatchers { get; private set; }
+        public static ConcurrentDictionary<string, INotificationDispatcher> NotificationDispatchers { get; private set; }
+
+        public static INotificationDispatcher GetDispatcher(string dispatcherName)
+        {
+
+            if (NotificationDispatchers != null)
+            {
+                if (NotificationDispatchers.ContainsKey(dispatcherName ) )
+                {
+                    return NotificationDispatchers[dispatcherName];
+                }
+            }
+
+            // If not found, return the NULL one for composability
+            return new NullNotificationDispatcher();
+        }
+
+        /// <summary>
+        /// A default dispatcher to use if none is specified
+        /// </summary>
+        /// <returns></returns>
+        public  static INotificationDispatcher GetDefaultDispatcher()
+        {
+            return GetDispatcher(nameof(EventGridNotificationDispatcher));
+        }
+
 
         /// <summary>
         /// Create any static classes used to dispatch notifications 
@@ -59,10 +85,23 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 // Add the default notification dispatchers
                 if (NotificationDispatchers == null)
                 {
-                    NotificationDispatchers = new List<INotificationDispatcher>();
+                    NotificationDispatchers = new ConcurrentDictionary<string, INotificationDispatcher>();
                 }
-                NotificationDispatchers.Append( new EventGridNotificationDispatcher(options, nameResolver, logger ));
-                NotificationDispatchers.Append(new QueueNotificationDispatcher(options, settings, logger));
+                EventGridNotificationDispatcher evDispatcher = new EventGridNotificationDispatcher(options, nameResolver, logger);
+                if (evDispatcher != null)
+                {
+                    NotificationDispatchers.TryAdd(evDispatcher.Name, evDispatcher );
+                }
+                QueueNotificationDispatcher quDispatch = new QueueNotificationDispatcher(options, settings, logger);
+                if (quDispatch != null)
+                {
+                    NotificationDispatchers.TryAdd(quDispatch.Name , quDispatch );
+                }
+                NullNotificationDispatcher nuDispatch = new NullNotificationDispatcher();
+                if (nuDispatch != null)
+                {
+                    NotificationDispatchers.TryAdd(nuDispatch.Name, nuDispatch);
+                }
             }
         }
 
