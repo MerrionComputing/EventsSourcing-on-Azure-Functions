@@ -119,19 +119,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 }
                 streamFooter.LastSequence += 1;
 
-                string lastETag = streamFooter.ETag;
-
                 try
                 {
-                    TableResult tres = await Table.ExecuteAsync(TableOperation.InsertOrReplace(streamFooter),
-                          null,
-                          new OperationContext
-                          {
-                              UserHeaders = new Dictionary<String, String>
-                              {
-                              { "If-Match", lastETag }
-                              }
-                          });
+                    TableResult tres = null;
+                    if (string.IsNullOrWhiteSpace(streamFooter.ETag))
+                    {
+                        tres = await Table.ExecuteAsync(TableOperation.Insert(streamFooter));
+                    }
+                    else
+                    {
+                        tres = await Table.ExecuteAsync(TableOperation.Replace(streamFooter));
+                    }
 
                     if (tres.HttpStatusCode == 204)
                     {

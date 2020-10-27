@@ -86,8 +86,8 @@ namespace EventSourcingOnAzureFunctions.Test
         public void Projection_MockProjectionOne_TestMethod()
         {
 
-            int notexpected = 0;
-            int actual = 0;
+            decimal notexpected = 0;
+            decimal actual = 0;
 
             TableEventStreamReader testReader = new TableEventStreamReader(
                 new EventStreamAttribute("Bank", "Account", "Instance 1234"),
@@ -95,8 +95,8 @@ namespace EventSourcingOnAzureFunctions.Test
 
             ProjectionProcessor testObj = new ProjectionProcessor(testReader);
 
-            var result = testObj.Process<MockProjectionOne>();
-            actual = result.Result.TotalCount;
+            var result = testObj.Process<MockBalanceProjection>();
+            actual = result.Result.CurrentBalance;
 
             Assert.AreNotEqual(notexpected, actual);
 
