@@ -98,6 +98,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 {
                     queueName = QUEUE_QUERY_PROJECTIONS;
                 }
+                // Add the extra details to the message text to indicate what projection was requested
+                ProjectionRequested evtPayload = eventPayload as ProjectionRequested;
+                if (evtPayload != null)
+                {
+                    messageToSend += $"|{evtPayload.ProjectionDomainName}|{evtPayload.ProjectionEntityTypeName}|{evtPayload.ProjectionInstanceKey}|{evtPayload.ProjectionTypeName}|{evtPayload.AsOfDate}|{evtPayload.CorrelationIdentifier}";
+                }
             }
             else
             {
@@ -111,6 +117,12 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                     if (targetEntity.DomainName.Contains("Query"))
                     {
                         queueName = QUEUE_QUERY_CLASSIFICATIONS;
+                    }
+                    // Add the extra details to the message text to indicate what classification was requested
+                    ClassifierRequested evtPayload = eventPayload as ClassifierRequested;
+                    if (evtPayload != null)
+                    {
+                        messageToSend += $"|{evtPayload.DomainName}|{evtPayload.EntityTypeName}|{evtPayload.InstanceKey}|{evtPayload.ClassifierTypeName}|{evtPayload.AsOfDate}|{evtPayload.CorrelationIdentifier}";
                     }
                 }
                 else
