@@ -28,9 +28,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             {
                 if (projectionToRun == null)
                 {
-                    throw new EventStreamReadException(eventStreamReader,
-                        0,
-                        "Projection to run was not specified"); 
+                    throw new ArgumentException("Projection to run must not be null", nameof(projectionToRun)); 
                 }
 
                 foreach (IEventContext wrappedEvent in await eventStreamReader.GetEventsWithContext(

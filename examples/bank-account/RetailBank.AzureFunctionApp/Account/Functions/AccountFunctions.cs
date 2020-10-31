@@ -27,6 +27,9 @@ namespace RetailBank.AzureFunctionApp
         /// The account number to use for the account.  
         /// If this already exists this command will return an error.
         /// </param>
+        /// <param name="bankAccountEvents">
+        /// The event stream to create and append events to
+        /// </param>
         [FunctionName("OpenAccount")]
         public static async Task<HttpResponseMessage> OpenAccountRun(
                       [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"OpenAccount/{accountnumber}")]HttpRequestMessage req,
@@ -154,6 +157,9 @@ namespace RetailBank.AzureFunctionApp
         /// <param name="accountnumber">
         /// The account number of the account for which we want the balance
         /// </param>
+        /// <param name="asOfDate">
+        /// The effective date for which to get the balance
+        /// </param>
         /// <param name="prjBankAccountBalance">
         /// The projection instance that is run to get the current account balance
         /// </param>
@@ -170,6 +176,9 @@ namespace RetailBank.AzureFunctionApp
 
             string result = $"No balance found for account {accountnumber}";
 
+            //see if a prior balance was passed in
+            ExistingBalanceData priorBalance = await req.Content.ReadAsAsync<ExistingBalanceData>(); 
+
             if (null != prjBankAccountBalance)
             {
                 if (await prjBankAccountBalance.Exists())
@@ -184,9 +193,20 @@ namespace RetailBank.AzureFunctionApp
                             asOfDateValue = dtTest;
                         }
                     }
-                    
+
                     // Run the "Balance" projection
-                    Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(asOfDateValue);
+                    Balance startingBalance = null;
+                    if (priorBalance != null)
+                    {
+                        startingBalance = new Balance(priorBalance.Balance, priorBalance.AsOfSequenceNumber);
+                    }
+                    else
+                    {
+                        startingBalance = new Balance();
+                    }
+                    
+
+                    Balance projectedBalance = await prjBankAccountBalance.Process<Balance>(startingBalance, asOfDateValue);
                     if (null != projectedBalance)
                     {
                         result = $"Balance for account {accountnumber} is ${projectedBalance.CurrentBalance} ";

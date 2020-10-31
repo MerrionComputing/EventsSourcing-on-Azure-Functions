@@ -103,5 +103,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 }
             }
         }
+
+        public ProjectionBase(int initialSequenceNumber)
+            : this()
+        {
+            _sequenceNumber = initialSequenceNumber;
+        }
     }
 }

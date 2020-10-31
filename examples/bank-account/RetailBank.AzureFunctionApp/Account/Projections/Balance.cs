@@ -59,6 +59,14 @@ namespace RetailBank.AzureFunctionApp.Account.Projections
             
         }
 
+        public Balance(decimal startingBalance,
+            int startingSequenceNumber
+            )
+            : base(startingSequenceNumber )
+        {
+            currentBalance = startingBalance;
+        }
+
         public override string ToString()
         {
             return $"Balance : {CurrentBalance}";

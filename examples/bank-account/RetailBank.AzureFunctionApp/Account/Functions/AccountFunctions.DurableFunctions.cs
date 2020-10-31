@@ -332,8 +332,6 @@ namespace RetailBank.AzureFunctionApp
                                 {
                                     success = false;
                                 }
-
-
                             }
                         }
                     }
