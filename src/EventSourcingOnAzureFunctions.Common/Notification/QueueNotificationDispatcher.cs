@@ -102,7 +102,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 ProjectionRequested evtPayload = eventPayload as ProjectionRequested;
                 if (evtPayload != null)
                 {
-                    messageToSend += $"|{evtPayload.ProjectionDomainName}|{evtPayload.ProjectionEntityTypeName}|{evtPayload.ProjectionInstanceKey}|{evtPayload.ProjectionTypeName}|{evtPayload.AsOfDate}|{evtPayload.CorrelationIdentifier}";
+                    messageToSend += ProjectionRequested.ToQueueMessage(evtPayload);
                 }
             }
             else
@@ -342,7 +342,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
             {
                 return $"{NotificationType}|{NotificationClass}|{targetEntity.InstanceKey}|{asOfSequenceNumber}|{asOfDate}";
             }
-            return $"{NotificationType}|{NotificationClass}|{targetEntity.InstanceKey}|{asOfSequenceNumber}";
+            return $"{NotificationType}|{NotificationClass}|{targetEntity.InstanceKey}|{asOfSequenceNumber}|null";
         }
 
     }
