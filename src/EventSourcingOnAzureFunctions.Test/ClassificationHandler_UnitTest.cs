@@ -30,7 +30,7 @@ namespace EventSourcingOnAzureFunctions.Test
                 DomainName = "Bank",
                 EntityTypeName = "Query",
                 InstanceKey = "QRY-1234-6567",
-                ClassifierRequest =  new Common.ClassifierHandler.Events.ClassifierRequested()
+                ClassifierRequest =  new Common.CQRS.ClassifierHandler.Events.ClassifierRequested()
                 {
                      ClassifierTypeName = "Balance Below Threshold",
                      DomainName = "Bank",

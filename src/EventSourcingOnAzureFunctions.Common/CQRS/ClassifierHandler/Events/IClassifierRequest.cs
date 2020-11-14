@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events
+namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events
 {
     public interface IClassifierRequest
     {

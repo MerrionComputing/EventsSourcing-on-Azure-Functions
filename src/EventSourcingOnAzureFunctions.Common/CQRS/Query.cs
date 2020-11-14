@@ -1,5 +1,4 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
-using EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.Common.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events;

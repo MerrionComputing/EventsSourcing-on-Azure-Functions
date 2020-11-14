@@ -4,6 +4,10 @@ using System.Text;
 
 namespace RetailBank.AzureFunctionApp
 {
+
+    /// <summary>
+    /// Payload of the "withdraw money" function
+    /// </summary>
     public class MoneyWithdrawnData
     {
 

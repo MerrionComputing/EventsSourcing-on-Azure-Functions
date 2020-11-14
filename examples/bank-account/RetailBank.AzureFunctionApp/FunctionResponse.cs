@@ -38,6 +38,18 @@ namespace RetailBank.AzureFunctionApp
         /// </summary>
         public FunctionResponse() { }
 
+        /// <summary>
+        /// Create a new function response from the given components
+        /// </summary>
+        /// <param name="startTime">
+        /// The time the function started at (for timing diagnostics)
+        /// </param>
+        /// <param name="isInError">
+        /// True if the function returned an error
+        /// </param>
+        /// <param name="responseMessage">
+        /// The text returned from the function for logging
+        /// </param>
         public FunctionResponse(DateTime startTime,
             bool isInError,
             string responseMessage)
@@ -64,6 +76,9 @@ namespace RetailBank.AzureFunctionApp
 
     }
 
+    /// <summary>
+    /// A response returned when a projection has been run
+    /// </summary>
     public class ProjectionFunctionResponse
         : FunctionResponse 
     {

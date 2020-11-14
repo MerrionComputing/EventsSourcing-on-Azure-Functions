@@ -1,7 +1,7 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events;
-using EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using System;
 using System.Collections.Generic;

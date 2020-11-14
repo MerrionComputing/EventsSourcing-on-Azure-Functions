@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events
+namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events
 {
 
     [EventName("Classification Requested")]

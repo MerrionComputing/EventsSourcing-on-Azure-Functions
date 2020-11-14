@@ -1,4 +1,4 @@
-﻿using EventSourcingOnAzureFunctions.Common.ClassifierHandler.Events;
+﻿using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
