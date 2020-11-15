@@ -5,6 +5,7 @@ using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.CQRS.Common.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
@@ -12,6 +13,7 @@ using EventSourcingOnAzureFunctions.Common.Notification;
 using Microsoft.Azure.EventGrid.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static EventSourcingOnAzureFunctions.Common.EventSourcing.ClassificationResponse;
@@ -478,6 +480,33 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             await esCmd.AppendEvent(evRet);
         }
 
+        /// <summary>
+        /// Gets the set of projection requests outstanding for this command 
+        /// </summary>
+        /// <returns>
+        /// The set of projection requests with no matching response
+        /// </returns>
+        public async Task<IEnumerable<IProjectionRequest>> GetOutstandingProjections()
+        {
+
+            // Run the [Outstanding Projections] projection over this command's event stream.
+            Projection outstanding = new Projection(new ProjectionAttribute(MakeDomainCommandName(DomainName),
+                CommandName,
+                UniqueIdentifier,
+                ProjectionNameAttribute.GetProjectionName(typeof(OutstandingProjections)),
+                notificationDispatcherName: _commandDispatcherName )
+                );
+
+            var outstandingProjections = await outstanding.Process<OutstandingProjections>();
+
+            if (outstandingProjections != null)
+            {
+                return outstandingProjections.ProjectionsToBeProcessed;
+            }
+
+            // If nothing found return an empty set for composability
+            return Enumerable.Empty<IProjectionRequest>();
+        }
 
         public Command (string domainName,
             string commandName,
