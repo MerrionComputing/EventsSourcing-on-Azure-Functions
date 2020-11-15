@@ -4,6 +4,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.Notification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace EventSourcingOnAzureFunctions.Test
 {
@@ -69,6 +70,29 @@ namespace EventSourcingOnAzureFunctions.Test
             var testObj = ProjectionRequested.FromQueuedMessage(testMessage);
 
             actual = testObj.CorrelationIdentifier;
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void FromQueueMessage_Valid_AsOfDate_TestMethod()
+        {
+
+            DateTime expected = new DateTime(2020,12,19);
+            DateTime  actual = new DateTime(1984,3,15);
+
+            IEventStreamIdentity cmdTest = new Common.Binding.EventStreamAttribute("Bank", "Apply Interest", "A-123456-BB");
+
+            string testMessage = QueueNotificationDispatcher.MakeMessageString(cmdTest,
+                QueueNotificationDispatcher.NOTIFICATION_NEW_EVENT,
+                "Projection Requested",
+                3);
+
+            testMessage += $"|Bank|Account|A-123456-BB|Balance|2020-12-19|123456789-ab";
+
+            var testObj = ProjectionRequested.FromQueuedMessage(testMessage);
+
+            actual = testObj.AsOfDate.GetValueOrDefault();
 
             Assert.AreEqual(expected, actual);
         }

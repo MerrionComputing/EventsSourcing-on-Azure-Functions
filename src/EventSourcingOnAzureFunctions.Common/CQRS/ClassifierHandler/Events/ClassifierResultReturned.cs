@@ -1,13 +1,15 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using static EventSourcingOnAzureFunctions.Common.EventSourcing.ClassificationResponse;
 
 namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events
 {
     [EventName("Classification Returned")]
     public class ClassifierResultReturned
-        : IClassifierRequest
+        : IClassifierRequest,
+        IEquatable<IClassifierRequest>
     {
 
 
@@ -57,5 +59,29 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events
         /// An unique identifier set by the caller to trace this classifier operation
         /// </summary> 
         public string CorrelationIdentifier { get; set; }
+
+        public bool Equals([AllowNull] IClassifierRequest other)
+        {
+            if (other != null)
+            {
+                if (other.DomainName.Equals(DomainName))
+                {
+                    if (other.EntityTypeName.Equals(EntityTypeName))
+                    {
+                        if (other.InstanceKey.Equals(InstanceKey))
+                        {
+                            if (other.ClassifierTypeName.Equals(ClassifierTypeName))
+                            {
+                                if (other.AsOfDate.Equals(AsOfDate))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
     }
 }

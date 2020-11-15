@@ -2,7 +2,7 @@
   "ConnectionStrings": {
     "Fakeconnectionstring": "UseDevelopmentStorage=true",
     "CosmosEmulator": "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
-    "RetailBank": ""
+    "RetailBank": "DefaultEndpointsProtocol=https;AccountName=retailbank;AccountKey=XCDblIj0ivj23kaedlO6EpeuZjvSa3CjvtEcrWK/w4snBnRUYbPwUDCTqSnqPDRLgeC9Empe2NXxwtqms+Qmpg==;EndpointSuffix=core.windows.net"
   },
   "EventMaps": 
     [

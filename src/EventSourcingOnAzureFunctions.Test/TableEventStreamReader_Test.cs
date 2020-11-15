@@ -208,6 +208,11 @@ namespace Mocking
             }
         }
 
+        public override string ToString()
+        {
+            return $"{CurrentBalance} as at {CurrentSequenceNumber} (Last event message {LastMessage})";
+        }
+
         /// <summary>
         /// Pretend the projection has run to a biven event number
         /// </summary>

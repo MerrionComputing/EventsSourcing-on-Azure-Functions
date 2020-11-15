@@ -2,6 +2,7 @@
 using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.Common.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events;
+using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Events;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
@@ -10,6 +11,7 @@ using EventSourcingOnAzureFunctions.Common.Notification;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static EventSourcingOnAzureFunctions.Common.EventSourcing.ClassificationResponse;
@@ -217,6 +219,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             await esQry.AppendEvent(evRet); 
         }
 
+        // TODO: Outstanding classifications
+
+
         // Projection request
         /// <summary>
         /// Request a projection to be performed
@@ -323,6 +328,35 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             };
 
             await esQry.AppendEvent(evRet);  
+        }
+
+
+        /// <summary>
+        /// Gets the set of projection requests outstanding for this query 
+        /// </summary>
+        /// <returns>
+        /// The set of projection requests with no matching response
+        /// </returns>
+        public async Task<IEnumerable<IProjectionRequest >> GetOutstandingProjections()
+        {
+
+            // Run the [Outstanding Projections] projection over this query's event stream.
+            Projection outstanding = new Projection(new ProjectionAttribute(MakeDomainQueryName(DomainName),
+                QueryName,
+                UniqueIdentifier,
+                ProjectionNameAttribute.GetProjectionName(typeof (OutstandingProjections)),
+                notificationDispatcherName: _queryDispatcherName)
+                );
+
+            var outstandingProjections = await outstanding.Process<OutstandingProjections>();
+
+            if (outstandingProjections!= null)
+            {
+                return outstandingProjections.ProjectionsToBeProcessed;
+            }
+
+            // If nothing found return an empty set for composability
+            return Enumerable.Empty<IProjectionRequest>();
         }
 
         // Collations

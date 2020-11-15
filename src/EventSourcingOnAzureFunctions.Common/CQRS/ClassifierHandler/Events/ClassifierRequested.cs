@@ -2,6 +2,7 @@
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events
@@ -9,7 +10,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events
 
     [EventName("Classification Requested")]
     public sealed class ClassifierRequested
-        : IClassifierRequest
+        : IClassifierRequest,
+          IEquatable<IClassifierRequest>
     {
 
         /// <summary>
@@ -49,6 +51,29 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events
         /// </summary> 
         public string CorrelationIdentifier { get; set; }
 
+        public bool Equals([AllowNull] IClassifierRequest other)
+        {
+            if (other != null)
+            {
+                if (other.DomainName.Equals(DomainName ))
+                {
+                    if (other.EntityTypeName.Equals(EntityTypeName ))
+                    {
+                        if (other.InstanceKey.Equals(InstanceKey ))
+                        {
+                            if (other.ClassifierTypeName.Equals(ClassifierTypeName ))
+                            {
+                                if (other.AsOfDate.Equals(AsOfDate))
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// Any parameters included in the classifier request
@@ -143,5 +168,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events
             }
             return "";
         }
+
+
     }
 }

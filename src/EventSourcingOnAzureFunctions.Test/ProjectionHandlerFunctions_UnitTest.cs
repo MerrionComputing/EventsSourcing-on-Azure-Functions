@@ -4,6 +4,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Test
@@ -47,9 +48,12 @@ namespace EventSourcingOnAzureFunctions.Test
         public async Task RunProjectionForQuery_TestMethod()
         {
 
+            int expected = 1;
+            int actual = 0;
+
             Query testQuery = new Query("Bank",
                 "Get Available Balance",
-                "QRY-TEST-A0001"
+                "QRY-TEST-A0004"
                 );
 
             // Add a projection-requested event
@@ -69,18 +73,30 @@ namespace EventSourcingOnAzureFunctions.Test
                 ProjectionRequest =
                    new Common.CQRS.ProjectionHandler.Events.ProjectionRequested()
                    {
-                       ProjectionDomainName = "Domain Test",
-                       ProjectionEntityTypeName = "Entity Type Test",
-                       ProjectionInstanceKey = "Instance 123",
-                       ProjectionTypeName = "Mock Projection One"
+                       ProjectionDomainName = "Bank",
+                       ProjectionEntityTypeName = "Account",
+                       ProjectionInstanceKey = "A-001-223456-B",
+                       ProjectionTypeName = "Balance"
                    }
             };
 
             await ProjectionHandlerFunctions.RunProjectionForQuery(projReq);
 
-            // TODO: Now check that there was a projection response...
+            // Add an unprocessed request so that we have something to verify was not processed
+            await testQuery.RequestProjection("Bank",
+                       "Account",
+                       "B-001-223456-B",
+                       "Balance",
+                       null);
 
-            Assert.IsNotNull(testQuery);
+            // Now check that there was a projection response...
+            var outstanding = await testQuery.GetOutstandingProjections();
+            if (outstanding != null)
+            {
+                actual = outstanding.Count();
+            }
+
+            Assert.AreEqual(expected, actual);
 
         }
 
