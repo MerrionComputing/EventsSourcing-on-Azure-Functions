@@ -177,7 +177,11 @@ namespace RetailBank.AzureFunctionApp
             string result = $"No balance found for account {accountnumber}";
 
             //see if a prior balance was passed in
-            ExistingBalanceData priorBalance = await req.Content.ReadAsAsync<ExistingBalanceData>(); 
+            ExistingBalanceData priorBalance = null;
+            if (req.Content != null)
+            {
+                priorBalance = await req.Content.ReadAsAsync<ExistingBalanceData>();
+            }
 
             if (null != prjBankAccountBalance)
             {
