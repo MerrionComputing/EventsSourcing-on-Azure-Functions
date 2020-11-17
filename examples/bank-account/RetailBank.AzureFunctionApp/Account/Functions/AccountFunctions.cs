@@ -180,7 +180,10 @@ namespace RetailBank.AzureFunctionApp
             ExistingBalanceData priorBalance = null;
             if (req.Content != null)
             {
-                priorBalance = await req.Content.ReadAsAsync<ExistingBalanceData>();
+                if (! (req.Content.Headers.ContentType == null))
+                {
+                    priorBalance = await req.Content.ReadAsAsync<ExistingBalanceData>();
+                }
             }
 
             if (null != prjBankAccountBalance)
