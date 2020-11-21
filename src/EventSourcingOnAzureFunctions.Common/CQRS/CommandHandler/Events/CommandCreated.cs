@@ -30,5 +30,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
         /// </summary>
         public string AuthorisationToken { get; set; }
 
+        /// <summary>
+        /// If the system that initiated this command has its own orchestration process (for example with
+        /// durable functions) this uniquely identifies that orchestration instance
+        /// </summary>
+        public string ExternalOrchestrationIdentifier { get; set; }
     }
 }

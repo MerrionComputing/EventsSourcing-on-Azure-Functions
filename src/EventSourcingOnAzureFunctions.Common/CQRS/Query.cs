@@ -63,6 +63,43 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
+        /// <summary>
+        /// Create the new query orchestration to be processed
+        /// </summary>
+        /// <param name="ExternalSystemUniqueIdentifier">
+        /// (Optional) A unique identifier for this query as passed in by an external system
+        /// </param>
+        /// <param name="AuthorisationToken">
+        /// (Optional) A token to use for authorisation(s) checking within this query
+        /// </param>
+        /// <param name="ExternalOrchestrationIdentifier">
+        /// (optional) An unique identifier to use if this query is being orchestrated by an external
+        /// system which uses its own provided unique identifiers
+        /// </param>
+        /// <returns></returns>
+        public async Task Create(
+            string ExternalSystemUniqueIdentifier = "",
+            string AuthorisationToken = "",
+            string ExternalOrchestrationIdentifier = "")
+        {
+
+            EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
+                QueryName,
+                UniqueIdentifier,
+                notificationDispatcherName: _queryDispatcherName),
+                context: _queryContext);
+
+            Created evCreated = new Created()
+            {
+                AuthorisationToken = AuthorisationToken,
+                ExternalOrchestrationIdentifier = ExternalOrchestrationIdentifier,
+                ExternalSystemUniqueIdentifier = ExternalSystemUniqueIdentifier,
+                DateLogged = DateTime.UtcNow
+            };
+
+            await esQry.AppendEvent(evCreated);
+        }
+
         // Parameters
         public async Task SetParameter(string parameterName, object parameterValue)
         {
