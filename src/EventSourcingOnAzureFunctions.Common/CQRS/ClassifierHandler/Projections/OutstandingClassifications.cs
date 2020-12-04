@@ -12,7 +12,7 @@ namespace EventSourcingOnAzureFunctions.Common.ClassifierHandler.Projections
     /// given command or query
     /// </summary>
     [ProjectionName("Classifications To Run") ]
-    public class OutstandingClassifications
+    public sealed class OutstandingClassifications
         : ProjectionBase,
         IHandleEventType<ClassifierRequested>,
         IHandleEventType<ClassifierResultReturned > 

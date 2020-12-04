@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.ClassifierHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.Common.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events;
@@ -256,8 +257,32 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             await esQry.AppendEvent(evRet); 
         }
 
-        // TODO: Outstanding classifications
+        /// <summary>
+        /// Gets the set of projection requests outstanding for this query 
+        /// </summary>
+        /// <returns>
+        /// The set of projection requests with no matching response
+        /// </returns>
+        public async Task<IEnumerable<IClassifierRequest>> GetOutstandingClassifiers()
+        {
+            // Run the [Outstanding Classifications] projection over this query's event stream.
+            Projection outstanding = new Projection(new ProjectionAttribute(MakeDomainQueryName(DomainName),
+                QueryName,
+                UniqueIdentifier,
+                ProjectionNameAttribute.GetProjectionName(typeof(OutstandingClassifications)),
+                notificationDispatcherName: _queryDispatcherName)
+                );
 
+            var outstandingClassifications = await outstanding.Process<OutstandingClassifications>();
+
+            if (outstandingClassifications != null)
+            {
+                return outstandingClassifications.ClassificationsToBeProcessed;
+            }
+
+            // If nothing found return an empty set for composability
+            return Enumerable.Empty<IClassifierRequest>();
+        }
 
         // Projection request
         /// <summary>
@@ -279,10 +304,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         /// (Optional) The date up to which to run the classification
         /// </param>
         public async Task RequestProjection(string domainName,
-                        string entityTypeName,
-                        string instanceKey,
-                        string projectionTypeName,
-                        Nullable<DateTime> asOfDate = null)
+                    string entityTypeName,
+                    string instanceKey,
+                    string projectionTypeName,
+                    Nullable<DateTime> asOfDate = null)
         {
             Guid correlationId = Guid.NewGuid();
 
@@ -294,14 +319,14 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                        context: _queryContext);
 
             ProjectionRequested evPrj = new ProjectionRequested()
-            { 
+            {
                 CorrelationIdentifier = correlationId.ToString(),
                 ProjectionDomainName = domainName,
-                ProjectionEntityTypeName = entityTypeName ,
-                ProjectionInstanceKey = instanceKey ,
-                ProjectionTypeName = projectionTypeName ,
-                AsOfDate = asOfDate ,
-                DateLogged = DateTime.UtcNow 
+                ProjectionEntityTypeName = entityTypeName,
+                ProjectionInstanceKey = instanceKey,
+                ProjectionTypeName = projectionTypeName,
+                AsOfDate = asOfDate,
+                DateLogged = DateTime.UtcNow
             };
 
             await esQry.AppendEvent(evPrj);
