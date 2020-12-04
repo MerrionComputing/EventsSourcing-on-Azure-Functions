@@ -6,6 +6,9 @@
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Platforms>AnyCPU;x64</Platforms>
+    <Authors>Duncan Jones</Authors>
+    <Product>Banking Demo</Product>
+    <Description>Demo app for EventSourcing on Azure Functions</Description>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutputPath>D:\Source\AzureFunctions\Deploy\</OutputPath>

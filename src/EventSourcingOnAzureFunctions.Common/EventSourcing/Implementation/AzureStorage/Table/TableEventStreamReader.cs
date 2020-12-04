@@ -326,10 +326,21 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                     foreach (DynamicTableEntity dteRow in segment)
                     {
-                        // add the "key"
-                        if (dteRow.Properties.ContainsKey(nameof(InstanceKey)))
+                        bool include = true;
+                        if (dteRow.Properties.ContainsKey(nameof(TableEntityKeyRecord.Deleting)))
                         {
-                            ret.Add(dteRow.Properties[nameof(InstanceKey)].StringValue);
+                            if (dteRow.Properties[nameof(TableEntityKeyRecord.Deleting )].BooleanValue.GetValueOrDefault(false) )
+                            {
+                                include = false;
+                            }
+                        }
+                        if (include)
+                        {
+                            // add the "key"
+                            if (dteRow.Properties.ContainsKey(nameof(InstanceKey)))
+                            {
+                                ret.Add(dteRow.Properties[nameof(InstanceKey)].StringValue);
+                            }
                         }
                     }
 

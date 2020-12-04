@@ -399,7 +399,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         // Collations
 
 
-
         // Response
         private async Task SetResponseTarget(string targetType,
             string targetLocation)
