@@ -56,7 +56,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Projection
         }
 
 
-        public class ProjectionComparer
+        public sealed class ProjectionComparer
             : IEqualityComparer<IProjectionRequest>
         {
 

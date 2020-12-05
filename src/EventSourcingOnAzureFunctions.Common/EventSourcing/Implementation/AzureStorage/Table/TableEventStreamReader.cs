@@ -188,16 +188,31 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                             {
                                 if (!IsContextProperty(entityProperty.Key))
                                 {
-
                                     PropertyInfo pi = eventWrapper.EventPayload.GetType().GetProperty(entityProperty.Key);
                                     if (null != pi)
                                     {
                                         if (pi.CanWrite)
                                         {
-                                            if (!IsPropertyValueEmpty(pi, entityProperty.Value.PropertyAsObject ))
+                                            if (!IsPropertyValueEmpty(pi, 
+                                                entityProperty.Value.PropertyAsObject ))
                                             {
-                                                pi.SetValue(eventWrapper.EventPayload,
-                                                    GetEntityPropertyValue(pi, entityProperty.Value.PropertyAsObject));
+                                                if (pi.PropertyType.IsEnum)
+                                                {
+                                                    // Emums are stored as strings
+                                                    string propertyValue = entityProperty.Value.StringValue;
+                                                    object value;
+                                                    if (Enum.TryParse(pi.PropertyType,
+                                                        propertyValue, out value))
+                                                    {
+                                                        pi.SetValue(eventWrapper.EventPayload, value);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    pi.SetValue(eventWrapper.EventPayload,
+                                                        GetEntityPropertyValue(pi,
+                                                        entityProperty.Value.PropertyAsObject));
+                                                }
                                             }
                                         }
                                     }

@@ -114,7 +114,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         {
             if (null != _classificationProcessor)
             {
-                ClassificationResponse ret = await _classificationProcessor.Classify(classificationToRun, asOfDate);
+                ClassificationResponse ret = await _classificationProcessor.Classify(classificationToRun,
+                    asOfDate);
                 if (null != _notificationDispatcher)
                 {
                     await _notificationDispatcher.ClassificationCompleted(this,
@@ -128,7 +129,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
             else
             {
-                return await Task.FromException<ClassificationResponse>(new Exception("Classification processor not initialised"));
+                return await Task.FromException<ClassificationResponse>(
+                    new Exception("Classification processor not initialised"));
             }
         }
 

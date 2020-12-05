@@ -37,7 +37,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <remarks>
         /// This is only updated where an event is processed that has an as-of date field as part of its data properties
         /// </remarks>
-        DateTime CurrentAsOfDate { get; }
+        Nullable<DateTime> CurrentAsOfDate { get; }
 
 
         /// <summary>

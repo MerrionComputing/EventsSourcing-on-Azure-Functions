@@ -452,10 +452,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 double dblValue = (double)propertyAsObject;
                 return new decimal(dblValue);
             }
-            else
+            if (pi.PropertyType.IsEnum )
             {
-                return propertyAsObject;
+                return propertyAsObject.ToString();
             }
+
+            return propertyAsObject;
         }
 
     }

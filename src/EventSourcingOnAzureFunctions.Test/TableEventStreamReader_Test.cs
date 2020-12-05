@@ -264,4 +264,50 @@ namespace Mocking
             }
         }
     }
+
+    [ClassificationName("In Credit") ]
+    public class MockInCreditClassifier
+        : ClassificationBase,
+        IClassifyEventType<MockWithdrawal>,
+        IClassifyEventType<MockDeposit>
+    {
+
+        decimal _currentBalance = 0.00M;
+        decimal _cuttoff = 0.00M;
+
+        public ClassificationResponse.ClassificationResults ClassifyEventInstance(MockWithdrawal eventInstance)
+        {
+            if (eventInstance != null)
+            {
+                _currentBalance -= eventInstance.AmountWithdrawn;
+            }
+            if (_currentBalance >= _cuttoff )
+            {
+                return ClassificationResponse.ClassificationResults.Include;
+            }
+            return ClassificationResponse.ClassificationResults.Exclude;
+        }
+
+        public ClassificationResponse.ClassificationResults ClassifyEventInstance(MockDeposit eventInstance)
+        {
+            if (eventInstance != null)
+            {
+                _currentBalance += eventInstance.AmountDeposited;
+            }
+            if (_currentBalance >= _cuttoff)
+            {
+                return ClassificationResponse.ClassificationResults.Include;
+            }
+            return ClassificationResponse.ClassificationResults.Exclude;
+        }
+
+
+        public override void SetParameter(string parameterName, object parameterValue)
+        {
+            if (parameterName.Equals("Cut Off") )
+            {
+                _cuttoff = (decimal)parameterValue;
+            }
+        }
+    }
 }

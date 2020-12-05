@@ -73,8 +73,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         public bool SupportsSnapshots => false;
 
         // As of date not implemented yet
-        private DateTime _currentAsOfDate;
-        public DateTime CurrentAsOfDate
+        private DateTime? _currentAsOfDate;
+        public DateTime? CurrentAsOfDate
         {
             get
             {
