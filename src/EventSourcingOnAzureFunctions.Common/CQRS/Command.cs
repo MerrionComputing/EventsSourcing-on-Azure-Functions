@@ -1,4 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
+using EventSourcingOnAzureFunctions.Common.ClassifierHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events;
@@ -435,6 +436,32 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             await esCmd.AppendEvent(evRet);
         }
 
+        /// <summary>
+        /// Gets the set of projection requests outstanding for this query 
+        /// </summary>
+        /// <returns>
+        /// The set of projection requests with no matching response
+        /// </returns>
+        public async Task<IEnumerable<IClassifierRequest>> GetOutstandingClassifiers()
+        {
+            // Run the [Outstanding Classifications] projection over this command's event stream.
+            Projection outstanding = new Projection(new ProjectionAttribute(MakeDomainCommandName(DomainName),
+                CommandName,
+                UniqueIdentifier,
+                ProjectionNameAttribute.GetProjectionName(typeof(OutstandingClassifications)),
+                notificationDispatcherName: _commandDispatcherName)
+                );
+
+            var outstandingClassifications = await outstanding.Process<OutstandingClassifications>();
+
+            if (outstandingClassifications != null)
+            {
+                return outstandingClassifications.ClassificationsToBeProcessed;
+            }
+
+            // If nothing found return an empty set for composability
+            return Enumerable.Empty<IClassifierRequest>();
+        }
 
         // Projection request
         /// <summary>
