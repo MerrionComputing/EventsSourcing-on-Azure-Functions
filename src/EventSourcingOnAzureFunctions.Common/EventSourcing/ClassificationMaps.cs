@@ -106,6 +106,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                 {
                     continue;
                 }
+                if (loadedAssembly.FullName.Contains("System.Text."))
+                {
+                    continue;
+                }
                 if (loadedAssembly.IsDynamic)
                 {
                     // Dynamic assemblies cannot be scanned for exported types

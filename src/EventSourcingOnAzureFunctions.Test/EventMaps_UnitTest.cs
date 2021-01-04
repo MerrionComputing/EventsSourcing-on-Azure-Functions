@@ -1,11 +1,22 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace EventSourcingOnAzureFunctions.Test
 {
     [TestClass ]
     public class EventMaps_UnitTest
     {
+
+        [TestInitialize]
+        public void EventMaps_UnitTest_Initialise()
+        {
+            // set the path to be local...
+            Environment.SetEnvironmentVariable("AzureWebJobsScriptRoot", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+        }
+
 
         [TestMethod]
         public void Constructor_TestMethod()

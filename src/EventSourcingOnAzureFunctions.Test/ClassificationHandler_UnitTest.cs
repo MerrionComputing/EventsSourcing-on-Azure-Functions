@@ -4,7 +4,9 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Test
@@ -20,6 +22,10 @@ namespace EventSourcingOnAzureFunctions.Test
             Environment.SetEnvironmentVariable("Bank.Query.Get Available Balance", "Table;RetailBank");
             //ALL.ALL=Table;RetailBank
             Environment.SetEnvironmentVariable("ALL.ALL", "Table;RetailBank");
+
+            // set the path to be local...
+            Environment.SetEnvironmentVariable("AzureWebJobsScriptRoot", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+
         }
 
         [TestMethod]
