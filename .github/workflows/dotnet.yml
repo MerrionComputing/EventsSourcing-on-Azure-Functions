@@ -28,4 +28,4 @@ jobs:
         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
         INCLUDE_SYMBOLS: true
         PACKAGE_NAME: EventSourcingOnAzureFunctions.Common
-        VERSION_REGEX: <Version>(\.*)<\/Version>
+        VERSION_STATIC: 1.1.0
