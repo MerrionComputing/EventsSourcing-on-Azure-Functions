@@ -21,6 +21,8 @@ jobs:
       run: dotnet build --configuration Release --no-restore src/EventSourcingOnAzureFunctions.sln
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
+    - name : Nuget package
+      run: dotnet pack --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj
     - name: Publish common library to NuGet
       uses: rohith/publish-nuget@v2
       with:
