@@ -29,3 +29,4 @@ jobs:
         PROJECT_FILE_PATH: src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj
         NUGET_KEY: ${{secrets.NUGET_API_KEY}}
         INCLUDE_SYMBOLS: true
+        VERSION_STATIC: 1.0.1
