@@ -3,8 +3,6 @@ name: .NET
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
@@ -20,6 +18,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore src/EventSourcingOnAzureFunctions.sln
     - name: Build
-      run: dotnet build --no-restore src/EventSourcingOnAzureFunctions.sln
+      run: dotnet build --configuration Release --no-restore src/EventSourcingOnAzureFunctions.sln
     - name: Test
-      run: dotnet test --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
+      run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
+    - name : Nuget package
+      run: dotnet pack --configuration Release --no-build --verbosity detailed --include-symbols --output nupkgs src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj
+    - name : Nuget push
+      run: dotnet nuget push *.nupkg --verbosity detailed --api-key ${{secrets.NUGET_API_KEY}} --source nupkgs 
