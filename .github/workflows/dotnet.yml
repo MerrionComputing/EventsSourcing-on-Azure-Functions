@@ -20,7 +20,7 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore src/EventSourcingOnAzureFunctions.sln
     - name: Test
-      run: dotnet test --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
+      run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
     - name: Publish common library to NuGet
       uses: brandedoutcast/publish-nuget@v2.5.2
       with:
