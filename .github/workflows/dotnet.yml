@@ -24,4 +24,4 @@ jobs:
     - name : Nuget package
       run: nuget pack src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.nuspec
     - name : Nuget push
-      run: dotnet nuget push src/EventSourcingOnAzureFunctions.Common.1.1.0.nupkg --api-key ${{secrets.NUGET_API_KEY}} 
+      run: dotnet nuget push -s src/EventSourcingOnAzureFunctions.Common.1.1.0.nupkg -k ${{secrets.NUGET_API_KEY}} 
