@@ -572,6 +572,22 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             return Enumerable.Empty<IProjectionRequest>();
         }
 
+        /// <summary>
+        /// Delete the command backing event stream
+        /// </summary>
+        public async Task Delete()
+        {
+            EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
+                CommandName,
+                UniqueIdentifier,
+                notificationDispatcherName: _commandDispatcherName),
+                context: _commandContext);
+
+            if (esCmd != null)
+            {
+                await esCmd.DeleteStream();
+            }
+        }
         public Command (string domainName,
             string commandName,
             string uniqueIdentifier)

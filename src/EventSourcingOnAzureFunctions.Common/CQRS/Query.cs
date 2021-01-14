@@ -512,6 +512,23 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         }
 
+        // Cleanup
+        /// <summary>
+        /// Delete the query backing event stream
+        /// </summary>
+        public async Task Delete()
+        {
+            EventStream esQry = new EventStream(new EventStreamAttribute(MakeDomainQueryName(DomainName),
+                    QueryName,
+                    UniqueIdentifier,
+                    notificationDispatcherName: _queryDispatcherName),
+                    context: _queryContext);
+
+            if (esQry != null)
+            {
+                await esQry.DeleteStream();
+            }
+        }
 
         /// <summary>
         /// Create a new query instance from the parameter attribute

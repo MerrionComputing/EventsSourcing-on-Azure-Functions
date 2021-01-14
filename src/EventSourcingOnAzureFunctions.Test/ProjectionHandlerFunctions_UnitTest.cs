@@ -101,6 +101,9 @@ namespace EventSourcingOnAzureFunctions.Test
                 actual = outstanding.Count();
             }
 
+            // clean up the event stream
+            await testQuery.Delete();
+
             Assert.AreEqual(expected, actual);
 
         }
