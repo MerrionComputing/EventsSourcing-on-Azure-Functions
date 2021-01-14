@@ -21,7 +21,3 @@ jobs:
       run: dotnet build --configuration Release --no-restore src/EventSourcingOnAzureFunctions.sln
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
-    - name : Nuget package
-      run: nuget pack src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.nuspec
-    - name : Nuget push
-      run: dotnet nuget push -s src/EventSourcingOnAzureFunctions.Common.1.1.0.nupkg -k ${{secrets.NUGET_API_KEY}} 
