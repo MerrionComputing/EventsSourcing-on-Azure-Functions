@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <PackageId>EventSourcingOnAzureFunctions.Common</PackageId>
+    <PackageVersion>1.1</PackageVersion>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>7.1</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -17,6 +19,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="EventSourcingOnAzureFunctions.Common.1.1.0.nupkg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.6.0" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.4.2" />
     <PackageReference Include="DotNetEnv" Version="1.4.0" /> 
@@ -31,6 +37,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.9" /> 
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.9" /> 
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" /> 
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.8.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference> 
   </ItemGroup>
 
   <ItemGroup>
