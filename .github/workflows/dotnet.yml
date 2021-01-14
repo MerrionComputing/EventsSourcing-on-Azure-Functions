@@ -22,6 +22,6 @@ jobs:
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
     - name : Nuget package
-      run: nuget pack --configuration Release --no-build --verbosity detailed --include-symbols src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.nuspec
+      run: nuget pack src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.nuspec
     - name : Nuget push
       run: dotnet nuget push *.nupkg --api-key ${{secrets.NUGET_API_KEY}} 
