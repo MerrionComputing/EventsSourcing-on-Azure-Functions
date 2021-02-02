@@ -6,11 +6,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using RetailBank.AzureFunctionApp.Account.Classifications;
 using RetailBank.AzureFunctionApp.Account.Events;
 using RetailBank.AzureFunctionApp.Account.Projections;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
