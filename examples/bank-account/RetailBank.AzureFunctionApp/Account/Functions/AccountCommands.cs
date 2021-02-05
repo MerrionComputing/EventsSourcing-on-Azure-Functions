@@ -9,6 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using RetailBank.AzureFunctionApp.Account.Events;
 using RetailBank.AzureFunctionApp.Account.Projections;
 using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -42,6 +43,10 @@ namespace RetailBank.AzureFunctionApp
                       string accountnumber,
                       [Command("Bank", "Apply Accrued Interest")] Command cmdApplyAccruedInterest)
         {
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
 
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;

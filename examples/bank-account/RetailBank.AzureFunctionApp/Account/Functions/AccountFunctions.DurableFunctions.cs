@@ -11,6 +11,7 @@ using RetailBank.AzureFunctionApp.Account.Events;
 using RetailBank.AzureFunctionApp.Account.Projections;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -98,6 +99,10 @@ namespace RetailBank.AzureFunctionApp
             const decimal CREDIT_INTEREST_RATE = 0.0005M;
 
             string accountNumber = accrueInterestContext.GetInput<string>();
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountNumber);
+            #endregion
 
             if (!string.IsNullOrEmpty(accountNumber))
             {
@@ -216,6 +221,10 @@ namespace RetailBank.AzureFunctionApp
 
             string accountNumber = context.GetInput<string>();
 
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountNumber);
+            #endregion
+
             if (!string.IsNullOrEmpty(accountNumber))
             {
                 Tuple<string, bool> overdraftTask = await context.CallActivityAsync<Tuple<string, bool>>
@@ -236,6 +245,11 @@ namespace RetailBank.AzureFunctionApp
         {
 
             string accountNumber = interestOverdraftContext.GetInput<string>();
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountNumber);
+            #endregion
+
             bool success = true;
 
             Command cmdPayInterest = new Command(
@@ -360,6 +374,10 @@ namespace RetailBank.AzureFunctionApp
 
             string accountNumber = payInterestContext.GetInput<string>();
 
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountNumber);
+            #endregion
+
             Command cmdPayInterest = new Command(
             new CommandAttribute("Bank",
                 "Pay Interest",
@@ -468,6 +486,10 @@ namespace RetailBank.AzureFunctionApp
           ([ActivityTrigger] IDurableActivityContext payInterestContext)
         {
             string accountNumber = payInterestContext.GetInput<string>();
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountNumber);
+            #endregion
 
             if (!string.IsNullOrWhiteSpace(accountNumber))
             {

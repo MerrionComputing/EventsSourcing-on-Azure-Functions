@@ -13,6 +13,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using RetailBank.AzureFunctionApp.Account.Classifications;
 using RetailBank.AzureFunctionApp.Account.Events;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace RetailBank.AzureFunctionApp
 {
@@ -38,7 +39,11 @@ namespace RetailBank.AzureFunctionApp
         {
 
             // Set the start time for how long it took to process the message
-            DateTime startTime = DateTime.UtcNow; 
+            DateTime startTime = DateTime.UtcNow;
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
 
             if (await bankAccountEvents.Exists())
             {
@@ -115,6 +120,10 @@ namespace RetailBank.AzureFunctionApp
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
+
             if (!await bankAccountEvents.Exists())
             {
                 return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.Forbidden,
@@ -173,6 +182,10 @@ namespace RetailBank.AzureFunctionApp
 
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
 
             string result = $"No balance found for account {accountnumber}";
 
@@ -268,6 +281,10 @@ namespace RetailBank.AzureFunctionApp
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
+
             if (!await bankAccountEvents.Exists())
             {
                 return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.NotFound ,
@@ -331,6 +348,10 @@ namespace RetailBank.AzureFunctionApp
 
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
 
             if (!await bankAccountEvents.Exists())
             {
@@ -447,6 +468,10 @@ namespace RetailBank.AzureFunctionApp
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
+
             if (await bankAccountEvents.Exists())
             {
                 if (!string.IsNullOrEmpty(ownername))
@@ -522,6 +547,10 @@ namespace RetailBank.AzureFunctionApp
 
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
 
             if (!await bankAccountEvents.Exists())
             {
@@ -614,6 +643,10 @@ namespace RetailBank.AzureFunctionApp
         {
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
 
             if (! await bankAccountEvents.Exists())
             {
@@ -712,6 +745,10 @@ namespace RetailBank.AzureFunctionApp
         {
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Account Number", accountnumber);
+            #endregion
 
             if (!await bankAccountEvents.Exists())
             {
