@@ -13,34 +13,33 @@
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Event sourcing,serverless,azure functions</PackageTags>
     <Platforms>AnyCPU;x64</Platforms>
-    <AssemblyVersion>1.1</AssemblyVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
     <Version>1.1</Version>
     <IsPackable>true</IsPackable>
+    <PackageReleaseNotes>Added notifications (via EventGrid) and CQRS scaffold</PackageReleaseNotes>
+    <Copyright>2017-2021 Duncan Jones</Copyright>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="EventSourcingOnAzureFunctions.Common.1.1.0.nupkg" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.8.0" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.6.0" />
-    <PackageReference Include="DotNetEnv" Version="1.4.0" /> 
+    <PackageReference Include="DotNetEnv" Version="2.0.0" /> 
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" /> 
     <PackageReference Include="Microsoft.Azure.EventGrid" Version="3.2.0" /> 
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" /> 
-    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.22" /> 
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.25" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="2.1.0" /> 
-    <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.2.0" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.9" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.9" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.9" /> 
+    <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.2.1" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" /> 
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" /> 
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.8.0">
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.9.0-preview.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference> 
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
