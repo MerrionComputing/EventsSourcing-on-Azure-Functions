@@ -5,4 +5,4 @@ This namespace contains a set of events and projections useful in implementing t
 backed by event sourcing.
 
 Each query instance has its own event stream to which events are written and over which projections may be run in 
-order to get the state of that command as at any given point in time.
+order to get the state of that query as at any given point in time.

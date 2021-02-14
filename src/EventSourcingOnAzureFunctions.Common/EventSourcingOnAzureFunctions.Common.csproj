@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>EventSourcingOnAzureFunctions.Common</PackageId>
     <PackageVersion>1.1</PackageVersion>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>7.1</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Duncan Jones</Authors>
@@ -36,10 +36,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" /> 
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" /> 
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" /> 
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.9.0-preview.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.9.0-preview.2" />
   </ItemGroup>
 
   <ItemGroup>
