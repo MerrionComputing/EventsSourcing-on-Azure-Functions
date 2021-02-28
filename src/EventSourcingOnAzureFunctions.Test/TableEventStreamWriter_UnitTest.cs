@@ -18,7 +18,7 @@ namespace EventSourcingOnAzureFunctions.Test
         [TestInitialize]
         public void InitialiseEnvironmentVariables()
         {
-            DotNetEnv.Env.Load();
+            EnvironmentVariables.SetTestVariables();
         }
 
         [TestMethod]
