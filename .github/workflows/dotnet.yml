@@ -21,8 +21,3 @@ jobs:
       run: dotnet build --configuration Release --no-restore src/EventSourcingOnAzureFunctions.sln
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
-    - name: Publish NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.2
-      with:
-        PROJECT_FILE_PATH: "src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj"
-        NUGET_KEY: ${{secrets.NUGET_KEY}}
