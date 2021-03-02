@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>EventSourcingOnAzureFunctions.Common</id>
+    <version>1.1</version>
+    <title>Event Sourcing On Azure Functions</title>
+    <authors>Duncan Jones</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions</projectUrl>
+    <description>$description$</description>
+    <releaseNotes>Added notifications (via EventGrid) and CQRS scaffold</releaseNotes>
+    <copyright>2017-2021 Duncan Jones</copyright>
+    <tags>Event sourcing,serverless,azure functions</tags>
+    <dependencies>
+      <group targetFramework=".NETCoreApp2.1" />
+      <group targetFramework=".NETCoreApp2.2" />
+      <group targetFramework=".NETCoreApp3.0" />
+      <group targetFramework=".NETCoreApp3.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <!-- Add a readme -->
+    <file src="EventSourcingOnAzureFunctions.Common.ReadMe.txt" target="" />
+    <!-- Include everything in bin\Release -->
+    <file src="bin\Release\**" target="lib" />
+  </files>
+</package>

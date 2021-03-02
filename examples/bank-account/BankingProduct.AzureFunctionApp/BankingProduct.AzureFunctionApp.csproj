@@ -3,6 +3,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <Platforms>AnyCPU;x64</Platforms>
+    <Version>1.0</Version>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" />

@@ -1,0 +1,17 @@
+ReadMe
+======
+
+A library to demonstrate doing Event Sourcing as a data persistence mechanism for Azure Functions.
+
+Introduction to event sourcing
+------------------------------
+At its very simplest, event sourcing is a way of storing state (for an entity) which works by storing the sequential history of all the events that have occurred to that entity. Changes to the entity are written as new events appended to the end of the event stream for the entity.
+
+When a query or business process needs to use the current state of the entity it gets this by running a projection over the event stream which is a very simple piece of code which, for each event, decides (a) do I care about this type of event and (b) if so what do I do when I receive it.
+
+
+End goal
+--------
+The goal is to be able to interact with the event streams for entities without any extra plumbing in the azure function itself - with both access to event streams and to run projections being via bound variables that are instantiated when the azure function is executed.
+
+(For full details see the GitHub project https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions)

@@ -4,11 +4,13 @@
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Platforms>AnyCPU;x64</Platforms>
     <Authors>Duncan Jones</Authors>
     <Product>Banking Demo</Product>
     <Description>Demo app for EventSourcing on Azure Functions</Description>
+    <Version>1.1</Version>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutputPath>D:\Source\AzureFunctions\Deploy\</OutputPath>
