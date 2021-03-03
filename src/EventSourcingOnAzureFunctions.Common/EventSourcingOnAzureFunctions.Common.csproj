@@ -32,11 +32,12 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="2.1.0" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.2.1" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.10" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.10" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.10" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.10" /> 
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" /> 
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.8.1">
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.9.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
