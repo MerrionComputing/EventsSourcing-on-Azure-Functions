@@ -56,4 +56,8 @@
       <Private>true</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Transfer\Functions\" />
+    <Folder Include="Transfer\Projections\" />
+  </ItemGroup>
 </Project>

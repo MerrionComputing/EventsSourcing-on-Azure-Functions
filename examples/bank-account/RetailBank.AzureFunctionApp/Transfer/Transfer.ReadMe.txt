@@ -1,0 +1,8 @@
+﻿Transfers
+=========
+
+A transfer is a money movement between accounts.  
+It is used to demonstrate the idea of saga-based actions as replacements for the traditional database concept of transactions.
+
+A transfer can succeed or fail due to the conditions of source and target account (assuming both are "ours") 
+and a failed transfer should set back the accounts to the state they were in before it.
