@@ -1,10 +1,10 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RetailBank.AzureFunctionApp.Transfer.Events
 {
+    /// <summary>
+    /// Funds being transfered have been deposited into the target account
+    /// </summary>
     [EventName("Target Funds Deposited")]
     public sealed class TargetFundsDeposited
     {
