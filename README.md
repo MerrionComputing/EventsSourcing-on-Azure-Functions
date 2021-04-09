@@ -17,11 +17,11 @@ There is a 50 minute talk that covers this on [YouTube](https://www.youtube.com/
 
 There is a rudimentary "retail bank accounts" example (as a Blazor front end) [here](https://retailbank.z6.web.core.windows.net/) ( [source repository on github](https://github.com/MerrionComputing/CloudBank) )  that demonstrates the different types of operation on an event stream and the source code for that is included in this repository.  This is an entirely serverless system with no underlying database which does "scale to zero".
 
-## End goal
+## How to use
 
-The goal is to be able to interact with the event streams for entities without any extra plumbing in the azure function itself - with both access to event streams and to run projections being via bound variables that are instantiated when the azure function is executed.
+This library allows you to interact with the event streams for entities without any extra plumbing in the azure function itself - with both access to event streams and to run projections being via bound variables that are instantiated when the azure function is executed.
 
-To add events to an event stream you would use an *Event stream* attribute and class thus:-
+To add events to an event stream you use an *Event stream* attribute and class thus:-
 
 ```csharp
 [FunctionName("OpenAccount")]
@@ -53,7 +53,7 @@ public static async Task<HttpResponseMessage> OpenAccountRun(
 }
 ```
 
-To get the values out of an event stream you would use a *Projection* attribute and class thus:-
+To get the values out of an event stream you use a *Projection* attribute and class thus:-
 
 ```csharp
    [FunctionName("GetBalance")]
