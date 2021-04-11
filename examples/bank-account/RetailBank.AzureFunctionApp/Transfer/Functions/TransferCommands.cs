@@ -7,7 +7,9 @@ namespace RetailBank.AzureFunctionApp.Transfer.Functions
     public class TransferCommands
     {
 
+        //Transfer money
 
+        //Cancel in-progress transfer
 
     }
 }

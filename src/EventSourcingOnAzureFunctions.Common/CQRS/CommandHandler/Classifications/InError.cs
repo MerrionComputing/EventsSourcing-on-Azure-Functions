@@ -1,23 +1,21 @@
-﻿using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events;
-using EventSourcingOnAzureFunctions.Common.EventSourcing;
-using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events;
+using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 
 namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Classifications
 {
     /// <summary>
-    /// A classification to denote that a command execution has completed
+    /// A classification to denote that a command execution has had a fatal error
     /// </summary>
-    [ClassificationName("Command Completed") ]
-    public sealed class Completed
+    [ClassificationName("Command In Error")]
+    public sealed class InError
         : ClassificationBase,
-        IClassifyEventType<Completed>
+        IClassifyEventType<FatalErrorOccured>
     {
-
-
-        public ClassificationResponse.ClassificationResults ClassifyEventInstance(Completed eventInstance)
+        public ClassificationResponse.ClassificationResults ClassifyEventInstance(FatalErrorOccured eventInstance)
         {
             if (eventInstance != null)
             {
