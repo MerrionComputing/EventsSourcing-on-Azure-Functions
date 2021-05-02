@@ -42,7 +42,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         private static HttpClient httpClient = null;
         private static HttpMessageHandler httpMessageHandler = null;
 
-        // trade http header constants
+        // trace http header constants
         public const string TRACE_HEADER_PARENT = "traceparent";
         public const string TRACE_HEADER_STATE = "tracestate";
 
@@ -616,15 +616,23 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 // turn it into an 16-byte array of lowercase hex
                 correlationIdentifier = StringToByteArray(16, correlationIdentifier);
             }
+            else
+            {
+                correlationIdentifier = @"00000000000000000000000000000000";
+            }
 
             if (! string.IsNullOrWhiteSpace(causationIdentifier ) )
             {
                 // turn it into an 8-byte array of lowercase hex
                 causationIdentifier = StringToByteArray(8, causationIdentifier);
             }
+            else
+            {
+                causationIdentifier = @"0000000000000000";
+            }
 
             // If not able to make a header, return a "null" one
-            return $"{version}-00000000000000000000000000000000-0000000000000000-{traceFlags}";
+            return $"{version}-{correlationIdentifier}-{causationIdentifier}-{traceFlags}";
         }
 
 
