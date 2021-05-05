@@ -89,7 +89,7 @@ The [azure functions](https://azure.microsoft.com/en-us/services/functions/) cod
 
 ## Comparison to other event sourcing implementations
 
-In this library the state of an entity has to be retrieved on demand - this is to allow for the functions application to be spun down to nothing and indeed for multiple independent azure functions applications to use the same underlying event stream without having to have any "always on" consistency service.
+In this library the state of an entity has to be **retrieved on demand** - this is to allow for the functions application to be spun down to nothing and indeed for multiple independent azure functions applications to use the same underlying event stream without having to have any "always on" consistency service.
 
 ## Requirements
 
