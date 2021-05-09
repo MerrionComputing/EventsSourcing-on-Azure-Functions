@@ -23,5 +23,5 @@ jobs:
       run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
     - name: Generate NuGet package
       run: |  
-        cd src
+        cd src/EventSourcingOnAzureFunctions.Common
         dotnet pack -c Release -o out  
