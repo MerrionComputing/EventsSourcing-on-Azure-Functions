@@ -24,4 +24,6 @@ jobs:
     - name: Generate NuGet package
       run: dotnet pack --no-build -c --include-source Release src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj -o src/EventSourcingOnAzureFunctions.Common
     - name: Push NuGet package
-      run: dotnet nuget push src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.nupkg -s https://api.nuget.org/v3/index.json -k ${{ NUGET_KEY }}  --skip-duplicate
+      env:
+        NUGET_KEY: ${{ secrets.NUGET_KEY }} 
+      run: dotnet nuget push src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_KEY --skip-duplicate
