@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Authors>Duncan Jones</Authors>
+    <Description>Utility functions for using Azure Durable Functions in concert with the EventSourcingOnAzureFunctions library</Description>
+    <PackageProjectUrl>https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.4.1" />
+    <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

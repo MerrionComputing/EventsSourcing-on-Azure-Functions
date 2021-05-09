@@ -5,7 +5,6 @@
     <PackageId>EventSourcingOnAzureFunctions.Common</PackageId>
     <PackageVersion>1.1</PackageVersion>
     <LangVersion>7.1</LangVersion>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Duncan Jones</Authors>
     <Description>Common function library to provide for event sourcing backed state management in Azure serverless functions</Description>
     <PackageProjectUrl>https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions</PackageProjectUrl>

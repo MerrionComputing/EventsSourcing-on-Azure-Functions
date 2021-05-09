@@ -162,13 +162,13 @@ namespace RetailBank.AzureFunctionApp
         [FunctionName(nameof(ApplyInterestForAllAccountsTrigger))]
         public static async Task ApplyInterestForAllAccountsTrigger(
             [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"ApplyInterestForAllAccounts")]HttpRequestMessage req,
-            [DurableClient] IDurableOrchestrationClient accrueInterestOrchestration)
+            [DurableClient] IDurableOrchestrationClient applyInterestOrchestration)
         {
 
             // Get all the account numbers
             IEnumerable<string> allAccounts = await req.Content.ReadAsAsync<IEnumerable<string>>();
 
-            await accrueInterestOrchestration.StartNewAsync(nameof(ApplyInterestForAllAccounts), allAccounts);
+            await applyInterestOrchestration.StartNewAsync(nameof(ApplyInterestForAllAccounts), allAccounts);
 
         }
 
