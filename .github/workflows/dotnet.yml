@@ -22,7 +22,7 @@ jobs:
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
     - name: Generate NuGet package
-      run: dotnet pack --no-build -c --include-source Release src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj -o src/EventSourcingOnAzureFunctions.Common
+      run: dotnet pack --no-build --include-source -c Release src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj -o src/EventSourcingOnAzureFunctions.Common
     - name: Push NuGet package
       env:
         NUGET_KEY: ${{ secrets.NUGET_KEY }} 
