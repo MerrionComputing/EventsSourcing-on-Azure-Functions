@@ -25,3 +25,8 @@ jobs:
       run: |  
         cd src/EventSourcingOnAzureFunctions.Common
         dotnet pack -c Release -o out  
+    - name: Publish EventSourcingOnAzureFunctions.Common
+      uses: brandedoutcast/publish-nuget@v2.5.2
+      with:
+          PROJECT_FILE_PATH: src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
