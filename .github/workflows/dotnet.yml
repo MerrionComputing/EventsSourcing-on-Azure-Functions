@@ -22,10 +22,6 @@ jobs:
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
     - name: Generate NuGet package
-      run: dotnet pack  --no-build -c Release src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj -o src/EventSourcingOnAzureFunctions.Common
-    - name: Publish EventSourcingOnAzureFunctions.Common
-      uses: brandedoutcast/publish-nuget@v2.5.2
-      with:
-          PROJECT_FILE_PATH: src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          INCLUDE_SYMBOLS: true
+      run: dotnet pack --no-build -c --include-source Release src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj -o src/EventSourcingOnAzureFunctions.Common
+    - name: Push NuGet package
+      run: dotnet nuget push src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.nupkg -s https://api.nuget.org/v3/index.json -k ${{ NUGET_KEY }}  --skip-duplicate
