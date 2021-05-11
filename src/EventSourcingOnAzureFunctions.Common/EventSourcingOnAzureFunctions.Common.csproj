@@ -17,8 +17,11 @@
     <IsPackable>true</IsPackable>
     <PackageReleaseNotes>Added notifications (via EventGrid) and CQRS scaffold</PackageReleaseNotes>
     <Copyright>2017-2021 Duncan Jones</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DocumentationFile>doc\EventSourcingOnAzureFunctions.Common.xml</DocumentationFile>
   </PropertyGroup>
-
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.8.0" />
