@@ -21,5 +21,3 @@ jobs:
       run: dotnet build --configuration Release --no-restore src/EventSourcingOnAzureFunctions.sln
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal src/EventSourcingOnAzureFunctions.sln
-    - name: Generate NuGet package
-      run: dotnet pack --no-build --include-source -c Release src/EventSourcingOnAzureFunctions.Common/EventSourcingOnAzureFunctions.Common.csproj -o nupkgs
