@@ -21,9 +21,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public const string METADATA_DATE_CREATED = "DATECREATED";
         public const string METADATA_CORRELATION_ID = "CORRELATIONIDENTIFIER";
 
-        // Named specific sub-folders
+        /// <summary>
+        /// The default folder where uncateggorised entities are stored
+        /// </summary>
         public const string ORPHANS_FOLDER = "uncategorised";
+        /// <summary>
+        /// The default subfolder where the event streams are stored
+        /// </summary>
         public const string EVENTSTREAM_FOLDER = "eventstreams";
+        /// <summary>
+        /// The default subfolder where projection snapshots are stored
+        /// </summary>
         public const string SNAPSHOTS_FOLDER = "snapshots";
 
         private readonly CloudBlobContainer _blobBasePath;

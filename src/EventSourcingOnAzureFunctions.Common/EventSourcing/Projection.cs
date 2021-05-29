@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 {
+    /// <summary>
+    /// A projection is a piece of code that runs over the event stream for an entity in order to derive some state information about that entity.
+    /// For each event in the stream it needs to decide (a) am I interested in this kind of event and if so (b) what do I do with it.
+    /// </summary>
     public class Projection
          : IEventStreamIdentity
     {
@@ -15,7 +19,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         private readonly IEventStreamSettings _settings = null;
         private readonly IProjectionProcessor _projectionProcessor = null;
         private readonly INotificationDispatcher _notificationDispatcher = null;
-        private readonly IProjectionSnapshotWriter _snapshortWriter = null;
+        private readonly IProjectionSnapshotWriter _snapshotWriter = null;
         private readonly IProjectionSnapshotReader _snapshotReader = null;
 
         private readonly string _domainName;
@@ -56,10 +60,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             }
         }
 
+        
+        private readonly string _projectionTypeName;
         /// <summary>
         /// The type of the projection we are going to run 
         /// </summary>
-        private readonly string _projectionTypeName;
         public string ProjectionTypeName
         {
             get
@@ -69,13 +74,42 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         }
 
 
+        /// <summary>
+        /// Process the projection and return the results
+        /// </summary>
+        /// <typeparam name="TProjection">
+        /// The type of the projection to be executed
+        /// </typeparam>
+        /// <param name="asOfDate">
+        /// The date up to which to run the projection. 
+        /// If this is not specified then run to the end of the event stream.
+        /// </param>
+        /// <returns>
+        /// A task which is used to execute the projection
+        /// </returns>
         public async Task<TProjection> Process<TProjection>(Nullable<DateTime> asOfDate = null) where TProjection : IProjection, new()
         {
             TProjection projectionToRun = new TProjection();
             return await Process(projectionToRun, asOfDate);
         }
 
-
+        /// <summary>
+        /// Process the projection and return the results
+        /// </summary>
+        /// <typeparam name="TProjection">
+        /// The type of the projection to be executed
+        /// </typeparam>
+        /// <param name="projectionToRun">
+        /// The instance of the projection to start processing from
+        /// (This allows a projection to start from a given initial state)
+        /// </param>
+        /// <param name="asOfDate">
+        /// The date up to which to run the projection. 
+        /// If this is not specified then run to the end of the event stream.
+        /// </param>
+        /// <returns>
+        /// A task which is used to execute the projection
+        /// </returns>
         public async Task<TProjection> Process<TProjection>(TProjection projectionToRun, Nullable<DateTime> asOfDate = null) where TProjection : IProjection
         {
             if (null != _projectionProcessor)
@@ -111,16 +145,23 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         /// <param name="state">
         /// The state of the projection when snapshotted
         /// </param>
-        public async Task WriteSnapshot<TProjection>(ISnapshot snapshot, TProjection state) where TProjection : IProjection
+        public async Task WriteSnapshot<TProjection>(ISnapshot snapshot, TProjection state) where TProjection : IProjectionWithSnapshots
         {
-            // If there is a snapshot writer, use it...
-            if (null != _snapshortWriter)
+            if (state.SupportsSnapshots)
             {
-                await _snapshortWriter.WriteSnapshot(snapshot, state); 
+                // If there is a snapshot writer, use it...
+                if (null != _snapshotWriter)
+                {
+                    await _snapshotWriter.WriteSnapshot(snapshot, state);
+                }
             }
         }
 
         private readonly string _connectionStringName;
+
+        /// <summary>
+        /// The name of the connection string used to run this projection
+        /// </summary>
         public string ConnectionStringName
         {
             get
@@ -193,7 +234,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
             if (null != snapshotWriter )
             {
-                _snapshortWriter = snapshotWriter;
+                _snapshotWriter = snapshotWriter;
             }
 
         }

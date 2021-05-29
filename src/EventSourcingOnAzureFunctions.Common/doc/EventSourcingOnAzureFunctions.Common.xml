@@ -2286,6 +2286,21 @@
             The stream of data to read events from
             </param>
         </member>
+        <member name="F:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamBase.ORPHANS_FOLDER">
+            <summary>
+            The default folder where uncateggorised entities are stored
+            </summary>
+        </member>
+        <member name="F:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamBase.EVENTSTREAM_FOLDER">
+            <summary>
+            The default subfolder where the event streams are stored
+            </summary>
+        </member>
+        <member name="F:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamBase.SNAPSHOTS_FOLDER">
+            <summary>
+            The default subfolder where projection snapshots are stored
+            </summary>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamBase.BlobContainer">
             <summary>
             The container where the blob for this specific event stream can be found
@@ -2414,6 +2429,47 @@
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AzureStorageEventStreamBase.StorageConnectionStringSettingName">
             <summary>
             The name of the default connection string to use for the domain
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Blob.BlobSnapshotBase.MakeSnapshotFilename(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.ISnapshot)">
+            <summary>
+            Turn the given snapshot definition into an unique filename
+            </summary>
+            <param name="snapshot">
+            The snapshot definition to be saved or read
+            </param>
+            <remarks>
+            The filename is the sequence number with the rest of the snapshot definition
+            going into the folder path
+            </remarks>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Blob.BlobSnapshotBase.MakeSnapshotFolder(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.ISnapshot)">
+            <summary>
+            Make a folder path in which a snapshot for a projection can be saved
+            </summary>
+            <param name="snapshot"></param>
+            <returns></returns>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Blob.BlobProjectionSnapshotReader">
+            <summary>
+            Class to read a projection snapshot from an Azure storage blob
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Blob.BlobProjectionSnapshotReader.LoadProjection``1(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.ISnapshot)">
+            <summary>
+            Loads the snapshot record closes to the requested as-of sequence number 
+            from which to start running a projection
+            </summary>
+            <typeparam name="TProjection">
+            The projection into which to load the initial snapshot
+            </typeparam>
+            <param name="snapshot">
+            The snapshot definition from which to load
+            </param>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Blob.BlobProjectionSnapshotWriter">
+            <summary>
+            Writer to save projection snapshots in an Azure storage blob
             </summary>
         </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableClassificationRecord.DomainName">
@@ -3385,6 +3441,30 @@
             The projection state as at that point
             </param>
         </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IProjectionWithSnapshots">
+            <summary>
+            A projection which supports saving a state to, and reading a state from, a snapshot
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IProjectionWithSnapshots.FromSnapshot(System.Int32,System.Nullable{System.DateTime},System.Object)">
+            <summary>
+            Read the current state of a projection from a snapshot 
+            </summary>
+            <param name="sequenceNumber">
+            The sequence number at which the snapshot was taken
+            </param>
+            <param name="asOfDate">
+            The as-of date at which the snapshot was taken
+            </param>
+            <param name="snapshot">
+            The raw data object of the state as at when the snapshot was taken
+            </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IProjectionWithSnapshots.ToSnapshot">
+            <summary>
+            Turn the current state of this projection into a snapshot object to be saved
+            </summary>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.ISnapshot">
             <summary>
             Common functionality for all snapshots - of projections or of
@@ -3455,6 +3535,12 @@
             If this is empty then the event type is used instead
             </remarks>
         </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection">
+            <summary>
+            A projection is a piece of code that runs over the event stream for an entity in order to derive some state information about that entity.
+            For each event in the stream it needs to decide (a) am I interested in this kind of event and if so (b) what do I do with it.
+            </summary>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection.DomainName">
             <summary>
             The domain in which this event stream that we are running the projection over is located
@@ -3471,10 +3557,44 @@
             that we are running the projection over pertains
             </summary>
         </member>
-        <member name="F:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection._projectionTypeName">
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection.ProjectionTypeName">
             <summary>
             The type of the projection we are going to run 
             </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection.Process``1(System.Nullable{System.DateTime})">
+            <summary>
+            Process the projection and return the results
+            </summary>
+            <typeparam name="TProjection">
+            The type of the projection to be executed
+            </typeparam>
+            <param name="asOfDate">
+            The date up to which to run the projection. 
+            If this is not specified then run to the end of the event stream.
+            </param>
+            <returns>
+            A task which is used to execute the projection
+            </returns>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection.Process``1(``0,System.Nullable{System.DateTime})">
+            <summary>
+            Process the projection and return the results
+            </summary>
+            <typeparam name="TProjection">
+            The type of the projection to be executed
+            </typeparam>
+            <param name="projectionToRun">
+            The instance of the projection to start processing from
+            (This allows a projection to start from a given initial state)
+            </param>
+            <param name="asOfDate">
+            The date up to which to run the projection. 
+            If this is not specified then run to the end of the event stream.
+            </param>
+            <returns>
+            A task which is used to execute the projection
+            </returns>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection.WriteSnapshot``1(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.ISnapshot,``0)">
             <summary>
@@ -3489,6 +3609,11 @@
             <param name="state">
             The state of the projection when snapshotted
             </param>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection.ConnectionStringName">
+            <summary>
+            The name of the connection string used to run this projection
+            </summary>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Projection.Exists">
             <summary>

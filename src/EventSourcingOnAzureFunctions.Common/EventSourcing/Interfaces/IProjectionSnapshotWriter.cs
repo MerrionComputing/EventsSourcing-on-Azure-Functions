@@ -23,7 +23,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <param name="state">
         /// The projection state as at that point
         /// </param>
-        Task WriteSnapshot<TProjection>(ISnapshot snapshot, TProjection state) where TProjection : IProjection;
+        Task WriteSnapshot<TProjection>(ISnapshot snapshot, TProjection state) where TProjection : IProjectionWithSnapshots;
 
     }
 }

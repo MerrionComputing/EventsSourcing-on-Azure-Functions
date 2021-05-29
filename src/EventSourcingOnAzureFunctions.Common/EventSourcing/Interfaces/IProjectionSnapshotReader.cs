@@ -22,7 +22,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// The entity instance and sequence number to get the snapshot from
         /// (If no sequence number is specified, get the latest snapshot)
         /// </param>
-        Task<TProjection> LoadProjection<TProjection>(ISnapshot snapshot) where TProjection : IProjection, new();
+        Task<TProjection> LoadProjection<TProjection>(ISnapshot snapshot) where TProjection : IProjectionWithSnapshots, new();
 
     }
 }
