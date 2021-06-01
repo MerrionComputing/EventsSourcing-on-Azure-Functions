@@ -12,7 +12,7 @@
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Event sourcing,serverless,azure functions</PackageTags>
     <Platforms>AnyCPU;x64</Platforms>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <Version>1.2</Version>
     <IsPackable>true</IsPackable>
     <PackageReleaseNotes>Added notifications (via EventGrid) and CQRS scaffold</PackageReleaseNotes>
