@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>EventSourcingOnAzureFunctions.Common</PackageId>
-    <PackageVersion>1.1</PackageVersion>
+    <PackageVersion>1.2</PackageVersion>
     <LangVersion>7.1</LangVersion>
     <Authors>Duncan Jones</Authors>
     <Description>Common function library to provide for event sourcing backed state management in Azure serverless functions</Description>
@@ -13,7 +13,7 @@
     <PackageTags>Event sourcing,serverless,azure functions</PackageTags>
     <Platforms>AnyCPU;x64</Platforms>
     <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <Version>1.1</Version>
+    <Version>1.2</Version>
     <IsPackable>true</IsPackable>
     <PackageReleaseNotes>Added notifications (via EventGrid) and CQRS scaffold</PackageReleaseNotes>
     <Copyright>2017-2021 Duncan Jones</Copyright>

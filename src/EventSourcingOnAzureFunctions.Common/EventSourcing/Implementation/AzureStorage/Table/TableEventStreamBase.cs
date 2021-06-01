@@ -126,14 +126,24 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// <remarks>
         /// We use the existence of the stream footer record as proof of stream existence
         /// </remarks>
-        protected internal bool StreamAlreadyExists()
+        protected async internal Task<bool> StreamAlreadyExists()
         {
             TableEntityKeyRecord streamFooter = null;
 
-            streamFooter = (TableEntityKeyRecord)Table.Execute(
-                   TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0)),
-                   requestOptions: null,
-                   operationContext: GetDefaultOperationContext()).Result;
+            TableOperation getKeyRecord = TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
+
+
+            TableResult getFooter = await Table.ExecuteAsync(
+                getKeyRecord);
+
+            if (getFooter != null)
+            {
+                if (getFooter.Result != null)
+                {
+                    streamFooter = (TableEntityKeyRecord)getFooter.Result;
+                }
+            }
+
 
             if (null != streamFooter)
             {

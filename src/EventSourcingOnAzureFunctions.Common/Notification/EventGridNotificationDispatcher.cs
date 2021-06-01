@@ -591,7 +591,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         }
 
         /// <summary>
-        /// Make a string that can be passed to the W3C Trace header as a trace paren
+        /// Make a string that can be passed to the W3C Trace header as a trace parent
         /// </summary>
         /// <param name="correlationIdentifier">
         /// The string we used as our correlation identifier 
@@ -599,9 +599,6 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <param name="causationIdentifier">
         /// The string we used as our causation identifier
         /// </param>
-        /// <returns>
-        /// 
-        /// </returns>
         /// <remarks>
         /// See https://www.w3.org/TR/trace-context/#examples-of-http-traceparent-headers
         /// </remarks>

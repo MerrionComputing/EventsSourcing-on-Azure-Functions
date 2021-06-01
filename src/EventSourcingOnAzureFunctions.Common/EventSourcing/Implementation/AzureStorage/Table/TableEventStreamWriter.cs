@@ -14,7 +14,22 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         : TableEventStreamBase, IEventStreamWriter
     {
 
-
+        /// <summary>
+        /// Save an event onto the end of the event stream stored in Azure table
+        /// </summary>
+        /// <param name="eventInstance">
+        /// The specific event to append to the end of the store
+        /// </param>
+        /// <param name="expectedTopSequenceNumber">
+        /// If this is set and the sequence number of the event stream is higher then the event is 
+        /// not written
+        /// </param>
+        /// <param name="eventVersionNumber">
+        /// The version number of the event being written
+        /// </param>
+        /// <param name="streamConstraint">
+        /// Additional constraint that must be true if the event is to be appended
+        /// </param>
         public async Task<IAppendResult> AppendEvent(IEvent eventInstance,
             int expectedTopSequenceNumber = 0,
             int eventVersionNumber = 1,
@@ -27,7 +42,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             if (streamConstraint != EventStreamExistenceConstraint.Loose )
             {
                 // find out if the stream exists
-                bool exists = StreamAlreadyExists();
+                bool exists = await StreamAlreadyExists();
                 if (streamConstraint== EventStreamExistenceConstraint.MustExist )
                 {
                     if (! exists )
@@ -108,10 +123,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 tries += 1;
                 // read in the a [TableEntityKeyRecord]
+                TableOperation getKeyRecord = TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
-                streamFooter = (TableEntityKeyRecord)Table.Execute(
-                    TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0)),
-                    operationContext: GetDefaultOperationContext()).Result;
+
+                TableResult getFooter =  await Table.ExecuteAsync(
+                    getKeyRecord );
+
+                if (getFooter != null)
+                {
+                    if (getFooter.Result != null)
+                    {
+                        streamFooter = (TableEntityKeyRecord)getFooter.Result;
+                    }
+                }
 
                 if (null == streamFooter)
                 {
@@ -198,10 +222,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 tries += 1;
                 // read in the a [TableEntityKeyRecord]
+                TableOperation getKeyRecord = TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
-                streamFooter = (TableEntityKeyRecord)Table.Execute(
-                    TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0)),
-                    operationContext: GetDefaultOperationContext()).Result;
+
+                TableResult getFooter = await Table.ExecuteAsync(
+                    getKeyRecord);
+
+                if (getFooter != null)
+                {
+                    if (getFooter.Result != null)
+                    {
+                        streamFooter = (TableEntityKeyRecord)getFooter.Result;
+                    }
+                }
 
                 if (null == streamFooter)
                 {
