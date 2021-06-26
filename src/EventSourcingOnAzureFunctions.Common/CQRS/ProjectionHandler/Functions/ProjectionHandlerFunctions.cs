@@ -5,7 +5,10 @@ using Microsoft.Azure.Documents.SystemFunctions;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using System;
+using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
@@ -25,6 +28,64 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
     {
 
         private static IProjectionMaps _projectionMap;
+
+        /// <summary>
+        /// Force run a projection for the given query instance
+        /// </summary>
+        /// <param name="req">
+        /// The HTTP request
+        /// </param>
+        /// <param name="queryIdentifier">
+        /// The unique identifier of the query instance for which the projection should be run
+        /// </param>
+        /// <returns>
+        /// HTTP code indicating success
+        /// </returns>
+        [FunctionName(nameof(RunProjectionForQuery))]
+        public static async Task<HttpResponseMessage> RunProjectionForQueryCommand(
+            [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"CQRS/RunProjectionForQuery/{queryIdentifier}")] HttpRequestMessage req,
+                      string queryIdentifier
+            )
+        {
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Query Identifier", queryIdentifier);
+            #endregion
+
+            // 1 - Read the ProjectionRequestData from the body
+            ProjectionRequestedEventGridEventData data = await req.Content.ReadAsAsync<ProjectionRequestedEventGridEventData>();
+            if (data != null)
+            {
+                if (string.IsNullOrWhiteSpace(data.InstanceKey))
+                {
+                    data.InstanceKey = queryIdentifier;
+                }
+                await RunProjectionForQuery(data);
+            }
+
+            return req.CreateResponse(System.Net.HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// A projection has been requested in processing a query.  This
+        /// function will run it and attach the result back to the query
+        /// event stream when complete
+        /// </summary>
+        /// <param name="eventGridEvent">
+        /// The event grid notification that triggered the request for the
+        /// projection to be run
+        /// </param>
+        [FunctionName(nameof(OnQueryProjectionHandler))]
+        public static async Task OnQueryProjectionHandler(
+            [EventGridTrigger] EventGridEvent eventGridEvent)
+        {
+            if (eventGridEvent != null)
+            {
+                // Get the data from the event that describes what projection is requested
+                ProjectionRequestedEventGridEventData projectionRequestData = eventGridEvent.Data as ProjectionRequestedEventGridEventData;
+                await ProjectionHandlerFunctions.RunProjectionForQuery(projectionRequestData);
+            }
+        }
 
         /// <summary>
         /// A projection has been requested in processing a query.  
@@ -83,6 +144,54 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
                 }
             }
         }
+
+        /// <summary>
+        /// A projection has been requested in processing a command.  This
+        /// function will run it and attach the result back to the command
+        /// event stream when complete
+        /// </summary>
+        /// <param name="eventGridEvent">
+        /// The event grid notification that triggered the request for the
+        /// projection to be run
+        /// </param>
+        [FunctionName(nameof(OnCommandProjectionHandler))]
+        public static async Task OnCommandProjectionHandler(
+            [EventGridTrigger] EventGridEvent eventGridEvent)
+        {
+            if (eventGridEvent != null)
+            {
+                // Get the data from the event that describes what projection is requested
+                ProjectionRequestedEventGridEventData projectionRequestData = eventGridEvent.Data as ProjectionRequestedEventGridEventData ;
+                await ProjectionHandlerFunctions.RunProjectionForCommand(projectionRequestData);
+            }
+        }
+
+        [FunctionName(nameof(RunProjectionForCommand))]
+        public static async Task<HttpResponseMessage> RunProjectionForCommandCommand(
+              [HttpTrigger(AuthorizationLevel.Function, "POST", 
+            Route = @"CQRS/RunProjectionForCommand/{commandIdentifier}")] HttpRequestMessage req,
+              string commandIdentifier
+            )
+        {
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Command Identifier", commandIdentifier);
+            #endregion
+
+            // 1 - Read the ProjectionRequestData from the body
+            ProjectionRequestedEventGridEventData data = await req.Content.ReadAsAsync<ProjectionRequestedEventGridEventData>();
+            if (data != null)
+            {
+                if (string.IsNullOrWhiteSpace(data.InstanceKey))
+                {
+                    data.InstanceKey = commandIdentifier;
+                }
+                await RunProjectionForCommand(data);
+            }
+
+            return req.CreateResponse(System.Net.HttpStatusCode.OK);
+        }
+
 
         /// <summary>
         /// A projection has been requested in processing a command.  

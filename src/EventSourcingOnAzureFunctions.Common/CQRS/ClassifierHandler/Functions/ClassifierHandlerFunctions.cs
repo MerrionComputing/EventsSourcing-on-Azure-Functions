@@ -4,7 +4,10 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using System;
+using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
@@ -15,10 +18,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
     /// <remarks>
     /// There are separate functions for handling classifications for commands and queries as,
     /// although they are very similar, we might want to separate them completely
-    ///     
-    /// Note that the functions runtime cannot discover functions declared in an imported library
-    /// so you will need to add a stub to your domain function app that calls into these
-    /// functions.
     /// </remarks>
     public static class ClassifierHandlerFunctions
     {
@@ -26,11 +25,68 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
         private static IClassificationMaps _classificationMap;
 
         /// <summary>
+        /// A classification has been requested in processing a query.  This
+        /// function will run it and attach the result back to the query
+        /// event stream when complete
+        /// </summary>
+        /// <param name="eventGridEvent">
+        /// The event grid notification that triggered the request for the
+        /// classification to be run
+        /// </param>
+        [FunctionName(nameof(OnQueryClassificationHandler))]
+        public static async Task OnQueryClassificationHandler(
+            [EventGridTrigger] EventGridEvent eventGridEvent)
+        {
+            if (eventGridEvent != null)
+            {
+                // Get the data from the event that describes what classification is requested
+                ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data as ClassifierRequestedEventGridEventData;
+                await ClassifierHandlerFunctions.RunClassificationForQuery(classifierRequestData);
+            }
+        }
+
+        /// <summary>
+        /// Force run a classification for the given query instance
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="queryIdentifier">
+        /// The unique identifier of the query instance for which the query should be run
+        /// </param>
+        /// <returns>
+        /// HTTP code indicating success
+        /// </returns>
+        [FunctionName(nameof(RunClassificationForQuery))]
+        public static async Task<HttpResponseMessage> RunClassificationForQueryCommand(
+            [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"CQRS/RunClassificationForQuery/{queryIdentifier}")] HttpRequestMessage req,
+                      string queryIdentifier
+            )
+        {
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Query Identifier", queryIdentifier);
+            #endregion
+
+            // 1 - Read the classifierRequestData from the body
+            ClassifierRequestedEventGridEventData data = await req.Content.ReadAsAsync<ClassifierRequestedEventGridEventData>();
+            if (data != null)
+            {
+                if (string.IsNullOrWhiteSpace(data.InstanceKey))
+                {
+                    data.InstanceKey = queryIdentifier;
+                }
+                await RunClassificationForQuery(data);
+            }
+
+            return req.CreateResponse(System.Net.HttpStatusCode.OK);
+        }
+
+        /// <summary>
         /// A classification has been requested in processing a query.  
         /// This function will run it and attach the result back to the query
         /// event stream when complete.
         /// </summary>
-        public static async Task RunClassificationForQuery(ClassifierRequestedEventGridEventData classifierRequestData)
+        public static async Task RunClassificationForQuery(
+            ClassifierRequestedEventGridEventData classifierRequestData)
         {
             if (classifierRequestData != null)
             {
@@ -146,23 +202,38 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
 
 
         /// <summary>
-        /// A classification has been requested in processing a query.  This
-        /// function will run it and attach the result back to the query
-        /// event stream when complete
+        /// Force run a classification for the given command instance
         /// </summary>
-        /// <param name="eventGridEvent">
-        /// The event grid notification that triggered the request for the
-        /// classification to be run
+        /// <param name="req"></param>
+        /// <param name="commandIdentifier">
+        /// The unique identifier of the command instance for which the query should be run
         /// </param>
-        [FunctionName(nameof(OnQueryClassificationHandler))]
-        public static async Task OnQueryClassificationHandler([EventGridTrigger] EventGridEvent eventGridEvent)
+        /// <returns>
+        /// HTTP code indicating success
+        /// </returns>
+        [FunctionName(nameof(RunClassificationForCommand))]
+        public static async Task<HttpResponseMessage> RunClassificationForCommandCommand(
+            [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"CQRS/RunClassificationForCommand/{commandIdentifier}")] HttpRequestMessage req,
+                      string commandIdentifier
+            )
         {
-            if (eventGridEvent != null)
+
+            #region Tracing telemetry
+            Activity.Current.AddTag("Command Identifier", commandIdentifier);
+            #endregion
+
+            // 1 - Read the classifierRequestData from the body
+            ClassifierRequestedEventGridEventData data = await req.Content.ReadAsAsync<ClassifierRequestedEventGridEventData>();
+            if (data != null)
             {
-                // Get the data from the event that describes what classification is requested
-                ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data as ClassifierRequestedEventGridEventData;
-                await ClassifierHandlerFunctions.RunClassificationForQuery(classifierRequestData);
+                if (string.IsNullOrWhiteSpace(data.InstanceKey ))
+                {
+                    data.InstanceKey = commandIdentifier;
+                }
+                await RunClassificationForCommand(data);
             }
+
+            return req.CreateResponse(System.Net.HttpStatusCode.OK);
         }
 
         /// <summary>

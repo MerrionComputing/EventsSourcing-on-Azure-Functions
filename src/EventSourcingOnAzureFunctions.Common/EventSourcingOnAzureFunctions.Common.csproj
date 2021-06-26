@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageId>EventSourcingOnAzureFunctions.Common</PackageId>
-    <PackageVersion>1.2</PackageVersion>
+    <PackageVersion>1.3</PackageVersion>
     <LangVersion>7.1</LangVersion>
     <Authors>Duncan Jones</Authors>
     <Description>Common function library to provide for event sourcing backed state management in Azure serverless functions</Description>
@@ -21,6 +21,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <DocumentationFile>doc\EventSourcingOnAzureFunctions.Common.xml</DocumentationFile>
+    <FunctionsInDependencies>true</FunctionsInDependencies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +34,7 @@
     <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.25" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="2.1.0" /> 
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.12" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.2.1" /> 
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.10" /> 
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.10" /> 
