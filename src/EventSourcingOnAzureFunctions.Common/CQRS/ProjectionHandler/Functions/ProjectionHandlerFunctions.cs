@@ -61,9 +61,14 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
                     data.InstanceKey = queryIdentifier;
                 }
                 await RunProjectionForQuery(data);
+                return req.CreateResponse(System.Net.HttpStatusCode.OK);
             }
-
-            return req.CreateResponse(System.Net.HttpStatusCode.OK);
+            else
+            {
+                // The projection cannot be run if there is no body supplied
+                return req.CreateResponse(System.Net.HttpStatusCode.BadRequest,
+                    "The projection details were not correctly specified in the request body");
+            }
         }
 
         /// <summary>
@@ -166,6 +171,19 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
             }
         }
 
+        /// <summary>
+        /// Run the requested projection for the command and put the resuklts back on the
+        /// event stream for that command
+        /// </summary>
+        /// <param name="req">
+        /// The HTTP request with the projection request details in the body
+        /// </param>
+        /// <param name="commandIdentifier">
+        /// The unique identifier of the command for which this projection should be
+        /// run
+        /// </param>
+        /// <returns>
+        /// </returns>
         [FunctionName(nameof(RunProjectionForCommand))]
         public static async Task<HttpResponseMessage> RunProjectionForCommandCommand(
               [HttpTrigger(AuthorizationLevel.Function, "POST", 
@@ -178,7 +196,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
             Activity.Current.AddTag("Command Identifier", commandIdentifier);
             #endregion
 
-            // 1 - Read the ProjectionRequestData from the body
+            // 1 - Read the ProjectionRequestData from the body to use to initiate the request
             ProjectionRequestedEventGridEventData data = await req.Content.ReadAsAsync<ProjectionRequestedEventGridEventData>();
             if (data != null)
             {
@@ -187,9 +205,14 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
                     data.InstanceKey = commandIdentifier;
                 }
                 await RunProjectionForCommand(data);
+                return req.CreateResponse(System.Net.HttpStatusCode.OK);
             }
-
-            return req.CreateResponse(System.Net.HttpStatusCode.OK);
+            else
+            {
+                // The projection cannot be run if there is no body supplied
+                return req.CreateResponse(System.Net.HttpStatusCode.BadRequest,
+                    "The projection details were not correctly specified in the request body");
+            }
         }
 
 

@@ -75,9 +75,14 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
                     data.InstanceKey = queryIdentifier;
                 }
                 await RunClassificationForQuery(data);
+                return req.CreateResponse(System.Net.HttpStatusCode.OK);
             }
-
-            return req.CreateResponse(System.Net.HttpStatusCode.OK);
+            else
+            {
+                // The classification cannot be run if there is no body supplied
+                return req.CreateResponse(System.Net.HttpStatusCode.BadRequest,
+                    "The classification details were not correctly specified in the request body");
+            }
         }
 
         /// <summary>
@@ -231,9 +236,14 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
                     data.InstanceKey = commandIdentifier;
                 }
                 await RunClassificationForCommand(data);
+                return req.CreateResponse(System.Net.HttpStatusCode.OK);
             }
-
-            return req.CreateResponse(System.Net.HttpStatusCode.OK);
+            else
+            {
+                // The classification cannot be run if there is no body supplied
+                return req.CreateResponse(System.Net.HttpStatusCode.BadRequest,
+                    "The classification details were not correctly specified in the request body");
+            }
         }
 
         /// <summary>

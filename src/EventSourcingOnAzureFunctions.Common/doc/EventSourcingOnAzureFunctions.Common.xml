@@ -1327,6 +1327,21 @@
             projection to be run
             </param>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionHandlerFunctions.RunProjectionForCommandCommand(System.Net.Http.HttpRequestMessage,System.String)">
+            <summary>
+            Run the requested projection for the command and put the resuklts back on the
+            event stream for that command
+            </summary>
+            <param name="req">
+            The HTTP request with the projection request details in the body
+            </param>
+            <param name="commandIdentifier">
+            The unique identifier of the command for which this projection should be
+            run
+            </param>
+            <returns>
+            </returns>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionHandlerFunctions.RunProjectionForCommand(EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionRequestedEventGridEventData)">
             <summary>
             A projection has been requested in processing a command.  
