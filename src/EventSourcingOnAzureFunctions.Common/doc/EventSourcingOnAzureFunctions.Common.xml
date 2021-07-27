@@ -916,6 +916,26 @@
             The sequence number as-of which thsi status was in force
             </summary>
         </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.CommandCancelled">
+            <summary>
+            A multi-step (event stream backed) command has been cancelled
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.CommandCancelled.CompensationInitiated">
+            <summary>
+            Did the cancellation initiate a rollback via compensating events
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.CommandCancelled.DateCancelled">
+            <summary>
+            The date/time the command was cancelled
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.CommandCancelled.Notes">
+            <summary>
+            Commentary on why the command that has been cancelled
+            </summary>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.Completed">
             <summary>
             A multi-step (event stream backed) command has completed
@@ -1045,10 +1065,45 @@
             The text message explaining what the error was
             </summary>
         </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Functions.CommandHandlerFunctions">
+            <summary>
+            Functions to interact with command instances 
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Functions.CommandHandlerFunctions.GetCommandState(System.Net.Http.HttpRequestMessage,System.String,System.String,System.String)">
+            <summary>
+            Get the state of the specified command
+            </summary>
+            <param name="req">
+            The HTTP request that triggered this function
+            </param>
+            <param name="domainName">
+            The domain in which this command instance was run
+            </param>
+            <param name="commandName">
+            The name of the type of command that was run
+            </param>
+            <param name="commandIdentifier">
+            The specific instance of the command that was run
+            </param>
+            <returns>
+            A record containing the state of the command as at the point the query was executed
+            </returns>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections.ExecutionState">
             <summary>
             A projection to get the execution state (Running, Error, Completed) 
             for a given command instance
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections.ExecutionState.CurrentStatus">
+            <summary>
+            The command status as at when the projection was executed
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections.ExecutionState.CurrentStep">
+            <summary>
+            The name of the step currently being executed
             </summary>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections.ParameterValues">
@@ -1273,15 +1328,15 @@
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionHandlerFunctions">
             <summary>
-            Event Grid triggered functions used to run projections for commands and queries
+            Functions used to run projections for commands and queries
             </summary>
             <remarks>
             There are separate functions for handling projections for commands and queries as,
             although they are very similar, we might want to separate them completely.
             
             Note that the functions runtime cannot discover functions declared in an imported library
-            so you will need to add a stub to your domain function app that calls into these
-            functions.
+            unless <FunctionsInDependencies>true</FunctionsInDependencies> is added to its project
+            file
             </remarks>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionHandlerFunctions.RunProjectionForQueryCommand(System.Net.Http.HttpRequestMessage,System.String)">
@@ -1755,6 +1810,31 @@
             If the system that initiated this query has its own orchestration process (for example with
             durable functions) this uniquely identifies that orchestration instance
             </summary>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Functions.QueryHandlerFunctions">
+            <summary>
+            Functions to interact with query instances 
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Functions.QueryHandlerFunctions.GetQueryState(System.Net.Http.HttpRequestMessage,System.String,System.String,System.String)">
+            <summary>
+            Get the state of the specified query instance
+            </summary>
+            <param name="req">
+            The HTTP request that triggered this function
+            </param>
+            <param name="domainName">
+            The domain in which this query instance was run
+            </param>
+            <param name="queryName">
+            The name of the type of query that was run
+            </param>
+            <param name="queryIdentifier">
+            The specific instance of the command that was run
+            </param>
+            <returns>
+            A record containing the state of the command as at the point the query was executed
+            </returns>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Projections.OutputLocations">
             <summary>

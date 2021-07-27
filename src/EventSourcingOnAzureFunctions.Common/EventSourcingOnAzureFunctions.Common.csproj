@@ -47,8 +47,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="CQRS\QueryHandler\Functions\" />
-  </ItemGroup>
-
 </Project>

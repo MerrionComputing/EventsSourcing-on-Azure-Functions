@@ -11,7 +11,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
     /// should be the last event in the event stream
     /// </remarks>
     [EventName("Command Created")]
-    public class Completed
+    public sealed class Completed
     {
         /// <summary>
         /// The date/time the command was completed by the system

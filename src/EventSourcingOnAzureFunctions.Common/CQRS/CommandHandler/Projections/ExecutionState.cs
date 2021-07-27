@@ -27,6 +27,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections
         public const string STATUS_COMPLETE = @"Complete";
 
         private string _currentStatus = STATUS_NEW;
+        /// <summary>
+        /// The command status as at when the projection was executed
+        /// </summary>
         public string CurrentStatus
         {
             get
@@ -41,6 +44,18 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections
             get
             {
                 return _message;
+            }
+        }
+
+        private string _currentStep = @"";
+        /// <summary>
+        /// The name of the step currently being executed
+        /// </summary>
+        public string CurrentStep
+        {
+            get
+            {
+                return _currentStep;
             }
         }
 
@@ -77,6 +92,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections
             {
                 _currentStatus = STATUS_RUNNING;
                 _message = $"Running {eventInstance.StepName}";
+                _currentStep = eventInstance.StepName;
             }
         }
 

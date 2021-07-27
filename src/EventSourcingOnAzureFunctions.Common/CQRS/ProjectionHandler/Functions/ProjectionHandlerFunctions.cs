@@ -14,15 +14,15 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
 {
     /// <summary>
-    /// Event Grid triggered functions used to run projections for commands and queries
+    /// Functions used to run projections for commands and queries
     /// </summary>
     /// <remarks>
     /// There are separate functions for handling projections for commands and queries as,
     /// although they are very similar, we might want to separate them completely.
     /// 
     /// Note that the functions runtime cannot discover functions declared in an imported library
-    /// so you will need to add a stub to your domain function app that calls into these
-    /// functions.
+    /// unless <FunctionsInDependencies>true</FunctionsInDependencies> is added to its project
+    /// file
     /// </remarks>
     public static class ProjectionHandlerFunctions
     {
