@@ -997,6 +997,15 @@
             The name of the step that was just completed
             </summary>
         </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.StepCompleted.StepInstance">
+            <summary>
+            The instance of this step that was run 
+            </summary>
+            <remarks>
+            This allows for commands that have to run the smae step for multiple 
+            times or for multiple parameters
+            </remarks>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.StepCompleted.Message">
             <summary>
             The message returned in completing the step
@@ -1031,6 +1040,15 @@
             <summary>
             The name of the step that was initiated
             </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.CommandStepInitiated.StepInstance">
+            <summary>
+            The instance of this step that is to be run 
+            </summary>
+            <remarks>
+            This allows for commands that have to run the smae step for multiple 
+            times or for multiple parameters
+            </remarks>
         </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.CommandStepInitiated.DomainName">
             <summary>
@@ -1834,6 +1852,32 @@
             </param>
             <returns>
             A record containing the state of the command as at the point the query was executed
+            </returns>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Functions.QueryHandlerFunctions.CompareQueries(System.Net.Http.HttpRequestMessage,System.String,System.String,System.String,System.String)">
+            <summary>
+            Compare two queries and return the set of differences between them
+            </summary>
+            <param name="req">
+            The HTTP request that triggered this function
+            </param>
+            <param name="domainName">
+            The domain in which these query instances were run
+            </param>
+            <param name="queryName">
+            The name of the type of query that was run
+            </param>
+            <param name="sourceQueryIdentifier">
+            The unique identifier of the first query instance we are comparing
+            </param>
+            <param name="targetQueryIdentifier">
+            The unique identifier of the first query instance we are comparing against
+            </param>
+            <remarks>
+            This is useful to run "what has changed" analysis between two instances of the 
+            query run at different times.
+            </remarks>
+            <returns>
             </returns>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Projections.OutputLocations">

@@ -19,6 +19,15 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events
         public string StepName { get; set; }
 
         /// <summary>
+        /// The instance of this step that was run 
+        /// </summary>
+        /// <remarks>
+        /// This allows for commands that have to run the smae step for multiple 
+        /// times or for multiple parameters
+        /// </remarks>
+        public string StepInstance { get; set; }
+
+        /// <summary>
         /// The message returned in completing the step
         /// </summary>
         public string Message { get; set; }

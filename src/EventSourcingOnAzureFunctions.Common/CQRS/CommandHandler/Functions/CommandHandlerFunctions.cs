@@ -64,6 +64,16 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Functions
             }
             #endregion 
 
+            Command cmd = new Command(domainName, commandName, commandIdentifier);
+            if (cmd != null)
+            {
+                CommandExecutionState cmdState = await cmd.GetExecutionState();
+                if (cmdState!= null)
+                {
+                    // return this 
+                }
+            }
+
             throw new NotImplementedException(); 
         }
 
