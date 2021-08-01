@@ -37,10 +37,8 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="2.1.0" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.12" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.2.3" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.17" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.17" /> 
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" /> 
     <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.10.0">
       <PrivateAssets>all</PrivateAssets>
