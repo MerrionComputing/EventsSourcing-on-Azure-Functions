@@ -22,6 +22,7 @@
     <DocumentationFile>D:\Source\AzureFunctions\Event Sourcing on Azure Functions\EventsSourcing-on-Azure-Functions\examples\bank-account\RetailBank.AzureFunctionApp\RetailBank.AzureFunctionApp.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Azure.Messaging.EventGrid" Version="4.5.0" />
     <PackageReference Include="DotNetEnv" Version="2.1.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.5.0" />
@@ -32,7 +33,6 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.4" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Host.Storage" Version="4.0.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.2.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="5.0.0" />
   </ItemGroup>

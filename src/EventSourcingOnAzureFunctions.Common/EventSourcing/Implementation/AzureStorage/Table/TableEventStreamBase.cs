@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table

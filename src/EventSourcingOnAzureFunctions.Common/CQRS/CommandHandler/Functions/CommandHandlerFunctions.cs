@@ -71,6 +71,9 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Functions
                 if (cmdState!= null)
                 {
                     // return this 
+                    return req.CreateResponse<CommandExecutionState>(System.Net.HttpStatusCode.OK,
+                        cmdState,
+                        @"application/json");
                 }
             }
 

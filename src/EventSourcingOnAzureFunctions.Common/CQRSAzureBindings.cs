@@ -198,7 +198,7 @@ namespace EventSourcingOnAzureFunctions.Common
             }
 
             var configuration = configurationBuilder.SetBasePath(currentDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("connectionstrings.json", optional: true)
                 .AddJsonFile("eventmaps.json", optional: true, reloadOnChange: true)

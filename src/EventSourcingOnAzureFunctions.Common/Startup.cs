@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs;
 [assembly: FunctionsStartup(typeof(EventSourcingOnAzureFunctions.Common.Startup))]
 namespace EventSourcingOnAzureFunctions.Common
 {
+
     public class Startup
         : FunctionsStartup
     {

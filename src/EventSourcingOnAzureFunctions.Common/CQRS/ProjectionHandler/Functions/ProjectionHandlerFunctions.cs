@@ -1,7 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Documents.SystemFunctions;
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
