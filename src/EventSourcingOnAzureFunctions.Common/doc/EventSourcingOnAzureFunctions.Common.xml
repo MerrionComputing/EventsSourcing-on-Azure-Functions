@@ -760,6 +760,18 @@
             to perform post-completion processing etc.
             </remarks>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.Cancel(System.String,System.Boolean)">
+            <summary>
+            Cancel this command 
+            </summary>
+            <param name="Notes">
+            Notes to add to the command to describe why/how it was cancelled
+            </param>
+            <param name="CompensationInitiated">
+            Whether to kick off compensating actions for this command to undo what it has
+            done so far
+            </param>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.InitiateStep(System.String,System.String,System.String,System.String)">
             <summary>
             Initiate a command step
@@ -1106,6 +1118,25 @@
             </param>
             <returns>
             A record containing the state of the command as at the point the query was executed
+            </returns>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Functions.CommandHandlerFunctions.CancelCommand(System.Net.Http.HttpRequestMessage,System.String,System.String,System.String)">
+            <summary>
+            Cancel an in-flight command
+            </summary>
+            <param name="req">
+            The HTTP request that triggered this function
+            </param>
+            <param name="domainName">
+            The domain in which this command instance was run
+            </param>
+            <param name="commandName">
+            The name of the type of command that was run
+            </param>
+            <param name="commandIdentifier">
+            The specific instance of the command that was run
+            </param>
+            <returns>
             </returns>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Projections.ExecutionState">

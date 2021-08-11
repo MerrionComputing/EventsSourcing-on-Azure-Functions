@@ -234,6 +234,37 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         }
 
         /// <summary>
+        /// Cancel this command 
+        /// </summary>
+        /// <param name="Notes">
+        /// Notes to add to the command to describe why/how it was cancelled
+        /// </param>
+        /// <param name="CompensationInitiated">
+        /// Whether to kick off compensating actions for this command to undo what it has
+        /// done so far
+        /// </param>
+        public async Task Cancel(string Notes = "",
+            bool CompensationInitiated = false )
+        {
+
+            EventStream esCmd = new EventStream(new EventStreamAttribute(MakeDomainCommandName(DomainName),
+                    CommandName,
+                    UniqueIdentifier,
+                    notificationDispatcherName: _commandDispatcherName),
+                    context: _commandContext);
+
+            CommandCancelled evCancel = new CommandCancelled()
+            {
+                Notes = Notes,
+                CompensationInitiated = CompensationInitiated,
+                DateCancelled = DateTime.UtcNow
+            };
+
+            await esCmd.AppendEvent(esCmd);
+
+        }
+
+        /// <summary>
         /// Initiate a command step
         /// </summary>
         /// <param name="stepName">
