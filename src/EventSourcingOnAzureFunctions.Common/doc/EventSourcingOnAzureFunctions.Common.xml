@@ -1579,6 +1579,17 @@
             </param>
             <returns></returns>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.SetParameter(System.String,System.Object)">
+            <summary>
+            Set a parameter to be used for the query
+            </summary>
+            <param name="parameterName">
+            The name of the query parameter
+            </param>
+            <param name="parameterValue">
+            The value to use for that parameter
+            </param>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.RequestClassification(System.String,System.String,System.String,System.String,System.Nullable{System.DateTime},System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Object}})">
             <summary>
             Request a classification to be performed as part of this query
@@ -2784,9 +2795,54 @@
             A class to wrap an event in the context read from an Azure table
             </summary>
         </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.VersionNumber">
+            <summary>
+            The version number of the event schema 
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.SequenceNumber">
+            <summary>
+            The sequence number of this event in its event stream
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.EventInstance">
+            <summary>
+            The specific event data
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.Who">
+            <summary>
+            The user that was the source of the event
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.Source">
+            <summary>
+            The application that was the source of the event
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.Commentary">
+            <summary>
+            Additional notes to go along with the event instance
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.CorrelationIdentifier">
+            <summary>
+            A unique identifier to show events that are correlated together
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.CausationIdentifier">
+            <summary>
+            The unique identifier of whatever caused this event to occur
+            </summary>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.SchemaName">
             <summary>
             The name or URN of the schema used to write this event
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableContextWrappedEvent.EventWrittenDateTime">
+            <summary>
+            The date and time the event was written
             </summary>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEntityIndexCardRecord">
@@ -4025,6 +4081,27 @@
             <remarks>
             This will be blank for a new-entity notification
             </remarks>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.Notification.MatchesFilter(EventSourcingOnAzureFunctions.Common.Listener.Notification.NotificationType,System.String,System.String,System.String,System.String)">
+            <summary>
+            Check if a notification message matches a set of filter
+            conditions tested against it
+            </summary>
+            <param name="expectedNotificationType">
+            If set we expect the notification to be matching this given type
+            </param>
+            <param name="expectedDomainName">
+            If set we expect the notification to be for this given domain
+            </param>
+            <param name="expectedEntityTypeName">
+            If set we expect the notification to be for this given entity type
+            </param>
+            <param name="expectedEntityKey">
+            If set we expect the notification to be for this given enity unique identifier
+            </param>
+            <param name="expectedEventType">
+            If set we expect the notification to be for this given entity event type
+            </param>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Listener.NotificationQueue">
             <summary>

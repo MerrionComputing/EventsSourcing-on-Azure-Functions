@@ -55,6 +55,25 @@ namespace EventSourcingOnAzureFunctions.Common.Listener
         public string EventName { get; private set; }
 
 
+        /// <summary>
+        /// Check if a notification message matches a set of filter
+        /// conditions tested against it
+        /// </summary>
+        /// <param name="expectedNotificationType">
+        /// If set we expect the notification to be matching this given type
+        /// </param>
+        /// <param name="expectedDomainName">
+        /// If set we expect the notification to be for this given domain
+        /// </param>
+        /// <param name="expectedEntityTypeName">
+        /// If set we expect the notification to be for this given entity type
+        /// </param>
+        /// <param name="expectedEntityKey">
+        /// If set we expect the notification to be for this given enity unique identifier
+        /// </param>
+        /// <param name="expectedEventType">
+        /// If set we expect the notification to be for this given entity event type
+        /// </param>
         public bool MatchesFilter(NotificationType expectedNotificationType,
             string expectedDomainName,
             string expectedEntityTypeName,

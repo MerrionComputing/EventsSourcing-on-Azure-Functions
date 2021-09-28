@@ -12,20 +12,44 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
     public class TableContextWrappedEvent
         : IEventContext
     {
+        /// <summary>
+        /// The version number of the event schema 
+        /// </summary>
         public int VersionNumber { get; private set; }
 
+        /// <summary>
+        /// The sequence number of this event in its event stream
+        /// </summary>
         public int SequenceNumber { get; private set; }
 
+        /// <summary>
+        /// The specific event data
+        /// </summary>
         public IEvent EventInstance { get; private set; }
 
+        /// <summary>
+        /// The user that was the source of the event
+        /// </summary>
         public string Who { get; private set; }
 
+        /// <summary>
+        /// The application that was the source of the event
+        /// </summary>
         public string Source { get; private set; }
 
+        /// <summary>
+        /// Additional notes to go along with the event instance
+        /// </summary>
         public string Commentary { get; private set; }
 
+        /// <summary>
+        /// A unique identifier to show events that are correlated together
+        /// </summary>
         public string CorrelationIdentifier { get; private set; }
 
+        /// <summary>
+        /// The unique identifier of whatever caused this event to occur
+        /// </summary>
         public string CausationIdentifier { get; private set; }
 
         /// <summary>
@@ -33,6 +57,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </summary>
         public string SchemaName { get; set; }
 
+        /// <summary>
+        /// The date and time the event was written
+        /// </summary>
         public DateTimeOffset  EventWrittenDateTime { get; set; }
 
         public TableContextWrappedEvent(IEvent eventToWrap, 

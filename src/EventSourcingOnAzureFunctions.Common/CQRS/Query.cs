@@ -101,7 +101,15 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             await esQry.AppendEvent(evCreated);
         }
 
-        // Parameters
+        /// <summary>
+        /// Set a parameter to be used for the query
+        /// </summary>
+        /// <param name="parameterName">
+        /// The name of the query parameter
+        /// </param>
+        /// <param name="parameterValue">
+        /// The value to use for that parameter
+        /// </param>
         public async Task SetParameter(string parameterName, object parameterValue)
         {
             if (!string.IsNullOrWhiteSpace(parameterName))
@@ -422,7 +430,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         }
 
         // Collations
-
 
         // Response
         private async Task SetResponseTarget(string targetType,
