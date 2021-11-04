@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Test
 {
-    [TestClass ]
+    [TestClass]
     public class ProjectionHandlerFunctions_UnitTest
     {
 
@@ -37,9 +37,9 @@ namespace EventSourcingOnAzureFunctions.Test
                 DomainName = "Bank",
                 EntityTypeName = "Query",
                 InstanceKey = "QRY-1234-6567",
-                ProjectionRequest = 
+                ProjectionRequest =
                    new Common.CQRS.ProjectionHandler.Events.ProjectionRequested()
-                    { 
+                   {
                        ProjectionDomainName = "Bank",
                        ProjectionEntityTypeName = "Account",
                        ProjectionInstanceKey = "A-001-223456-B"
@@ -72,9 +72,9 @@ namespace EventSourcingOnAzureFunctions.Test
             ProjectionRequestedEventGridEventData projReq = new ProjectionRequestedEventGridEventData()
             {
                 Commentary = "This is a unit test",
-                DomainName = testQuery.DomainName ,
-                EntityTypeName = testQuery.QueryName ,
-                InstanceKey = testQuery.UniqueIdentifier ,
+                DomainName = testQuery.DomainName,
+                EntityTypeName = testQuery.QueryName,
+                InstanceKey = testQuery.UniqueIdentifier,
                 ProjectionRequest =
                    new Common.CQRS.ProjectionHandler.Events.ProjectionRequested()
                    {
@@ -108,5 +108,22 @@ namespace EventSourcingOnAzureFunctions.Test
 
         }
 
+
+        [TestMethod]
+        public async Task RunCollationForQuery_TestMethod()
+        {
+
+            Query testQuery = new Query("Bank",
+                "Get Available Balance",
+                "QRY-TEST-A0004"
+                );
+
+            if (testQuery!=null)
+            {
+
+            }
+
+
+        }
     }
 }

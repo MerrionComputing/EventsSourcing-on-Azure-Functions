@@ -1710,6 +1710,17 @@
             The set of projection requests with no matching response
             </returns>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.RunCollationProjection``1(System.String)">
+            <summary>
+            Run a projection over this query event stream to give the collated results
+            </summary>
+            <typeparam name="TProjectionResult">
+            The data type of the collation result
+            </typeparam>
+            <param name="collationProjectionName">
+            The projection name to perform the collation function
+            </param>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.AddStorageBlobOutput(System.Uri,System.Uri)">
             <summary>
             Add an azure storage blob target for the query to save its results

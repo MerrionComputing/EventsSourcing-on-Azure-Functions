@@ -431,6 +431,38 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         // Collations
 
+        /// <summary>
+        /// Run a projection over this query event stream to give the collated results
+        /// </summary>
+        /// <typeparam name="TProjectionResult">
+        /// The data type of the collation result
+        /// </typeparam>
+        /// <param name="collationProjectionName">
+        /// The projection name to perform the collation function
+        /// </param>
+        public async Task<TProjectionResult> RunCollationProjection<TProjectionResult>(string collationProjectionName ) where TProjectionResult : IProjection , new()
+        {
+
+            if (!string.IsNullOrEmpty(collationProjectionName))
+            {
+                Projection collating = new Projection(new ProjectionAttribute(MakeDomainQueryName(DomainName),
+                    QueryName,
+                    UniqueIdentifier,
+                    collationProjectionName,
+                    notificationDispatcherName: _queryDispatcherName)
+                    );
+
+                var collationResult = await collating.Process<TProjectionResult>();
+
+                return collationResult;
+
+            }
+
+            // If we got here then no collation result was possible
+            return default(TProjectionResult);
+
+        }
+
         // Response
         private async Task SetResponseTarget(string targetType,
             string targetLocation)
