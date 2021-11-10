@@ -5,12 +5,12 @@ using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using System;
 using System.Collections.Generic;
-using Azure.Storage.Queues;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using Azure.Storage.Queues;
 
 namespace EventSourcingOnAzureFunctions.Common.Notification
 {

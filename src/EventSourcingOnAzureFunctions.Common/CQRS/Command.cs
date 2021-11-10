@@ -1,4 +1,5 @@
-﻿using EventSourcingOnAzureFunctions.Common.Binding;
+﻿using Azure.Messaging.EventGrid;
+using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.ClassifierHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Events;
 using EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler;
@@ -11,7 +12,6 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.Notification;
-using Microsoft.Azure.EventGrid.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -647,7 +647,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             if (null != egCommandNotification )
             {
                 // get the NewEventEventGridPayload from the event grid event
-                NewEventEventGridPayload payload = egCommandNotification.Data as NewEventEventGridPayload;
+                NewEventEventGridPayload payload = egCommandNotification.Data.ToObjectFromJson<NewEventEventGridPayload>();
                 if (null != payload )
                 {
                     _domainName = payload.DomainName;

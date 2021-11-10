@@ -1,7 +1,7 @@
-﻿using EventSourcingOnAzureFunctions.Common.Binding;
+﻿using Azure.Messaging.EventGrid;
+using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -40,7 +40,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
             if (eventGridEvent != null)
             {
                 // Get the data from the event that describes what classification is requested
-                ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data as ClassifierRequestedEventGridEventData;
+                ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data.ToObjectFromJson<ClassifierRequestedEventGridEventData>();
                 await ClassifierHandlerFunctions.RunClassificationForQuery(classifierRequestData);
             }
         }
@@ -262,7 +262,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions
             if (eventGridEvent != null)
             {
                 // Get the data from the event that describes what classification is requested
-                ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data as ClassifierRequestedEventGridEventData;
+                ClassifierRequestedEventGridEventData classifierRequestData = eventGridEvent.Data.ToObjectFromJson< ClassifierRequestedEventGridEventData>();
 
                 await ClassifierHandlerFunctions.RunClassificationForCommand(classifierRequestData);
             }

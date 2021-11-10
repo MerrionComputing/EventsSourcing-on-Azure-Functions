@@ -1,6 +1,6 @@
 
+using Azure.Messaging.EventGrid;
 using EventSourcingOnAzureFunctions.Common.Notification;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Extensions.Logging;
@@ -47,7 +47,7 @@ namespace RetailBank.AzureFunctionApp
 
             if (null != eventGridEvent.Data)
             {
-                NewEntityEventGridPayload payload = eventGridEvent.Data as NewEntityEventGridPayload;
+                NewEntityEventGridPayload payload = eventGridEvent.Data.ToObjectFromJson<NewEntityEventGridPayload>();
                 if (null != payload )
                 {
                     // New bank account is uniquely identified by key

@@ -1,7 +1,7 @@
-﻿using EventSourcingOnAzureFunctions.Common.Binding;
+﻿using Azure.Messaging.EventGrid;
+using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.CQRS;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
@@ -80,7 +80,7 @@ namespace RetailBank.AzureFunctionApp
         /// </param>
         [FunctionName(nameof(SetOverdraftForInterestCommandStep))]
         public static async Task SetOverdraftForInterestCommandStep
-            ([EventGridTrigger]EventGridEvent egStepTriggered
+            ([EventGridTrigger] EventGridEvent egStepTriggered
              )
         {
 

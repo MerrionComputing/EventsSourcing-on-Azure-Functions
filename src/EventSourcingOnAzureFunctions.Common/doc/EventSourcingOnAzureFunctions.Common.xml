@@ -632,7 +632,7 @@
             although they are very similar, we might want to separate them completely
             </remarks>
         </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions.ClassifierHandlerFunctions.OnQueryClassificationHandler(Microsoft.Azure.EventGrid.Models.EventGridEvent)">
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions.ClassifierHandlerFunctions.OnQueryClassificationHandler(Azure.Messaging.EventGrid.EventGridEvent)">
             <summary>
             A classification has been requested in processing a query.  This
             function will run it and attach the result back to the query
@@ -681,7 +681,7 @@
             HTTP code indicating success
             </returns>
         </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions.ClassifierHandlerFunctions.OnCommandClassificationHandler(Microsoft.Azure.EventGrid.Models.EventGridEvent)">
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ClassifierHandler.Functions.ClassifierHandlerFunctions.OnCommandClassificationHandler(Azure.Messaging.EventGrid.EventGridEvent)">
             <summary>
             A classification has been requested in processing a command.  This
             function will run it and attach the result back to the command
@@ -1402,7 +1402,7 @@
             HTTP code indicating success
             </returns>
         </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionHandlerFunctions.OnQueryProjectionHandler(Microsoft.Azure.EventGrid.Models.EventGridEvent)">
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionHandlerFunctions.OnQueryProjectionHandler(Azure.Messaging.EventGrid.EventGridEvent)">
             <summary>
             A projection has been requested in processing a query.  This
             function will run it and attach the result back to the query
@@ -1420,7 +1420,7 @@
             event stream when complete.
             </summary>
         </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionHandlerFunctions.OnCommandProjectionHandler(Microsoft.Azure.EventGrid.Models.EventGridEvent)">
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions.ProjectionHandlerFunctions.OnCommandProjectionHandler(Azure.Messaging.EventGrid.EventGridEvent)">
             <summary>
             A projection has been requested in processing a command.  This
             function will run it and attach the result back to the command

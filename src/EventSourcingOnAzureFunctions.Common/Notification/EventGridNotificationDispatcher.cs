@@ -9,12 +9,12 @@ using System.Runtime.ExceptionServices;
 using System.Linq;
 using System.Threading;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.EventGrid.Models;
 using Newtonsoft.Json;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
+using Azure.Messaging.EventGrid;
 
 namespace EventSourcingOnAzureFunctions.Common.Notification
 {
@@ -150,13 +150,14 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 // Create an event grid message to send
                 EventGridEvent[] message = new EventGridEvent[]
                 {
-                    new EventGridEvent()
+                    new EventGridEvent(
+                        subject: MakeEventGridSubject(newEntity),
+                        eventType: NewEntityEventGridPayload.MakeEventTypeName(newEntity ),
+                        dataVersion: NewEntityEventGridPayload.DATA_VERSION,
+                        data: new BinaryData(payload )
+                        )
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = NewEntityEventGridPayload.MakeEventTypeName(newEntity ) ,
-                        Subject = MakeEventGridSubject(newEntity) ,
-                        DataVersion = NewEntityEventGridPayload.DATA_VERSION,
-                        Data = payload,
                         EventTime = DateTime.UtcNow  
                     }
                 };
@@ -202,13 +203,14 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 // Create an event grid message to send
                 EventGridEvent[] message = new EventGridEvent[]
                 {
-                    new EventGridEvent()
+                    new EventGridEvent(
+                        subject:  MakeEventGridSubject(deletedEntity),
+                        eventType:  DeletedEntityEventGridPayload.MakeEventTypeName(deletedEntity ),
+                        dataVersion: DeletedEntityEventGridPayload.DATA_VERSION,
+                        data: new BinaryData(payload )
+                        )
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = DeletedEntityEventGridPayload.MakeEventTypeName(deletedEntity ) ,
-                        Subject = MakeEventGridSubject(deletedEntity) ,
-                        DataVersion = DeletedEntityEventGridPayload.DATA_VERSION,
-                        Data = payload,
                         EventTime = DateTime.UtcNow
                     }
                 };
@@ -269,13 +271,14 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 // Create an event grid message to send
                 EventGridEvent[] message = new EventGridEvent[]
                 {
-                    new EventGridEvent()
+                    new EventGridEvent(
+                        subject: MakeEventGridSubject(targetEntity, eventType),
+                        eventType: NewEventEventGridPayload.MakeEventTypeName(targetEntity, eventType ),
+                        dataVersion: NewEventEventGridPayload.DATA_VERSION,
+                        data: new BinaryData( payload )
+                        )
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = NewEventEventGridPayload.MakeEventTypeName(targetEntity, eventType )   ,
-                        Subject = MakeEventGridSubject(targetEntity, eventType) ,
-                        DataVersion = NewEventEventGridPayload.DATA_VERSION ,
-                        Data = payload,
                         EventTime = DateTime.UtcNow
                     }
                 };
@@ -344,13 +347,14 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 // Create an event grid message to send
                 EventGridEvent[] message = new EventGridEvent[]
                 {
-                    new EventGridEvent()
+                    new EventGridEvent(
+                        subject: MakeEventGridSubject(targetEntity, projectionType ),
+                        eventType : ProjectionCompleteEventGridPayload.MakeEventTypeName(targetEntity, projectionType  ),
+                        dataVersion: NewEventEventGridPayload.DATA_VERSION,
+                        data: new BinaryData( payload) 
+                        )
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = ProjectionCompleteEventGridPayload.MakeEventTypeName(targetEntity, projectionType  )   ,
-                        Subject = MakeEventGridSubject(targetEntity, projectionType ) ,
-                        DataVersion = NewEventEventGridPayload.DATA_VERSION ,
-                        Data = payload,
                         EventTime = DateTime.UtcNow
                     }
                 };
@@ -413,14 +417,14 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 // Create an event grid message to send
                 EventGridEvent[] message = new EventGridEvent[]
                 {
-                    new EventGridEvent()
+                    new EventGridEvent(subject : MakeEventGridSubject(targetEntity, classificationType ),
+                    eventType: ClassificationCompleteEventGridPayload.MakeEventTypeName(targetEntity,
+                        classificationType  ), 
+                    dataVersion: NewEventEventGridPayload.DATA_VERSION,
+                    data: new BinaryData(payload) 
+                    )
                     {
                         Id = Guid.NewGuid().ToString(),
-                        EventType = ClassificationCompleteEventGridPayload.MakeEventTypeName(targetEntity, 
-                        classificationType  )   ,
-                        Subject = MakeEventGridSubject(targetEntity, classificationType ) ,
-                        DataVersion = NewEventEventGridPayload.DATA_VERSION ,
-                        Data = payload,
                         EventTime = DateTime.UtcNow
                     }
                 };

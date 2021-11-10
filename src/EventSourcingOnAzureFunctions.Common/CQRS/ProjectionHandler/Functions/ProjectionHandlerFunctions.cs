@@ -1,7 +1,7 @@
-﻿using EventSourcingOnAzureFunctions.Common.Binding;
+﻿using Azure.Messaging.EventGrid;
+using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -86,7 +86,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
             if (eventGridEvent != null)
             {
                 // Get the data from the event that describes what projection is requested
-                ProjectionRequestedEventGridEventData projectionRequestData = eventGridEvent.Data as ProjectionRequestedEventGridEventData;
+                ProjectionRequestedEventGridEventData projectionRequestData = eventGridEvent.Data.ToObjectFromJson<ProjectionRequestedEventGridEventData>();
                 await ProjectionHandlerFunctions.RunProjectionForQuery(projectionRequestData);
             }
         }
@@ -165,7 +165,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Functions
             if (eventGridEvent != null)
             {
                 // Get the data from the event that describes what projection is requested
-                ProjectionRequestedEventGridEventData projectionRequestData = eventGridEvent.Data as ProjectionRequestedEventGridEventData ;
+                ProjectionRequestedEventGridEventData projectionRequestData = eventGridEvent.Data.ToObjectFromJson<ProjectionRequestedEventGridEventData>() ;
                 await ProjectionHandlerFunctions.RunProjectionForCommand(projectionRequestData);
             }
         }
