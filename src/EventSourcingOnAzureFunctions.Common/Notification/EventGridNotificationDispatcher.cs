@@ -483,22 +483,29 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 string causationIdentifier = "")
         {
 
-            EventGridPublisherClient ec = new EventGridPublisherClient(new Uri(this.eventGridTopicEndpoint),
-                new Azure.AzureKeyCredential( this.eventGridKeyValue));
-
-            if (ec != null)
+            if (!string.IsNullOrWhiteSpace(this.eventGridKeyValue))
             {
-                try
+
+                if (!string.IsNullOrWhiteSpace(this.eventGridTopicEndpoint))
                 {
-                    await ec.SendEventsAsync(eventGridEvents: eventGridEventArray);
-                }
-                catch (Exception e)
-                {
-                    if (null != _logger)
+                    EventGridPublisherClient ec = new EventGridPublisherClient(new Uri(this.eventGridTopicEndpoint),
+                        new Azure.AzureKeyCredential(this.eventGridKeyValue));
+
+                    if (ec != null)
                     {
-                        _logger.LogError(e.Message);
+                        try
+                        {
+                            await ec.SendEventsAsync(eventGridEvents: eventGridEventArray);
+                        }
+                        catch (Exception e)
+                        {
+                            if (null != _logger)
+                            {
+                                _logger.LogError(e.Message);
+                            }
+                            return;
+                        }
                     }
-                    return;
                 }
             }
         }
