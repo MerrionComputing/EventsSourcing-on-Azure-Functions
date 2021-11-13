@@ -886,6 +886,12 @@
             Delete the command backing event stream
             </summary>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.#ctor(Azure.Messaging.EventGrid.EventGridEvent)">
+            <summary>
+            Create a new command instance from an event grid notification
+            </summary>
+            <param name="egCommandNotification"></param>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.MakeDomainCommandName(System.String)">
             <summary>
             Make a "commands" domain for the given top level domain

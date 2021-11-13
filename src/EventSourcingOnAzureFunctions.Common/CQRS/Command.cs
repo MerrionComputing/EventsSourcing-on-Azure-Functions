@@ -642,6 +642,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
+        /// <summary>
+        /// Create a new command instance from an event grid notification
+        /// </summary>
+        /// <param name="egCommandNotification"></param>
         public Command(EventGridEvent egCommandNotification)
         {
             if (null != egCommandNotification )

@@ -70,7 +70,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         public string Commentary { get; set; }
 
         [JsonProperty(PropertyName = "value")] 
-        object CurrentValue { get; set; }
+        public object CurrentValue { get; set; }
 
         /// <summary>
         /// Empty constructor for serialisation

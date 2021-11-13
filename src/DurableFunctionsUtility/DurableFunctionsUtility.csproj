@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>Duncan Jones</Authors>
     <Description>Utility functions for using Azure Durable Functions in concert with the EventSourcingOnAzureFunctions library</Description>
     <PackageProjectUrl>https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions</PackageProjectUrl>

@@ -482,47 +482,23 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
                 string correlationIdentifier = "",
                 string causationIdentifier = "")
         {
-            string json = JsonConvert.SerializeObject(eventGridEventArray);
-            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
-            HttpResponseMessage result = null;
-            try
-            {
-                if ( (!string.IsNullOrWhiteSpace(correlationIdentifier ) ) ||
-                    (!string.IsNullOrWhiteSpace(causationIdentifier )))
-                {
-                    // Add a W3C Trace header
-                    content.Headers.Add(TRACE_HEADER_PARENT, 
-                        MakeTraceParent(correlationIdentifier, causationIdentifier));
-                }
-                result = await httpClient.PostAsync(this.eventGridTopicEndpoint, content);
-            }
-            catch (Exception e)
-            {
-                if (null != _logger )
-                {
-                    _logger.LogError(e.Message);  
-                }
-                return;
-            }
 
-            using (result)
+            EventGridPublisherClient ec = new EventGridPublisherClient(new Uri(this.eventGridTopicEndpoint),
+                new Azure.AzureKeyCredential( this.eventGridKeyValue));
+
+            if (ec != null)
             {
-                var body = await result.Content.ReadAsStringAsync();
-                if (result.IsSuccessStatusCode)
+                try
                 {
-                    // Successfully sent the notification...
-                    if (null != _logger)
-                    {
-                        _logger.LogInformation($"Sent notification via {this.eventGridTopicEndpoint}" );
-                    }
+                    await ec.SendEventsAsync(eventGridEvents: eventGridEventArray);
                 }
-                else
+                catch (Exception e)
                 {
-                    // Failed to send the eventgrid notification...
                     if (null != _logger)
                     {
-                        _logger.LogError($"Failed to send notification - {result.StatusCode} {result.Content}");
+                        _logger.LogError(e.Message);
                     }
+                    return;
                 }
             }
         }

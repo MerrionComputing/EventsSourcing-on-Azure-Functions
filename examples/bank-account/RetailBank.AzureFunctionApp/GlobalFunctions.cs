@@ -39,15 +39,19 @@ namespace RetailBank.AzureFunctionApp
 
                 // Get the signalR group from the event stream identity
                 string groupName = string.Empty;
-                IEventStreamIdentity eventTarget = eventGridEvent.Data as IEventStreamIdentity;
+                IEventStreamIdentity eventTarget = eventGridEvent.Data.ToObjectFromJson<EventStreamIdentity>();
                 if (eventTarget != null)
                 {
                     groupName = MakeSignalRGroupName(eventTarget);
                 }
+                else
+                {
+                    groupName = "all";
+                }
 
                 return signalRMessages.AddAsync(
                     new SignalRMessage
-                    {
+                    { 
                         GroupName = groupName,
                         Target = eventGridEvent.EventType,
                         Arguments = new[] { eventGridEvent.Data }
@@ -106,6 +110,20 @@ namespace RetailBank.AzureFunctionApp
         {
             // connectionInfo contains an access key token with a name identifier claim set to the authenticated user
             return connectionInfo;
+        }
+
+        /// <summary>
+        /// A subset of the eventgrid message containing the identifiy of the source stream
+        /// that sent the message
+        /// </summary>
+        private class EventStreamIdentity
+            : IEventStreamIdentity
+        {
+            public string DomainName { get; set; }
+
+            public string EntityTypeName { get; set; }
+
+            public string InstanceKey { get; set; }
         }
     }
 }
