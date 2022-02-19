@@ -3,6 +3,9 @@ A library to demonstrate doing Event Sourcing as a data persistence mechanism fo
 
 ![.NET](https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions/workflows/.NET/badge.svg)
 
+[![Gitter](https://badges.gitter.im/Accounting-on-Azure-Functions/Event-sourcing-on-azure-functions.svg)](https://gitter.im/Accounting-on-Azure-Functions/Event-sourcing-on-azure-functions?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+
 ## Introduction to event sourcing
 
 At its very simplest, event sourcing is a way of storing state (for an entity) which works by storing the sequential history of all the events that have occurred to that entity.  Changes to the entity are written as new events appended to the end of the event stream for the entity. 
