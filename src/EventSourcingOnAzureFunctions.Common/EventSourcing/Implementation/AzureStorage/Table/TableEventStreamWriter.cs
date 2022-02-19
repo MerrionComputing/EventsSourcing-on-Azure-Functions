@@ -93,7 +93,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         }
 
 
-
+        /// <summary>
+        /// Gets the operation context used to write data to the table
+        /// </summary>
+        /// <remarks>
+        /// This adds the correlation identifier to the operation so it can be seen in any tracing operation
+        /// </remarks>
         public override OperationContext GetDefaultOperationContext()
         {
             OperationContext ret = base.GetDefaultOperationContext();

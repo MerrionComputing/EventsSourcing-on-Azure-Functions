@@ -24,10 +24,35 @@
             The specific uniquely identitified instance of the entity for which the classifier will run
             </summary>
         </member>
-        <member name="F:EventSourcingOnAzureFunctions.Common.Binding.ClassificationAttribute._classifierTypeName">
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.ClassificationAttribute.ClassifierTypeName">
             <summary>
             The specific classifier type to execute
             </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.ClassificationAttribute.NotificationDispatcherName">
+            <summary>
+            The notification dispatcher to use to send out notifications whenever a classification completes
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Binding.ClassificationAttribute.#ctor(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Creates a new attribute to identify a class that performs a classification function over an event stream
+            </summary>
+            <param name="domainName">
+            The domain of the event stream over which the classifier will be run
+            </param>
+            <param name="entityTypeName">
+            The entity type of the event stream over which the classifier will be run
+            </param>
+            <param name="instanceKey">
+            The unique entity instance of the event stream over which the classifier will be run
+            </param>
+            <param name="classifierTypeName">
+            The name of the classifier process
+            </param>
+            <param name="notificationDispatcherName">
+            The name of the notification dispatcher used to notify the results when the classifier has run
+            </param>
         </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.Binding.ClassificationAttributeBinding.FromAttribute">
             <summary>
@@ -3081,6 +3106,14 @@
             <param name="streamConstraint">
             Additional constraint that must be true if the event is to be appended
             </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamWriter.GetDefaultOperationContext">
+            <summary>
+            Gets the operation context used to write data to the table
+            </summary>
+            <remarks>
+            This adds the correlation identifier to the operation so it can be seen in any tracing operation
+            </remarks>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamWriter.IncrementSequenceNumber">
             <summary>

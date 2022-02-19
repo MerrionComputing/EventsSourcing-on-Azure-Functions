@@ -69,6 +69,9 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         [JsonProperty(PropertyName = "commentary")]
         public string Commentary { get; set; }
 
+        /// <summary>
+        /// The current value of the projection
+        /// </summary>
         [JsonProperty(PropertyName = "value")] 
         public object CurrentValue { get; set; }
 

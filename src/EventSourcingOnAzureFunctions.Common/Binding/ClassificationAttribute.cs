@@ -54,10 +54,11 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
             }
         }
 
+        
+        private readonly string _classifierTypeName;
         /// <summary>
         /// The specific classifier type to execute
         /// </summary>
-        private readonly string _classifierTypeName;
         [AutoResolve]
         public string ClassifierTypeName
         {
@@ -68,6 +69,9 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         }
 
         private readonly string _notificationDispatcherName;
+        /// <summary>
+        /// The notification dispatcher to use to send out notifications whenever a classification completes
+        /// </summary>
         [AutoResolve]
         public string NotificationDispatcherName
         {
@@ -77,8 +81,25 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
             }
         }
 
-        // Note: The parameter names need to match the property names (except for the camelCase) because 
-        // the autoresolve uses this fact to perform the instantiation
+
+        /// <summary>
+        /// Creates a new attribute to identify a class that performs a classification function over an event stream
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain of the event stream over which the classifier will be run
+        /// </param>
+        /// <param name="entityTypeName">
+        /// The entity type of the event stream over which the classifier will be run
+        /// </param>
+        /// <param name="instanceKey">
+        /// The unique entity instance of the event stream over which the classifier will be run
+        /// </param>
+        /// <param name="classifierTypeName">
+        /// The name of the classifier process
+        /// </param>
+        /// <param name="notificationDispatcherName">
+        /// The name of the notification dispatcher used to notify the results when the classifier has run
+        /// </param>
         public ClassificationAttribute(string domainName,
                         string entityTypeName,
                         string instanceKey,
