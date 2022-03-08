@@ -109,21 +109,5 @@ namespace EventSourcingOnAzureFunctions.Test
         }
 
 
-        [TestMethod]
-        public async Task RunCollationForQuery_TestMethod()
-        {
-
-            Query testQuery = new Query("Bank",
-                "Get Available Balance",
-                "QRY-TEST-A0004"
-                );
-
-            if (testQuery!=null)
-            {
-
-            }
-
-
-        }
     }
 }

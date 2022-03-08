@@ -66,6 +66,13 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
+        /// <summary>
+        /// Get the command attribute that is used to define this command instance
+        /// </summary>
+        public CommandAttribute AsAttribute()
+        {
+            return new CommandAttribute(_domainName, _commandName, _uniqueIdentifier);
+        }
 
         /// <summary>
         /// Create the new query orchestration to be processed

@@ -41,7 +41,8 @@ namespace RetailBank.AzureFunctionApp
         public static async Task<HttpResponseMessage> ApplyAccruedInterestCommand(
                       [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"ApplyAccruedInterest/{accountnumber}")]HttpRequestMessage req,
                       string accountnumber,
-                      [Command("Bank", "Apply Accrued Interest")] Command cmdApplyAccruedInterest)
+                      [Command("Bank", "Apply Accrued Interest")] Command cmdApplyAccruedInterest,
+                      [DurableClient] IDurableOrchestrationClient applyInterestOrchestration)
         {
 
             #region Tracing telemetry
@@ -51,16 +52,17 @@ namespace RetailBank.AzureFunctionApp
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
+
             // No parameters passed in - but set the as-of date/time so that if this command is 
             // re-executed it does not return a different result
-            await cmdApplyAccruedInterest.SetParameter("As Of Date", startTime);
-            await cmdApplyAccruedInterest.SetParameter("Account Number", accountnumber );
+            InstanceParameter paramAsOf = new InstanceParameter(cmdApplyAccruedInterest.AsAttribute(), "As Of Date", startTime);
+            await applyInterestOrchestration.StartNewAsync(nameof(SetParametersCommandStep), paramAsOf);
 
-            // Start the set-overdraft-for-interest command step
-            await cmdApplyAccruedInterest.InitiateStep(COMMAND_STEP_OVERDRAFT);
+            InstanceParameter paramAccount = new InstanceParameter(cmdApplyAccruedInterest.AsAttribute(), "Account Number", accountnumber);
+            await applyInterestOrchestration.StartNewAsync(nameof(SetParametersCommandStep), paramAccount );
 
-            // The rest of the command should flow on from that step completing .. somehow..
-
+            // The rest of the command is performed by a durable functions orchestration
+            await applyInterestOrchestration.StartNewAsync(nameof(ApplyAccruedInterestCommandStep), cmdApplyAccruedInterest.AsAttribute());
 
             // Return that the command has been initiated...
             return req.CreateResponse<FunctionResponse>(System.Net.HttpStatusCode.OK,
@@ -71,141 +73,124 @@ namespace RetailBank.AzureFunctionApp
 
         }
 
+        
 
         /// <summary>
-        /// Set any overdraft required if the interest accrued exceeds the current requirement
+        /// Sets a parameter for the given command
         /// </summary>
-        /// <param name="egStepTriggered">
-        /// The event grid event that gets sent to this command step
+        /// <param name="context">
         /// </param>
-        [FunctionName(nameof(SetOverdraftForInterestCommandStep))]
-        public static async Task SetOverdraftForInterestCommandStep
-            ([EventGridTrigger] EventGridEvent egStepTriggered
-             )
+        [FunctionName(nameof(SetParametersCommandStep))]
+        public static async Task SetParametersCommandStep
+            ([OrchestrationTrigger] IDurableOrchestrationContext context)
         {
+            InstanceParameter payload =  context.GetInput<InstanceParameter>();
 
-            // Get the parameters from the event grid trigger
-            // (Payload is a Command Step Initiated)
-            Command cmdApplyAccruedInterest = new Command(egStepTriggered);
-            if (null != cmdApplyAccruedInterest)
+            if (payload != null)
             {
-
-                string result = $"No overdraft extension required";
-
-                if (cmdApplyAccruedInterest.CommandName == COMMAND_STEP_OVERDRAFT)
+                Command cmdApplyAccruedInterest = new Command(payload.DomainName, payload.Name, payload.InstanceKey);
+                if (cmdApplyAccruedInterest != null)
                 {
-                    // Get the parameter for account number
-                    string accountNumber = (string)(await cmdApplyAccruedInterest.GetParameterValue("Account Number"));
-                    if (!string.IsNullOrWhiteSpace(accountNumber))
-                    {
-                        // run the "set overdraft limit for interest" function 
-                        // 1- Get interest due...
-                        Projection prjInterestDue = new Projection(
-                            new ProjectionAttribute(
-                                "Bank",
-                                "Account",
-                                accountNumber,
-                                nameof(InterestDue)
-                                ) 
-                            );
-
-                        // get the interest owed / due as now
-                        InterestDue interestDue = await prjInterestDue.Process<InterestDue>();
-                        if (null != interestDue)
-                        {
-                            // if the interest due is negative we need to make sure the account has sufficient balance
-                            if (interestDue.Due < 0.00M)
-                            {
-                                Projection prjBankAccountBalance = new Projection(
-                                    new ProjectionAttribute(
-                                        "Bank",
-                                        "Account",
-                                        accountNumber,
-                                        nameof(InterestDue)
-                                        )
-                                    );
-
-                                Balance balance = await prjBankAccountBalance.Process<Balance>();
-                                if (null != balance)
-                                {
-                                    decimal availableBalance = balance.CurrentBalance;
-
-                                    // is there an overdraft?
-                                    Projection prjBankAccountOverdraft = new Projection(
-                                                new ProjectionAttribute(
-                                                "Bank",
-                                                "Account",
-                                                accountNumber,
-                                                nameof(OverdraftLimit)
-                                                )
-                                        );
-
-                                    OverdraftLimit overdraft = await prjBankAccountOverdraft.Process<OverdraftLimit>();
-                                    if (null != overdraft)
-                                    {
-                                        availableBalance += overdraft.CurrentOverdraftLimit;
-                                    }
-
-                                    if (availableBalance < interestDue.Due)
-                                    {
-                                        // Force an overdraft extension
-                                        EventStream bankAccountEvents = new EventStream(
-                                            new EventStreamAttribute(
-                                                "Bank",
-                                                "Account",
-                                                accountNumber
-                                                ) 
-                                            );
-
-                                        decimal newOverdraft = overdraft.CurrentOverdraftLimit;
-                                        decimal extension = 10.00M + Math.Abs(interestDue.Due % 10.00M);
-                                        OverdraftLimitSet evNewLimit = new OverdraftLimitSet()
-                                        {
-                                            OverdraftLimit = newOverdraft + extension,
-                                            Commentary = $"Overdraft extended to pay interest of {interestDue.Due} ",
-                                            Unauthorised = true
-                                        };
-
-                                        await bankAccountEvents.AppendEvent(evNewLimit);
-
-                                        result = $"{evNewLimit.Commentary} on account {accountNumber }";
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    await cmdApplyAccruedInterest.SetParameter(payload.ParameterName, payload.ParameterValue);
                 }
-
-                // mark this step as complete
-                await cmdApplyAccruedInterest.StepCompleted(COMMAND_STEP_OVERDRAFT, result); 
             }
         }
 
-        /// <summary>
-        /// Pay any accrued interest
-        /// </summary>
-        /// <param name="egStepTriggered">
-        /// The event grid event that gets sent to this command step
-        /// </param>
-        [FunctionName(nameof(PayInterestCommandStep))]
-        public static async Task PayInterestCommandStep
-            ([EventGridTrigger]EventGridEvent egStepTriggered)
-        {
-            // Get the parameters from the event grid trigger
-            // (Payload is a Command Step Initiated)
-            Command cmdApplyAccruedInterest = new Command(egStepTriggered);
-            if (null != cmdApplyAccruedInterest)
-            {
-                string result = $"No accrued interest paid";
 
-                if (cmdApplyAccruedInterest.CommandName == COMMAND_STEP_PAY_INTEREST)
+        /// <summary>
+        /// Orchestration to apply the accrued interest for one account
+        /// </summary>
+        /// <param name="context">
+        /// </param>
+        /// <returns></returns>
+        [FunctionName(nameof(ApplyAccruedInterestCommandStep))]
+        public static async Task ApplyAccruedInterestCommandStep
+            ([OrchestrationTrigger] IDurableOrchestrationContext context)
+        {
+            CommandAttribute payload =  context.GetInput<CommandAttribute>();
+
+            Command cmdApplyAccruedInterest = null;
+            if (payload == null)
+            {
+               cmdApplyAccruedInterest  = new Command(payload );
+            }
+            else
+            {
+                cmdApplyAccruedInterest = new Command(new CommandAttribute("Bank", "Apply Accrued Interest"));
+            }
+
+
+            int overdraftEventSequence = await context.CallActivityAsync<int>(nameof(SetOverdraftForInterestCommandStep),
+                cmdApplyAccruedInterest.AsAttribute());
+
+             
+
+            // Set the next step "paying accrued interest"
+            await cmdApplyAccruedInterest.InitiateStep(COMMAND_STEP_PAY_INTEREST);
+
+            bool success = await context.CallActivityAsync<bool>(nameof(SetOverdraftForInterestCommandStep),
+                cmdApplyAccruedInterest.AsAttribute());
+
+
+
+
+        }
+
+        /// <summary>
+        /// Sets the overdraft for an account if it is required in order to pay the account interest accrued
+        /// </summary>
+        /// <param name="setOverdraftContext">
+        /// The context of the orchestration for which this command is being run
+        /// </param>
+        /// <returns>
+        /// The event sequence number of the event to add interest, if needed (0 if no interest needed)
+        /// </returns>
+        [FunctionName(nameof(SetOverdraftForInterestCommandStep))]
+        public static async Task<int> SetOverdraftForInterestCommandStep
+            ([ActivityTrigger] IDurableActivityContext setOverdraftContext)
+        {
+
+            int overdraftSequenceNumber = 0;
+
+            CommandAttribute payload = setOverdraftContext.GetInput<CommandAttribute>();
+
+            Command cmdApplyAccruedInterest = null;
+            if (payload == null)
+            {
+                cmdApplyAccruedInterest = new Command(payload);
+            }
+            else
+            {
+                cmdApplyAccruedInterest = new Command(new CommandAttribute("Bank", "Apply Accrued Interest"));
+            }
+
+            // Set the next step "setting an overdraft if needed"
+            await cmdApplyAccruedInterest.InitiateStep(COMMAND_STEP_OVERDRAFT);
+
+            string accountNumber = (string)(await cmdApplyAccruedInterest.GetParameterValue("Account Number"));
+            string result = $"No overdraft extension required";
+
+            if (!string.IsNullOrWhiteSpace(accountNumber))
+            { 
+                    // run the "set overdraft limit for interest" function 
+                    // 1- Get interest due...
+                    Projection prjInterestDue = new Projection(
+                        new ProjectionAttribute(
+                            "Bank",
+                            "Account",
+                            accountNumber,
+                            nameof(InterestDue)
+                            )
+                        );
+
+                    // get the interest owed / due as now
+                    InterestDue interestDue = await prjInterestDue.Process<InterestDue>();
+                if (null != interestDue)
                 {
-                    // Get the parameter for account number
-                    string accountNumber = (string)(await cmdApplyAccruedInterest.GetParameterValue("Account Number"));
-                    if (!string.IsNullOrWhiteSpace(accountNumber))
+                    // if the interest due is negative we need to make sure the account has sufficient balance
+                    if (interestDue.Due < 0.00M)
                     {
-                        // 1- Get interest due...
-                        Projection prjInterestDue = new Projection(
+                        Projection prjBankAccountBalance = new Projection(
                             new ProjectionAttribute(
                                 "Bank",
                                 "Account",
@@ -214,14 +199,30 @@ namespace RetailBank.AzureFunctionApp
                                 )
                             );
 
-                        // get the interest owed / due as now
-                        InterestDue interestDue = await prjInterestDue.Process<InterestDue>();
-                        if (null != interestDue)
+                        Balance balance = await prjBankAccountBalance.Process<Balance>();
+                        if (null != balance)
                         {
-                            // pay the interest
-                            decimal amountToPay = decimal.Round(interestDue.Due, 2, MidpointRounding.AwayFromZero);
-                            if (amountToPay != 0.00M)
+                            decimal availableBalance = balance.CurrentBalance;
+
+                            // is there an overdraft?
+                            Projection prjBankAccountOverdraft = new Projection(
+                                        new ProjectionAttribute(
+                                        "Bank",
+                                        "Account",
+                                        accountNumber,
+                                        nameof(OverdraftLimit)
+                                        )
+                                );
+
+                            OverdraftLimit overdraft = await prjBankAccountOverdraft.Process<OverdraftLimit>();
+                            if (null != overdraft)
                             {
+                                availableBalance += overdraft.CurrentOverdraftLimit;
+                            }
+
+                            if (availableBalance < interestDue.Due)
+                            {
+                                // Force an overdraft extension
                                 EventStream bankAccountEvents = new EventStream(
                                     new EventStreamAttribute(
                                         "Bank",
@@ -230,23 +231,113 @@ namespace RetailBank.AzureFunctionApp
                                         )
                                     );
 
-                                InterestPaid evInterestPaid = new InterestPaid()
+                                decimal newOverdraft = overdraft.CurrentOverdraftLimit;
+                                decimal extension = 10.00M + Math.Abs(interestDue.Due % 10.00M);
+                                OverdraftLimitSet evNewLimit = new OverdraftLimitSet()
                                 {
-                                    AmountPaid = decimal.Round(interestDue.Due, 2, MidpointRounding.AwayFromZero),
-                                    Commentary = $"Interest due {interestDue.Due} as at {interestDue.CurrentSequenceNumber}"
+                                    OverdraftLimit = newOverdraft + extension,
+                                    Commentary = $"Overdraft extended to pay interest of {interestDue.Due} ",
+                                    Unauthorised = true
                                 };
-                                await bankAccountEvents.AppendEvent(evInterestPaid);
 
-                                result = $"Interest of {evInterestPaid.AmountPaid} paid for account {accountNumber} ";
+                                await bankAccountEvents.AppendEvent(evNewLimit, overdraft.CurrentSequenceNumber );
+
+                                overdraftSequenceNumber = 1 + overdraft.CurrentSequenceNumber;
+
+                                await cmdApplyAccruedInterest.SetParameter("Overdraft Extension", extension);
+
+                                result = $"{evNewLimit.Commentary} on account {accountNumber }";
                             }
                         }
                     }
                 }
+            }
 
-                // mark this step as complete
-                await cmdApplyAccruedInterest.StepCompleted(COMMAND_STEP_PAY_INTEREST , result);
+            await cmdApplyAccruedInterest.SetParameter("Overdraft Event Sequence Number", overdraftSequenceNumber);
+
+            // mark this step as complete
+            await cmdApplyAccruedInterest.StepCompleted(COMMAND_STEP_OVERDRAFT, result);
+
+            return overdraftSequenceNumber;
+        }
+
+        /// <summary>
+        /// Pay any accrued interest
+        /// </summary>
+
+        [FunctionName(nameof(PayInterestCommandStep))]
+        public static async Task<bool> PayInterestCommandStep
+            ([ActivityTrigger] IDurableActivityContext setOverdraftContext)
+        {
+
+            string result = "";
+
+            CommandAttribute payload = setOverdraftContext.GetInput<CommandAttribute>();
+
+            Command cmdApplyAccruedInterest = null;
+            if (payload == null)
+            {
+                cmdApplyAccruedInterest = new Command(payload);
+            }
+            else
+            {
+                cmdApplyAccruedInterest = new Command(new CommandAttribute("Bank", "Apply Accrued Interest"));
+            }
+
+            string accountNumber = (string)(await cmdApplyAccruedInterest.GetParameterValue("Account Number"));
+            int overdraftSequenceNumber = (int)(await cmdApplyAccruedInterest.GetParameterValue("Overdraft Event Sequence Number"));
+
+            if (!string.IsNullOrWhiteSpace(accountNumber))
+            {
+                // 1- Get interest due...
+                Projection prjInterestDue = new Projection(
+                    new ProjectionAttribute(
+                        "Bank",
+                        "Account",
+                        accountNumber,
+                        nameof(InterestDue)
+                        )
+                    );
+
+                // get the interest owed / due as now
+                InterestDue interestDue = await prjInterestDue.Process<InterestDue>();
+                if (null != interestDue)
+                {
+                    // pay the interest
+                    decimal amountToPay = decimal.Round(interestDue.Due, 2, MidpointRounding.AwayFromZero);
+                    if (amountToPay != 0.00M)
+                    {
+                        EventStream bankAccountEvents = new EventStream(
+                            new EventStreamAttribute(
+                                "Bank",
+                                "Account",
+                                accountNumber
+                                )
+                            );
+
+                        InterestPaid evInterestPaid = new InterestPaid()
+                        {
+                            AmountPaid = decimal.Round(interestDue.Due, 2, MidpointRounding.AwayFromZero),
+                            Commentary = $"Interest due {interestDue.Due} as at {interestDue.CurrentSequenceNumber}"
+                        };
+                        await bankAccountEvents.AppendEvent(evInterestPaid);
+
+                        result = $"Interest of {evInterestPaid.AmountPaid} paid for account {accountNumber} ";
+                    }
+
+                    if (interestDue.CurrentSequenceNumber > overdraftSequenceNumber )
+                    {
+                        // May indicate a concurrency issue
+                        return false;
+                    }
+
+                   
+                }
 
             }
+
+            return true;
         }
+
     }
 }

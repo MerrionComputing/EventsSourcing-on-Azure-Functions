@@ -737,6 +737,11 @@
             The unique instance of the command to run
             </summary>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.AsAttribute">
+            <summary>
+            Get the command attribute that is used to define this command instance
+            </summary>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.Create(System.String,System.String,System.String)">
             <summary>
             Create the new query orchestration to be processed
@@ -915,7 +920,9 @@
             <summary>
             Create a new command instance from an event grid notification
             </summary>
-            <param name="egCommandNotification"></param>
+            <param name="egCommandNotification">
+            The notification that triggered the creation of this command instance
+            </param>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.MakeDomainCommandName(System.String)">
             <summary>
@@ -1243,6 +1250,49 @@
         <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.Common.Events.ValidationError.Message">
             <summary>
             The message to go along with the validation notification
+            </summary>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter">
+            <summary>
+            A parameter linked to an instance of a command or query
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter.TargetType">
+            <summary>
+            Is the parameter target a Command or a Query
+            </summary>
+            <remarks>
+            This may be extended to projection and classifier so kept as a string
+            </remarks>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter.DomainName">
+            <summary>
+            The domain name the command or query is running in
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter.Name">
+            <summary>
+            The name of the query or command being run
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter.InstanceKey">
+            <summary>
+            The command or query instance
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter.ParameterName">
+            <summary>
+            The name of the parameter
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter.ParameterValue">
+            <summary>
+            The value of the parameter being set
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter.#ctor">
+            <summary>
+            Parameter-less constructor for serialisation
             </summary>
         </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Events.IProjectionRequest.ProjectionDomainName">
@@ -4702,6 +4752,11 @@
         <member name="P:EventSourcingOnAzureFunctions.Common.Notification.ProjectionCompleteEventGridPayload.Commentary">
             <summary>
             Comments that can be passed for logging / diagnostic or other purpose
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Notification.ProjectionCompleteEventGridPayload.CurrentValue">
+            <summary>
+            The current value of the projection
             </summary>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.Notification.ProjectionCompleteEventGridPayload.#ctor">
