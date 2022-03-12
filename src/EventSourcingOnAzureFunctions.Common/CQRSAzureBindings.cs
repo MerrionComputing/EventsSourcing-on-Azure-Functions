@@ -275,7 +275,10 @@ namespace EventSourcingOnAzureFunctions.Common
                     string settingValue)
                     : base(settingName)
             {
-
+                if (settingName.Equals("SequenceNumberFormat"))
+                {
+                    _sequenceNumberFormat = settingValue;
+                }
             }
         }
     }

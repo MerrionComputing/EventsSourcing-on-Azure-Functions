@@ -2702,7 +2702,17 @@
             This can be used for e.g. checking it exists as part of a validation
             </remarks>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamReader.GetAllInstanceKeys(System.Nullable{System.DateTime})" -->
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamReader.GetAllInstanceKeys(System.Nullable{System.DateTime})">
+            <summary>
+            Get all of the unique instances of this domain/entity type
+            </summary>
+            <param name="asOfDate">
+            (Optional) The date as of which to get all the instance keys
+            </param>
+            <remarks>
+            This is to allow for set-based functionality
+            </remarks>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamWriter.AppendEvent(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEvent,System.Int32,System.Int32,EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.EventStreamBase.EventStreamExistenceConstraint)">
             <summary>
             Append the event to the end of the event stream

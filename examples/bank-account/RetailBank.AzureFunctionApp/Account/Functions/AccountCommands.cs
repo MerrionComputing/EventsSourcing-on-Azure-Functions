@@ -41,7 +41,6 @@ namespace RetailBank.AzureFunctionApp
         public static async Task<HttpResponseMessage> ApplyAccruedInterestCommand(
                       [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"ApplyAccruedInterest/{accountnumber}")]HttpRequestMessage req,
                       string accountnumber,
-                      [Command("Bank", "Apply Accrued Interest")] Command cmdApplyAccruedInterest,
                       [DurableClient] IDurableOrchestrationClient applyInterestOrchestration)
         {
 
@@ -52,6 +51,13 @@ namespace RetailBank.AzureFunctionApp
             // Set the start time for how long it took to process the message
             DateTime startTime = DateTime.UtcNow;
 
+            // use a durable functions GUID so that the orchestration is replayable
+
+            //Command cmdApplyAccruedInterest
+            CommandAttribute commandToRun = new CommandAttribute("Bank", "Apply Accrued Interest");
+            string commandId = await applyInterestOrchestration.StartNewAsync(nameof(StartCommand), commandToRun);
+            commandToRun = new CommandAttribute("Bank", "Apply Accrued Interest", commandId);
+            Command cmdApplyAccruedInterest = new Command(commandToRun);
 
             // No parameters passed in - but set the as-of date/time so that if this command is 
             // re-executed it does not return a different result
@@ -73,7 +79,19 @@ namespace RetailBank.AzureFunctionApp
 
         }
 
-        
+        [FunctionName(nameof(StartCommand))]
+        public static async Task StartCommand(
+            [OrchestrationTrigger] IDurableOrchestrationContext context)
+        {
+            CommandAttribute payload = context.GetInput<CommandAttribute>();
+            if (payload != null)
+            {
+
+                CommandAttribute cmdToUse = new CommandAttribute(payload.DomainName,
+                    payload.CommandName,
+                    context.InstanceId);
+            }
+        }
 
         /// <summary>
         /// Sets a parameter for the given command
@@ -125,10 +143,7 @@ namespace RetailBank.AzureFunctionApp
 
              
 
-            // Set the next step "paying accrued interest"
-            await cmdApplyAccruedInterest.InitiateStep(COMMAND_STEP_PAY_INTEREST);
-
-            bool success = await context.CallActivityAsync<bool>(nameof(SetOverdraftForInterestCommandStep),
+            bool success = await context.CallActivityAsync<bool>(nameof(PayInterestCommandStep),
                 cmdApplyAccruedInterest.AsAttribute());
 
 
@@ -285,7 +300,13 @@ namespace RetailBank.AzureFunctionApp
             }
 
             string accountNumber = (string)(await cmdApplyAccruedInterest.GetParameterValue("Account Number"));
-            int overdraftSequenceNumber = (int)(await cmdApplyAccruedInterest.GetParameterValue("Overdraft Event Sequence Number"));
+            int overdraftSequenceNumber = 0;
+            
+            var overdraftSeqNoParam = await cmdApplyAccruedInterest.GetParameterValue("Overdraft Event Sequence Number");
+            if (overdraftSeqNoParam != null)
+            {
+                overdraftSequenceNumber = (int)(overdraftSeqNoParam);
+            }
 
             if (!string.IsNullOrWhiteSpace(accountNumber))
             {

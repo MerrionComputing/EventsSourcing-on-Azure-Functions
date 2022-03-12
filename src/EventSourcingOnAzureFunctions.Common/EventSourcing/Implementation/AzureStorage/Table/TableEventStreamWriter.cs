@@ -84,7 +84,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             var dteEvent = MakeDynamicTableEntity(eventInstance, nextSequence);
             if (null != dteEvent)
             {
-                await base.Table.ExecuteAsync(TableOperation.Insert(dteEvent));
+                await base.Table.ExecuteAsync(TableOperation.Insert(dteEvent), null, GetDefaultOperationContext()  );
             }
 
 
@@ -132,7 +132,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
 
                 TableResult getFooter =  await Table.ExecuteAsync(
-                    getKeyRecord );
+                    getKeyRecord);
 
                 if (getFooter != null)
                 {
@@ -498,6 +498,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
 
         }
+
 
         public static EntityProperty MakeEntityProperty(PropertyInfo pi,
             object eventPayload)

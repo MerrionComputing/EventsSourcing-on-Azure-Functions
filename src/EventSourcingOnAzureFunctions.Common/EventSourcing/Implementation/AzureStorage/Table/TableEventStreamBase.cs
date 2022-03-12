@@ -35,7 +35,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         protected internal CloudStorageAccount _storageAccount;
         private readonly CloudTableClient _cloudTableClient;
-        
+
         public CloudTable Table
         {
             get
@@ -100,7 +100,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             if (Table != null)
             {
-                if (Table.Exists())
+                if (await Table.ExistsAsync())
                 {
                     TableResult ret = await Table.ExecuteAsync(
                         TableOperation.Retrieve(this.InstanceKey, SequenceNumberAsString(0)),
@@ -113,7 +113,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
             else
             {
-                // If the table doesn't exist then the event cannot possibly exist
+                // If the table doesn't exist then the instance cannot possibly exist
                 return await Task.FromResult<bool>(false);
             }
 
@@ -213,7 +213,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     if (! Table.Exists( operationContext: GetDefaultOperationContext()))
                     {
-                        Table.Create();
+                        Table.CreateIfNotExists ();
                     }
                 }
             }

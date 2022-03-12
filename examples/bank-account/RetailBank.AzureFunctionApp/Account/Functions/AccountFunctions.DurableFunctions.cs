@@ -59,19 +59,30 @@ namespace RetailBank.AzureFunctionApp
                 // Perform all the accruals in parrallel
                 await Task.WhenAll(accrualTasks);
 
-                string failedAccruals = "";
+                List<string> failedAccruals = new List<string>();
                 foreach (var accrualTask in accrualTasks)
                 {
-                    if (!accrualTask.Result.Item2)
+                    if (accrualTask.IsCompleted)
                     {
-                        failedAccruals += $"{accrualTask.Result.Item1}:";
+                        if (!accrualTask.Result.Item2)
+                        {
+                            failedAccruals.Add(accrualTask.Result.Item1);
+                        }
                     }
                 }
 
                 // Try a second pass - using failedAccruals.Count ?
-                if (! string.IsNullOrWhiteSpace(failedAccruals))
+                if (failedAccruals.Count > 0)
                 {
-                    throw new Exception($"Not all account accruals succeeded - {failedAccruals}");
+                    // try them again?
+                    foreach (string accountNumber in failedAccruals)
+                    {
+                        Task<Tuple<string, bool>> accrualTask = context.CallActivityAsync<Tuple<string, bool>>(nameof(AccrueInterestForSpecificAccount), accountNumber);
+                        accrualTasks.Add(accrualTask);
+                    }
+
+                    // Perform all the accruals in parrallel
+                    await Task.WhenAll(accrualTasks);
                 }
 
             }

@@ -176,7 +176,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// <param name="asOfDate">
         /// (Optional) The date as of which to get all the instance keys
         /// </param>
-        /// <remarks
+        /// <remarks>
         /// This is to allow for set-based functionality
         /// </remarks>
         public Task<IEnumerable<string>> GetAllInstanceKeys(DateTime? asOfDate)
