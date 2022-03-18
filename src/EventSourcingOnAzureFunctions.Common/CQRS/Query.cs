@@ -9,6 +9,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.Notification;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -604,6 +605,28 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             {
                 _queryContext = context;
             }
+        }
+
+        /// <summary>
+        /// Create a query instance tied to a specific durable functions orchestration
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain in which the command is being run
+        /// </param>
+        /// <param name="commandName">
+        /// The name of the type of command 
+        /// </param>
+        /// <param name="durableOrchestrationContext">
+        /// The durable functions orchestration that this query instance is tied to
+        /// </param>
+        /// <remarks>
+        /// Only one command instance can be connected to a given durable functions orchestration instance
+        /// </remarks>
+        public Query(string domainName,
+            string commandName,
+            IDurableOrchestrationContext durableOrchestrationContext)
+            : this(domainName, commandName, durableOrchestrationContext.InstanceId)
+        {
         }
 
         /// <summary>

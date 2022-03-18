@@ -12,6 +12,7 @@ using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using EventSourcingOnAzureFunctions.Common.Notification;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -626,6 +627,19 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                 await esCmd.DeleteStream();
             }
         }
+
+        /// <summary>
+        /// Create a command tied to a specific durable functions orchestration
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain in which the command is being run
+        /// </param>
+        /// <param name="commandName">
+        /// The name of the type of command 
+        /// </param>
+        /// <param name="uniqueIdentifier">
+        /// The unique identifier for this instance of the command
+        /// </param>
         public Command (string domainName,
             string commandName,
             string uniqueIdentifier)
@@ -633,6 +647,12 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         {
         }
 
+        /// <summary>
+        /// Create a new command from the properties of the binding attribute
+        /// </summary>
+        /// <param name="attribute">
+        /// The attribute defining the domain, command name and instance identifier of the command instance
+        /// </param>
         public Command(CommandAttribute attribute)
         {
             if (null != attribute )
@@ -647,6 +667,28 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                     CausationIdentifier = _uniqueIdentifier 
                 };
             }
+        }
+
+        /// <summary>
+        /// Create a command tied to a specific durable functions orchestration
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain in which the command is being run
+        /// </param>
+        /// <param name="commandName">
+        /// The name of the type of command 
+        /// </param>
+        /// <param name="durableOrchestrationContext">
+        /// The durable functions orchestration that this command instance is tied to
+        /// </param>
+        /// <remarks>
+        /// Only one command instance can be connected to a given durable functions orchestration instance
+        /// </remarks>
+        public Command(string domainName,
+            string commandName,
+            IDurableOrchestrationContext durableOrchestrationContext )
+            : this( domainName, commandName , durableOrchestrationContext.InstanceId )
+        {
         }
 
         /// <summary>

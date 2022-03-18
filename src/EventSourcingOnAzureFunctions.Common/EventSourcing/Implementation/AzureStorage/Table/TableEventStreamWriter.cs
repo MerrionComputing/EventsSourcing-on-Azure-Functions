@@ -130,6 +130,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 // read in the a [TableEntityKeyRecord]
                 TableOperation getKeyRecord = TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
+                await Table.CreateIfNotExistsAsync();
 
                 TableResult getFooter =  await Table.ExecuteAsync(
                     getKeyRecord);

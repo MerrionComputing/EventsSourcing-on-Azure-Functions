@@ -131,6 +131,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             TableOperation getKeyRecord = TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
+            await Table.CreateIfNotExistsAsync(); 
 
             TableResult getFooter = await Table.ExecuteAsync(
                 getKeyRecord);
@@ -208,14 +209,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             if (_storageAccount != null)
             {
                 _cloudTableClient = _storageAccount.CreateCloudTableClient();
-
-                if (null != _cloudTableClient )
-                {
-                    if (! Table.Exists( operationContext: GetDefaultOperationContext()))
-                    {
-                        Table.CreateIfNotExists ();
-                    }
-                }
             }
 
 

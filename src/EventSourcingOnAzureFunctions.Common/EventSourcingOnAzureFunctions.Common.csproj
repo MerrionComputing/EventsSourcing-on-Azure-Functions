@@ -63,6 +63,9 @@
     <Reference Include="Azure.Storage.Queues">
       <HintPath>..\..\..\..\..\..\Common\.nuget\azure.storage.queues\12.8.0\lib\netstandard2.0\Azure.Storage.Queues.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask">
+      <HintPath>..\..\..\..\..\..\Common\.nuget\microsoft.azure.webjobs.extensions.durabletask\2.6.0\lib\netstandard2.0\Microsoft.Azure.WebJobs.Extensions.DurableTask.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

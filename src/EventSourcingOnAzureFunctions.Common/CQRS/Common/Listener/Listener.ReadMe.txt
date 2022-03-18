@@ -1,0 +1,9 @@
+﻿Listeners
+=========
+
+The listeners react to events in the commands, queries, projections and classifiers that kick off the steps required to perform the
+actions of those.  
+
+The listener uses the event stream backing the command, query, projection or classifier to store/track progress.  This is conceptually
+similar to an orchestration, albeit with more constrained actions.
+
