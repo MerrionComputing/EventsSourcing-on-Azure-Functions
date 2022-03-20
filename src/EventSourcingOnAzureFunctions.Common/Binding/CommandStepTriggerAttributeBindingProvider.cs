@@ -10,16 +10,16 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 {
 
 #if TRIGGER_BINDING
-    /// <summary>
-    /// The provider to bind a NewEntityAttribute to the parameter/function triggered 
-    /// when a new entity is created
-    /// </summary>
-    /// <remarks>
-    /// See https://www.tpeczek.com/2018/11/azure-functions-20-extensibility_20.html
-    /// </remarks>
-    public class NewEntityTriggerBindingProvider
-        : ITriggerBindingProvider
-    {
+        /// <summary>
+        /// The provider to bind a NewEntityAttribute to the parameter/function triggered 
+        /// when a new entity is created
+        /// </summary>
+        /// <remarks>
+        /// See https://www.tpeczek.com/2018/11/azure-functions-20-extensibility_20.html
+        /// </remarks>
+        public class CommandStepTriggerAttributeBindingProvider
+            : ITriggerBindingProvider
+        {
 
         public Task<ITriggerBinding> TryCreateAsync(TriggerBindingProviderContext context)
         {
@@ -31,8 +31,7 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
             ParameterInfo parameter = context.Parameter;
 
-            NewEntityTriggerAttribute triggerAttribute =
-            parameter.GetCustomAttribute<NewEntityTriggerAttribute>(inherit: false);
+            CommandStepTriggerAttribute triggerAttribute = parameter.GetCustomAttribute<CommandStepTriggerAttribute>(inherit: false);
             if (triggerAttribute is null)
             {
                 return Task.FromResult<ITriggerBinding>(null);
@@ -40,10 +39,11 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
         }
 
-        public NewEntityTriggerBindingProvider(IConfiguration configuration)
+        public CommandStepTriggerAttributeBindingProvider(IConfiguration configuration)
         {
 
         }
+
     }
-#endif
+#endif 
 }

@@ -241,6 +241,21 @@
             This can be set to ALL_INSTANCE_KEYS to respond regardless of the instance key
             </remarks>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerAttribute.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Attribute to trigger a function when a new entity is created
+            </summary>
+            <param name="DomainNameSource">
+            The domain in which the new entity creation occured
+            </param>
+            <param name="EntityTypeNameSource">
+            The entity type of the new entity that was created
+            </param>
+            <param name="InstanceKeyFilterToUse">
+            A filter to use to apply to the new entity to decide whether it should trigger this function
+            (This can be "*" to trigger for all new entitiy instances)
+            </param>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Binding.ProjectionAttribute">
             <summary>
             An attribute to mark a projection to get state information from an event stream by projection
@@ -758,6 +773,17 @@
             </param>
             <returns></returns>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.SetParameter(System.String,System.Object)">
+            <summary>
+            Set a parameter value to be used in executing the command
+            </summary>
+            <param name="parameterName">
+            The name of the parameter
+            </param>
+            <param name="parameterValue">
+            The value to use for that named parameter
+            </param>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.GetParameterValue(System.String,System.Nullable{System.DateTime})">
             <summary>
             Get the current value set for a parameter
@@ -809,6 +835,15 @@
             <param name="stepName">
             The name of the step to run
             </param>
+            <param name="targetDomain">
+            The domain of the entity on which the command is to be executed
+            </param>
+            <param name="targetEntityType">
+            The type of the entity on which the command isw to be executed
+            </param>
+            <param name="targetEntityInstance">
+            The unique instance of the entity on which the command is to be executed
+            </param>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.StepCompleted(System.String,System.String,System.String,System.String,System.String)">
             <summary>
@@ -819,6 +854,15 @@
             </param>
             <param name="completionMessage">
             Additional text for the step completion
+            </param>
+            <param name="targetDomain">
+            The domain of the entity on which the command was executed
+            </param>
+            <param name="targetEntityType">
+            The type of the entity on which the command was executed
+            </param>
+            <param name="targetEntityInstance">
+            The unique instance of the entity on which the command was executed
             </param>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.RequestClassification(System.String,System.String,System.String,System.String,System.Nullable{System.DateTime},System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Object}})">
@@ -873,7 +917,6 @@
             <param name="result">
             The result of running the classifier
             </param>
-            <returns></returns>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.GetOutstandingClassifiers">
             <summary>
@@ -896,12 +939,26 @@
             <param name="instanceKey">
             The specific instance over which to run the classification
             </param>
-            <param name="classifierTypeName">
-            The specific type of classification process to run over the event stream
+            <param name="projectionTypeName">
+            The specific type of projection process to run over the event stream
             </param>
             <param name="asOfDate">
             (Optional) The date up to which to run the classification
             </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.PostProjectionResponse(System.String,System.String,System.String,System.String,System.Nullable{System.DateTime},System.String,System.Int32,EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IProjection)">
+            <summary>
+            Append a projection response to the command event stream
+            </summary>
+            <param name="domainName"></param>
+            <param name="entityTypeName"></param>
+            <param name="instanceKey"></param>
+            <param name="projectionTypeName"></param>
+            <param name="asOfDate"></param>
+            <param name="correlationIdentifier"></param>
+            <param name="asOfSequenceNumber"></param>
+            <param name="projectionResult"></param>
+            <returns></returns>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.GetOutstandingProjections">
             <summary>
@@ -914,6 +971,11 @@
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.Delete">
             <summary>
             Delete the command backing event stream
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.StartListener">
+            <summary>
+            Start the command listener / executor linked to this command
             </summary>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.#ctor(System.String,System.String,System.String)">
@@ -1002,7 +1064,7 @@
         </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.CommandExecutionState.AsOfSequenceNumber">
             <summary>
-            The sequence number as-of which thsi status was in force
+            The sequence number of the command's backing event stream as-of which this status was in force
             </summary>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler.Events.CommandCancelled">
@@ -1301,7 +1363,7 @@
             A common base class for all the CQRS listeners
             </summary>
             <remarks>
-            This is done by 
+            This is done by out-of-process
             </remarks>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.Common.Listener.QueryListener">
@@ -1803,8 +1865,8 @@
             <param name="instanceKey">
             The specific instance over which to run the classification
             </param>
-            <param name="classifierTypeName">
-            The specific type of classification process to run over the event stream
+            <param name="projectionTypeName">
+            The specific type of projection process to run over the event stream
             </param>
             <param name="asOfDate">
             (Optional) The date up to which to run the classification
@@ -1900,12 +1962,34 @@
             Delete the query backing event stream
             </summary>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.StartListener">
+            <summary>
+            Start the query listener / executor linked to this query
+            </summary>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.#ctor(EventSourcingOnAzureFunctions.Common.Binding.QueryAttribute)">
             <summary>
             Create a new query instance from the parameter attribute
             </summary>
             <param name="attribute">
             The attribute to use to new up the query instance
+            </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.#ctor(System.String,System.String,System.String,EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.WriteContext)">
+            <summary>
+            Create a new query instance
+            </summary>
+            <param name="domainName">
+            The domain in which the query is to run
+            </param>
+            <param name="queryName">
+            The name of the type of query to be run
+            </param>
+            <param name="queryUniqueIdentifier">
+            The unique identifier of the query instance
+            </param>
+            <param name="context">
+            Additional context information to use when writing events for the query
             </param>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.#ctor(System.String,System.String,Microsoft.Azure.WebJobs.Extensions.DurableTask.IDurableOrchestrationContext)">

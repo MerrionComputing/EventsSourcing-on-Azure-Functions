@@ -30,6 +30,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         private readonly string _commandDispatcherName = nameof(QueueNotificationDispatcher);
         private readonly IWriteContext _commandContext;
+        private Common.Listener.CommandListener _commandListener;
 
         private readonly string _domainName;
         /// <summary>
@@ -110,10 +111,24 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             };
 
             await esCmd.AppendEvent(evCreated);
+
+            // Start the listener 
+            if (_commandListener != null)
+            {
+                // TODO : Start a listener / executor for this command
+            }
         }
 
-        // Defined methods...
-        // 1 - Set parameter
+
+        /// <summary>
+        /// Set a parameter value to be used in executing the command
+        /// </summary>
+        /// <param name="parameterName">
+        /// The name of the parameter
+        /// </param>
+        /// <param name="parameterValue">
+        /// The value to use for that named parameter
+        /// </param>
         public async Task SetParameter(string parameterName, object parameterValue)
         {
             if (!string.IsNullOrWhiteSpace(parameterName))
@@ -270,6 +285,11 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
             await esCmd.AppendEvent(esCmd);
 
+            
+            if (_commandListener != null)
+            {
+                // TODO : Perform any cancellation action(s) by listener / activator
+            }
         }
 
         /// <summary>
@@ -277,6 +297,15 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         /// </summary>
         /// <param name="stepName">
         /// The name of the step to run
+        /// </param>
+        /// <param name="targetDomain">
+        /// The domain of the entity on which the command is to be executed
+        /// </param>
+        /// <param name="targetEntityType">
+        /// The type of the entity on which the command isw to be executed
+        /// </param>
+        /// <param name="targetEntityInstance">
+        /// The unique instance of the entity on which the command is to be executed
         /// </param>
         public async Task InitiateStep(string stepName,
             string targetDomain = "",
@@ -302,6 +331,11 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
                 await esCmd.AppendEvent(evStep);
             }
+
+            if (_commandListener != null)
+            {
+                // TODO : Use the listener / executor to run the command step
+            }
         }
 
         /// <summary>
@@ -312,6 +346,15 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         /// </param>
         /// <param name="completionMessage">
         /// Additional text for the step completion
+        /// </param>
+        /// <param name="targetDomain">
+        /// The domain of the entity on which the command was executed
+        /// </param>
+        /// <param name="targetEntityType">
+        /// The type of the entity on which the command was executed
+        /// </param>
+        /// <param name="targetEntityInstance">
+        /// The unique instance of the entity on which the command was executed
         /// </param>
         public async Task StepCompleted(string stepName,
             string completionMessage,
@@ -343,7 +386,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         }
 
 
-        //Classifier request
         /// <summary>
         /// Request a classification to be performed as part of this query
         /// </summary>
@@ -411,6 +453,10 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
             await esCmd.AppendEvent(evRequest);
 
+            if (_commandListener != null)
+            {
+                // TODO : Use the listener / executor to run the classification
+            }
         }
 
         // Classifier response...
@@ -442,7 +488,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         /// <param name="result">
         /// The result of running the classifier
         /// </param>
-        /// <returns></returns>
         public async Task PostClassifierResponse(string domainName,
                         string entityTypeName,
                         string instanceKey,
@@ -502,7 +547,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             return Enumerable.Empty<IClassifierRequest>();
         }
 
-        // Projection request
         /// <summary>
         /// Request a projection to be performed
         /// </summary>
@@ -515,8 +559,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         /// <param name="instanceKey">
         /// The specific instance over which to run the classification
         /// </param>
-        /// <param name="classifierTypeName">
-        /// The specific type of classification process to run over the event stream
+        /// <param name="projectionTypeName">
+        /// The specific type of projection process to run over the event stream
         /// </param>
         /// <param name="asOfDate">
         /// (Optional) The date up to which to run the classification
@@ -548,8 +592,25 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             };
 
             await esCmd.AppendEvent(evPrj);
+
+            if (_commandListener != null)
+            {
+                // TODO : Use the listener / executor to run the projection
+            }
         }
 
+        /// <summary>
+        /// Append a projection response to the command event stream
+        /// </summary>
+        /// <param name="domainName"></param>
+        /// <param name="entityTypeName"></param>
+        /// <param name="instanceKey"></param>
+        /// <param name="projectionTypeName"></param>
+        /// <param name="asOfDate"></param>
+        /// <param name="correlationIdentifier"></param>
+        /// <param name="asOfSequenceNumber"></param>
+        /// <param name="projectionResult"></param>
+        /// <returns></returns>
         public async Task PostProjectionResponse(string domainName,
                         string entityTypeName,
                         string instanceKey,
@@ -629,6 +690,18 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         }
 
         /// <summary>
+        /// Start the command listener / executor linked to this command
+        /// </summary>
+        private void StartListener()
+        {
+            if (_commandListener == null)
+            {
+                _commandListener = new Common.Listener.CommandListener(_domainName, _commandName, _uniqueIdentifier);
+
+            }
+        }
+
+        /// <summary>
         /// Create a command tied to a specific durable functions orchestration
         /// </summary>
         /// <param name="domainName">
@@ -666,6 +739,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                     Source = _commandName,
                     CausationIdentifier = _uniqueIdentifier 
                 };
+
+                StartListener();
             }
         }
 
@@ -709,6 +784,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                     _commandName = payload.EntityTypeName;
                     _uniqueIdentifier = payload.InstanceKey;
                 }
+
+                StartListener();
             }
         }
 

@@ -28,6 +28,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         private readonly string _queryDispatcherName = nameof(QueueNotificationDispatcher);
         private readonly IWriteContext _queryContext;
+        private Common.Listener.QueryListener _queryListener;
 
         private readonly string _domainName;
         /// <summary>
@@ -100,6 +101,12 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             };
 
             await esQry.AppendEvent(evCreated);
+
+            // Start the listener 
+            if (_queryListener != null)
+            {
+                // TODO : Start a listener / executor for this query
+            }
         }
 
         /// <summary>
@@ -200,8 +207,12 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                 AsOfDate = asOfDate 
             };
 
-            await esQry.AppendEvent(evRequest);  
+            await esQry.AppendEvent(evRequest);
 
+            if (_queryListener != null)
+            {
+                // TODO : Use the listener / executor to run the classification
+            }
         }
 
         // Classifier response...
@@ -306,8 +317,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         /// <param name="instanceKey">
         /// The specific instance over which to run the classification
         /// </param>
-        /// <param name="classifierTypeName">
-        /// The specific type of classification process to run over the event stream
+        /// <param name="projectionTypeName">
+        /// The specific type of projection process to run over the event stream
         /// </param>
         /// <param name="asOfDate">
         /// (Optional) The date up to which to run the classification
@@ -339,6 +350,11 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             };
 
             await esQry.AppendEvent(evPrj);
+
+            if (_queryListener != null)
+            {
+                // TODO : Use the listener / executor to run the projection
+            }
         }
 
         /// <summary>
@@ -430,7 +446,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             return Enumerable.Empty<IProjectionRequest>();
         }
 
-        // Collations
 
         /// <summary>
         /// Run a projection over this query event stream to give the collated results
@@ -571,6 +586,18 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         }
 
         /// <summary>
+        /// Start the query listener / executor linked to this query
+        /// </summary>
+        private void StartListener()
+        {
+            if (_queryListener == null)
+            {
+                _queryListener = new Common.Listener.QueryListener(_domainName, _queryName , _uniqueIdentifier);
+
+            }
+        }
+
+        /// <summary>
         /// Create a new query instance from the parameter attribute
         /// </summary>
         /// <param name="attribute">
@@ -583,6 +610,21 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
         {
         }
 
+        /// <summary>
+        /// Create a new query instance
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain in which the query is to run
+        /// </param>
+        /// <param name="queryName">
+        /// The name of the type of query to be run
+        /// </param>
+        /// <param name="queryUniqueIdentifier">
+        /// The unique identifier of the query instance
+        /// </param>
+        /// <param name="context">
+        /// Additional context information to use when writing events for the query
+        /// </param>
         public Query(string domainName,
             string queryName,
             string queryUniqueIdentifier,
@@ -594,6 +636,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             // Make a query 
             if (context == null)
             {
+                // Use a default write context for this query
                 _queryContext = new WriteContext()
                 {
                     Source = _queryName,
@@ -605,6 +648,8 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             {
                 _queryContext = context;
             }
+
+            StartListener();
         }
 
         /// <summary>

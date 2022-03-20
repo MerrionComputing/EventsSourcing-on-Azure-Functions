@@ -21,7 +21,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS.CommandHandler
         public string Message { get; set; }
 
         /// <summary>
-        /// The sequence number as-of which thsi status was in force
+        /// The sequence number of the command's backing event stream as-of which this status was in force
         /// </summary>
         public int AsOfSequenceNumber { get; set; }
     }

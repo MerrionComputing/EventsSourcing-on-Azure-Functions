@@ -51,6 +51,19 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         public string InstanceKeyFilter { get; }
 
 
+        /// <summary>
+        /// Attribute to trigger a function when a new entity is created
+        /// </summary>
+        /// <param name="DomainNameSource">
+        /// The domain in which the new entity creation occured
+        /// </param>
+        /// <param name="EntityTypeNameSource">
+        /// The entity type of the new entity that was created
+        /// </param>
+        /// <param name="InstanceKeyFilterToUse">
+        /// A filter to use to apply to the new entity to decide whether it should trigger this function
+        /// (This can be "*" to trigger for all new entitiy instances)
+        /// </param>
         public NewEntityTriggerAttribute(string DomainNameSource,
                 string EntityTypeNameSource,
                 string InstanceKeyFilterToUse = @"")

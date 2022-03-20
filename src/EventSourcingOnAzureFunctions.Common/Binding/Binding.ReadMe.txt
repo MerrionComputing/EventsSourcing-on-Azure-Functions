@@ -1,4 +1,22 @@
 ﻿Binding
 =======
 
-These classes implement the parameter binding which allows the event stream and projection classes to be created when an Azure Function is called
+These classes implement the parameter binding which allows the event stream and projection classes to be created when an Azure Function is called.
+
+Standard bindings
+-----------------
+The following bindings create the variable concerned when applied to a parameter in an Azure function
+- Classification
+- Command
+- Query
+- Event Stream
+- Projection
+
+Trigger bindings
+----------------
+The following bindings create a triggered variable which invokes the given Azure function in response to 
+a trigger event
+
+-NewEntityTrigger
+-EventTrigger
+-CommandStepTrigger 
