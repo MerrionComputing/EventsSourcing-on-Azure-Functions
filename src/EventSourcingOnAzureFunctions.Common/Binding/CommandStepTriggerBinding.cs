@@ -1,21 +1,28 @@
-﻿using EventSourcingOnAzureFunctions.Common.Listener;
-using Microsoft.Azure.WebJobs.Host.Bindings;
+﻿using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Listeners;
 using Microsoft.Azure.WebJobs.Host.Protocols;
 using Microsoft.Azure.WebJobs.Host.Triggers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.Binding
 {
-
-    public sealed class CommandStepTriggerAttributeBinding
-         : ITriggerBinding
+    public sealed class CommandStepTriggerBinding
+        : ITriggerBinding
     {
+
         private readonly ParameterInfo parameter = null;
-        private readonly CommandStepTriggerAttribute commandAttribute = null;
+        private readonly CommandStepTriggerAttribute triggerAttribute = null;
+
+        public CommandStepTriggerBinding(ParameterInfo parameter, CommandStepTriggerAttribute triggerAttribute)
+        {
+            this.parameter = parameter;
+            this.triggerAttribute = triggerAttribute;
+        }
 
         public Type TriggerValueType => throw new NotImplementedException();
 
@@ -28,26 +35,12 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
         public Task<IListener> CreateListenerAsync(ListenerFactoryContext context)
         {
-           if (context == null)
-           {
-               throw new ArgumentNullException(nameof(context));
-           }
-
-            return Task.FromResult<IListener>(new CommandListener(context.Executor, commandAttribute));
+            throw new NotImplementedException();
         }
 
         public ParameterDescriptor ToParameterDescriptor()
         {
-            return new ParameterDescriptor
-            {
-                Name = parameter.Name,
-                DisplayHints = new ParameterDisplayHints
-                {
-                    Prompt = "CommandStep",
-                    Description = "Command Step trigger fired",
-                    DefaultValue = "Sample"
-                }
-            };
+            throw new NotImplementedException();
         }
     }
 }

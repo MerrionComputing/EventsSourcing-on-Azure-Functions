@@ -11,6 +11,7 @@ using EventSourcingOnAzureFunctions.Common.CQRS.ProjectionHandler.Projections;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using EventSourcingOnAzureFunctions.Common.Listener;
 using EventSourcingOnAzureFunctions.Common.Notification;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using System;
@@ -30,7 +31,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         private readonly string _commandDispatcherName = nameof(QueueNotificationDispatcher);
         private readonly IWriteContext _commandContext;
-        private Common.Listener.CommandListener _commandListener;
+        private CommandListener _commandListener;
 
         private readonly string _domainName;
         /// <summary>
@@ -689,17 +690,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
-        /// <summary>
-        /// Start the command listener / executor linked to this command
-        /// </summary>
-        private void StartListener()
-        {
-            if (_commandListener == null)
-            {
-                _commandListener = new Common.Listener.CommandListener(_domainName, _commandName, _uniqueIdentifier);
 
-            }
-        }
 
         /// <summary>
         /// Create a command tied to a specific durable functions orchestration
@@ -740,7 +731,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                     CausationIdentifier = _uniqueIdentifier 
                 };
 
-                StartListener();
             }
         }
 
@@ -785,7 +775,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                     _uniqueIdentifier = payload.InstanceKey;
                 }
 
-                StartListener();
             }
         }
 

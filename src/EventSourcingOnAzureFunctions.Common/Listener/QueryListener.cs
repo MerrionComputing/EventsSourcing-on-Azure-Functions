@@ -3,24 +3,30 @@ using Microsoft.Azure.WebJobs.Host.Executors;
 using Microsoft.Azure.WebJobs.Host.Listeners;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.Listener
 {
-    public sealed class EventTriggerListener
-        : ListenerWorker, IListener
+    /// <summary>
+    /// A listener to trigger azure functions for query events
+    /// </summary>
+    public sealed class QueryListener
+        :  ListenerWorker, IListener
     {
+        private readonly QueryTriggerAttribute _queryTrigger;
 
-        private readonly EventTriggerAttribute _eventTrigger;
+
 
         /// <summary>
-        /// Cancel listening for new entities being created
+        /// Create a new query event listener for the given query instance
         /// </summary>
-        public void Cancel()
+        public QueryListener(ITriggeredFunctionExecutor executor, QueryTriggerAttribute queryTrigger)
+            : base(executor)
         {
-            StopAsync(CancellationToken.None).Wait();
+            _queryTrigger = queryTrigger;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -33,17 +39,16 @@ namespace EventSourcingOnAzureFunctions.Common.Listener
             throw new NotImplementedException();
         }
 
+        public void Cancel()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// If this listener uses disposable objects then the IDisposable interface will need to be fully implemented
         /// </summary>
         public void Dispose()
         {
-        }
-
-        public EventTriggerListener(ITriggeredFunctionExecutor executor, EventTriggerAttribute eventTrigger)
-            : base(executor )
-        {
-            _eventTrigger = eventTrigger;
         }
     }
 }

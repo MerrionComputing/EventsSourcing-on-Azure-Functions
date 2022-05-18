@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.Binding
 {
 
-#if TRIGGER_BINDING
     /// <summary>
     /// The provider to bind a NewEntityAttribute to the parameter/function triggered 
     /// when a new entity is created
@@ -21,6 +20,15 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         : ITriggerBindingProvider
     {
 
+        /// <summary>
+        /// Create a new trigger binding to trigger a function when a new entity is created
+        /// </summary>
+        /// <param name="context">
+        /// The trigger binding provider context for this binding
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if no trigger binding provider context is passed in
+        /// </exception>
         public Task<ITriggerBinding> TryCreateAsync(TriggerBindingProviderContext context)
         {
 
@@ -38,6 +46,10 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
                 return Task.FromResult<ITriggerBinding>(null);
             }
 
+            // If we get here a new entity trigger was found
+
+            var binding = new NewEntityTriggerBinding( parameter, triggerAttribute );
+            return Task.FromResult<ITriggerBinding>(binding);
         }
 
         public NewEntityTriggerBindingProvider(IConfiguration configuration)
@@ -45,5 +57,5 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
         }
     }
-#endif
+
 }

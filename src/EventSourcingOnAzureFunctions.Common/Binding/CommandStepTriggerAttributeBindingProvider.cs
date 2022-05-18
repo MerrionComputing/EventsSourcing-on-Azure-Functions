@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.Binding
 {
 
-#if TRIGGER_BINDING
         /// <summary>
         /// The provider to bind a NewEntityAttribute to the parameter/function triggered 
         /// when a new entity is created
@@ -37,6 +36,10 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
                 return Task.FromResult<ITriggerBinding>(null);
             }
 
+            // If we get here a command step trigger was found
+
+            var binding = new CommandStepTriggerBinding(parameter, triggerAttribute);
+            return Task.FromResult<ITriggerBinding>(binding);
         }
 
         public CommandStepTriggerAttributeBindingProvider(IConfiguration configuration)
@@ -45,5 +48,4 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
         }
 
     }
-#endif 
 }

@@ -8,6 +8,7 @@ using EventSourcingOnAzureFunctions.Common.CQRS.QueryHandler.Events;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
+using EventSourcingOnAzureFunctions.Common.Listener;
 using EventSourcingOnAzureFunctions.Common.Notification;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Newtonsoft.Json;
@@ -28,7 +29,7 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
 
         private readonly string _queryDispatcherName = nameof(QueueNotificationDispatcher);
         private readonly IWriteContext _queryContext;
-        private Common.Listener.QueryListener _queryListener;
+        private QueryListener _queryListener;
 
         private readonly string _domainName;
         /// <summary>
@@ -585,17 +586,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
             }
         }
 
-        /// <summary>
-        /// Start the query listener / executor linked to this query
-        /// </summary>
-        private void StartListener()
-        {
-            if (_queryListener == null)
-            {
-                _queryListener = new Common.Listener.QueryListener(_domainName, _queryName , _uniqueIdentifier);
-
-            }
-        }
 
         /// <summary>
         /// Create a new query instance from the parameter attribute
@@ -649,7 +639,6 @@ namespace EventSourcingOnAzureFunctions.Common.CQRS
                 _queryContext = context;
             }
 
-            StartListener();
         }
 
         /// <summary>

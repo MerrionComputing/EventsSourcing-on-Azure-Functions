@@ -57,7 +57,16 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
 
         public ParameterDescriptor ToParameterDescriptor()
         {
-            throw new NotImplementedException();
+            return new ParameterDescriptor
+            {
+                Name = parameter.Name,
+                DisplayHints = new ParameterDisplayHints
+                {
+                    Prompt = "NewEventAppended",
+                    Description = "New Event trigger fired",
+                    DefaultValue = "Sample"
+                }
+            };
         }
     }
 }

@@ -17,6 +17,7 @@ Trigger bindings
 The following bindings create a triggered variable which invokes the given Azure function in response to 
 a trigger event
 
--NewEntityTrigger
--EventTrigger
--CommandStepTrigger 
+-NewEntityTrigger - Triggered when a new entity that matches the given attribute(s) is created
+-EventTrigger - Triggered when an event that matches the given attributes is appended to an event stream
+-CommandStepTrigger - Triggered by a command orchestration to perform a step in that command
+-QueryCollationTrigger - Triggered by a query orchestration to perform a collation step 

@@ -104,6 +104,35 @@
             This binding gets its properties from the Attribute 
             </summary>
         </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Binding.CommandStepTriggerAttribute">
+            <summary>
+            Attribute to mark a function to be triggered for a given command step
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.CommandStepTriggerAttribute.DomainName">
+            <summary>
+            The domain in which the command is being executed monitored is located
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.CommandStepTriggerAttribute.CommandName">
+            <summary>
+            The name of the command for which this step is a part
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.CommandStepTriggerAttribute.CommandStepName">
+            <summary>
+            The name of the specific step of this command
+            </summary>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Binding.CommandStepTriggerAttributeBindingProvider">
+            <summary>
+            The provider to bind a NewEntityAttribute to the parameter/function triggered 
+            when a new entity is created
+            </summary>
+            <remarks>
+            See https://www.tpeczek.com/2018/11/azure-functions-20-extensibility_20.html
+            </remarks>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Binding.ConnectionStringNameAttribute">
             <summary>
             The connection string to use for this aggrgeate class
@@ -214,6 +243,26 @@
             Binding provider to bind the [EventTrigger] attribute
             </summary>
         </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Binding.NewEntityContext">
+            <summary>
+            The context passed in when a "new entity created" event is triggered
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.NewEntityContext.DomainName">
+            <summary>
+            The name of the domain for which this new entity was created
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.NewEntityContext.EntityTypeName">
+            <summary>
+            The name of the type of entity of which this new instance was created
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.NewEntityContext.InstanceKey">
+            <summary>
+            The unique identifier of the new entity that was created
+            </summary>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerAttribute">
             <summary>
             Attribute to be fired whenever an event stream is created for a new entity
@@ -255,6 +304,52 @@
             A filter to use to apply to the new entity to decide whether it should trigger this function
             (This can be "*" to trigger for all new entitiy instances)
             </param>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerBinding">
+            <summary>
+            A binding to trigger an azure function when a new entity is created (by having the first event added to 
+            the event stream for that entity)
+            </summary>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerBindingProvider">
+            <summary>
+            The provider to bind a NewEntityAttribute to the parameter/function triggered 
+            when a new entity is created
+            </summary>
+            <remarks>
+            See https://www.tpeczek.com/2018/11/azure-functions-20-extensibility_20.html
+            </remarks>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerBindingProvider.TryCreateAsync(Microsoft.Azure.WebJobs.Host.Triggers.TriggerBindingProviderContext)">
+            <summary>
+            Create a new trigger binding to trigger a function when a new entity is created
+            </summary>
+            <param name="context">
+            The trigger binding provider context for this binding
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown if no trigger binding provider context is passed in
+            </exception>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerData">
+            <summary>
+            The information passed into an azure function that has been trigegred whenever a new entity is created
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerData.DomainName">
+            <summary>
+            The domain in which this event stream is located
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerData.EntityTypeName">
+            <summary>
+            The type of entity for which this event stream pertains
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.NewEntityTriggerData.InstanceKey">
+            <summary>
+            The specific uniquely identitified instance of the entity to which this event stream pertains
+            </summary>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Binding.ProjectionAttribute">
             <summary>
@@ -335,6 +430,16 @@
         <member name="P:EventSourcingOnAzureFunctions.Common.Binding.QueryAttributeBinding.FromAttribute">
             <summary>
             This binding gets its properties from the Attribute 
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.QueryTriggerAttribute.DomainName">
+            <summary>
+            The business domain in which the query is located
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.Binding.QueryTriggerAttribute.QueryName">
+            <summary>
+            The name of the query to run
             </summary>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRSAzureBindings">
@@ -973,11 +1078,6 @@
             Delete the command backing event stream
             </summary>
         </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.StartListener">
-            <summary>
-            Start the command listener / executor linked to this command
-            </summary>
-        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Command.#ctor(System.String,System.String,System.String)">
             <summary>
             Create a command tied to a specific durable functions orchestration
@@ -1351,24 +1451,6 @@
         <member name="P:EventSourcingOnAzureFunctions.Common.CQRS.Common.Events.ValidationError.Message">
             <summary>
             The message to go along with the validation notification
-            </summary>
-        </member>
-        <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.Common.Listener.CommandListener">
-            <summary>
-            A listener that tracks progress and triggers steps for a query instance
-            </summary>
-        </member>
-        <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.Common.Listener.CQRSListenerBase">
-            <summary>
-            A common base class for all the CQRS listeners
-            </summary>
-            <remarks>
-            This is done by out-of-process
-            </remarks>
-        </member>
-        <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.Common.Listener.QueryListener">
-            <summary>
-            A listener that tracks progress and triggers steps for a query instance
             </summary>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.CQRS.InstanceParameter">
@@ -1960,11 +2042,6 @@
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.Delete">
             <summary>
             Delete the query backing event stream
-            </summary>
-        </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.StartListener">
-            <summary>
-            Start the query listener / executor linked to this query
             </summary>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.CQRS.Query.#ctor(EventSourcingOnAzureFunctions.Common.Binding.QueryAttribute)">
@@ -4304,6 +4381,71 @@
             Dependency injection configuration for this Azure functions app
             </summary>
         </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Listener.CommandListener">
+            <summary>
+            A listener to trigger functions as a result of command events
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.CommandListener.#ctor(Microsoft.Azure.WebJobs.Host.Executors.ITriggeredFunctionExecutor,EventSourcingOnAzureFunctions.Common.Binding.CommandStepTriggerAttribute)">
+            <summary>
+            Create a new command listener for the given event instance
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.CommandListener.Dispose">
+            <summary>
+            If this listener uses disposable objects then the IDisposable interface will need to be fully implemented
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.EventTriggerListener.Cancel">
+            <summary>
+            Cancel listening for new entities being created
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.EventTriggerListener.Dispose">
+            <summary>
+            If this listener uses disposable objects then the IDisposable interface will need to be fully implemented
+            </summary>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Listener.ListenerWorker">
+            <summary>
+            A class that caches the azure functions that can be triggered by the various listeners
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.ListenerWorker.OnTrigger(Microsoft.Azure.WebJobs.Host.Executors.TriggeredFunctionData)">
+            <summary>
+            Trigger the given azure function
+            </summary>
+            <param name="functionData">
+            The identificantion of the function to be executed
+            </param>
+            <exception cref="T:System.Exception">
+            Thrown if execution of the azure function fails
+            </exception>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.ListenerWorker.#ctor(Microsoft.Azure.WebJobs.Host.Executors.ITriggeredFunctionExecutor)">
+            <summary>
+            Create a new worker class to perform the work of triggering azure functions for a listener
+            </summary>
+            <param name="executor">
+            The triggered function evecutor to use to trigger execution of azure functions
+            </param>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Listener.NewEntityTriggerListener">
+            <summary>
+            A class that listens out for a new entity being created and if one occurs triggers all the 
+            relevant functions with their [NewEntityTrigger]
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.NewEntityTriggerListener.Cancel">
+            <summary>
+            Cancel listening for new entities being created
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.NewEntityTriggerListener.StartAsync(System.Threading.CancellationToken)">
+            <summary>
+            Start the listener process that waits for new entity events to tell the world about
+            </summary>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Listener.Notification.NotificationType">
             <summary>
             The different types of notification that can occur
@@ -4375,6 +4517,21 @@
             <summary>
             The notification queue is where the notifications for events (new entity created or new event written) are posted 
             so that notification listeners can react to them 
+            </summary>
+        </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.Listener.QueryListener">
+            <summary>
+            A listener to trigger azure functions for query events
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.QueryListener.#ctor(Microsoft.Azure.WebJobs.Host.Executors.ITriggeredFunctionExecutor,EventSourcingOnAzureFunctions.Common.Binding.QueryTriggerAttribute)">
+            <summary>
+            Create a new query event listener for the given query instance
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.QueryListener.Dispose">
+            <summary>
+            If this listener uses disposable objects then the IDisposable interface will need to be fully implemented
             </summary>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Notification.ClassificationCompleteEventGridPayload">
