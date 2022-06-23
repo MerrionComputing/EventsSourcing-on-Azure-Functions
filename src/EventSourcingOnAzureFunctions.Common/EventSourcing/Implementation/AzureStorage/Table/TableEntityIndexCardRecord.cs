@@ -1,6 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 using System;
 using System.Collections.Generic;
 
@@ -102,14 +102,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// <summary>
         /// The time the record was last updated
         /// </summary>
-        public DateTimeOffset Timestamp { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
 
         /// <summary>
         /// The special concurrency protection tag used to make sure no update has occured since the last read
         /// </summary>
-        public string ETag { get; set; }
+        public Azure.ETag ETag { get; set; }
 
 
+#if OLD_TABLES_SDK
         public void ReadEntity(IDictionary<string, EntityProperty> properties,
           OperationContext operationContext)
         {
@@ -140,5 +141,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             ret.Add(nameof(InstanceKey), EntityProperty.GeneratePropertyForString(InstanceKey));
             return ret;
         }
+#endif
+
     }
+
 }

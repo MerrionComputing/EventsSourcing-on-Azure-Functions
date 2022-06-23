@@ -3084,6 +3084,11 @@
             The classification state as at the point the snapshot is taken
             </summary>
         </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableClassificationRecord.RowKey">
+            <summary>
+            Row key holds the as-of sequence number
+            </summary>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableClassificationRecord.ETag">
             <summary>
             The special concurrency protection tag used to make sure no update has occured since the last read
@@ -3363,16 +3368,6 @@
             Get all the "key" rows in the table
             </summary>
         </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamReader.GetDefaultRequestOptions">
-            <summary>
-            Get the standard request options to use when retrieving the event stream data from a table
-            </summary>
-        </member>
-        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamReader.DefaultSharedAccessAccountPolicy">
-            <summary>
-            Policy to allow read-access to the tables
-            </summary>
-        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamReader.Create(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity,System.String)">
             <summary>
             Creates an azure table storage based event stream reader for the given aggregate
@@ -3402,14 +3397,6 @@
             Additional constraint that must be true if the event is to be appended
             </param>
         </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamWriter.GetDefaultOperationContext">
-            <summary>
-            Gets the operation context used to write data to the table
-            </summary>
-            <remarks>
-            This adds the correlation identifier to the operation so it can be seen in any tracing operation
-            </remarks>
-        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamWriter.IncrementSequenceNumber">
             <summary>
             Increment the sequence number for this event stream and return the new number
@@ -3428,11 +3415,6 @@
             <summary>
             Create a query to get the events 
             for an instance key to delete them
-            </summary>
-        </member>
-        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamWriter.DefaultSharedAccessAccountPolicy">
-            <summary>
-            Policy to allow read/writer access to the storage account the table(s) are in
             </summary>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamWriter.#ctor(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity,System.String)">

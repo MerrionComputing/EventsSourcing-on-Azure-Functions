@@ -1,6 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table
 {
     public abstract class TableEventStreamBase
-        : EventStreamBase, IEventStreamIdentity
+        : EventStreamBase, 
+        IEventStreamIdentity
     {
 
         #region Field names
@@ -33,17 +34,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         public const int MAX_BATCH_SIZE = 100;
 
-        protected internal CloudStorageAccount _storageAccount;
-        private readonly CloudTableClient _cloudTableClient;
+        private readonly TableClient _cloudTableClient;
 
-        public CloudTable Table
+        public TableClient Table
         {
             get
             {
                 if (null != _cloudTableClient )
                 {
-                    CloudTable ret = _cloudTableClient.GetTableReference(this.TableName);
-                    return ret;
+                    return _cloudTableClient;
                 }
                 else
                 {
@@ -88,6 +87,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
+
         public string TableName
         {
             get
@@ -100,14 +100,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             if (Table != null)
             {
-                if (await Table.ExistsAsync())
-                {
-                    TableResult ret = await Table.ExecuteAsync(
-                        TableOperation.Retrieve(this.InstanceKey, SequenceNumberAsString(0)),
-                           requestOptions: null,
-                           operationContext: GetDefaultOperationContext());
 
-                    return (null != ret.Result);
+                TableEntityIndexCardRecord  ret = await Table.GetEntityAsync<TableEntityIndexCardRecord>(TableEntityIndexCardRecord.INDEX_CARD_PARTITION , this.InstanceKey);
+
+                if (null != ret)
+                { 
+                    return true;
                 }
                 return await Task.FromResult<bool>(false);
             }
@@ -129,20 +127,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             TableEntityKeyRecord streamFooter = null;
 
-            TableOperation getKeyRecord = TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
-            await Table.CreateIfNotExistsAsync(); 
+            await Table.CreateIfNotExistsAsync();
 
-            TableResult getFooter = await Table.ExecuteAsync(
-                getKeyRecord);
-
-            if (getFooter != null)
-            {
-                if (getFooter.Result != null)
-                {
-                    streamFooter = (TableEntityKeyRecord)getFooter.Result;
-                }
-            }
+            streamFooter = await Table.GetEntityAsync<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
 
             if (null != streamFooter)
@@ -202,38 +190,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     {
                         throw new NullReferenceException($"No connection string configured for {connectionStringName}");  
                     }
-                    _storageAccount = CloudStorageAccount.Parse(connectionString );
+
+                    if (_cloudTableClient == null)
+                    {
+                        _cloudTableClient = new TableClient(connectionString, TableName);
+                    }
+
                 }
             }
-
-            if (_storageAccount != null)
-            {
-                _cloudTableClient = _storageAccount.CreateCloudTableClient();
-            }
-
-
         }
 
-        public static TableRequestOptions DefaultTableRequestOptions(string sasToken)
-        {
-            return new TableRequestOptions()
-            {
-                SessionToken = sasToken
-            };
-        }
 
-        public virtual OperationContext GetDefaultOperationContext()
-        {
-            OperationContext ret = new OperationContext();
-            // Debugging requests sent
-            // ret.SendingRequest += DebugSendingRequest;
-            return ret;
-        }
-
-        private void DebugSendingRequest(object sender, RequestEventArgs e)
-        {
-            string debugMessage = $"{e.Request.RequestUri}";
-        }
 
 
         /// <summary>
@@ -309,7 +276,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// <param name="upToSequence">
         /// (Optional) The end sequence to read up to (inclusive)
         /// </param>
-        public static TableQuery<DynamicTableEntity> ProjectionQuery(IEventStreamIdentity identity,
+        public static string ProjectionQuery(IEventStreamIdentity identity,
             int startingSequence = 1,
             int upToSequence = 0)
         {
@@ -324,16 +291,10 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 }
             }
 
-            TableQuery<DynamicTableEntity> ret = InstanceQuery(identity).Where(TableQuery.GenerateFilterCondition("RowKey",
-                    QueryComparisons.GreaterThanOrEqual, SequenceNumberAsString(startingSequence)));
+            System.FormattableString   filter = $"PartitionKey eq {identity.InstanceKey} and RowKey ge {SequenceNumberAsString(startingSequence)} { ((upToSequence > 0) ? " and RowKey le {SequenceNumberAsString(upToSequence)} }" : "") }";
 
-            if (upToSequence > 0)
-            {
-                ret = ret.Where(TableQuery.GenerateFilterCondition("RowKey",
-                    QueryComparisons.LessThanOrEqual, SequenceNumberAsString(upToSequence)));
-            }
-
-            return ret;
+            
+            return TableClient.CreateQueryFilter(filter) ;
         }
 
 
@@ -345,11 +306,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// The domain/entity type/unique identifier insatnec of the event stream to get
         /// </param>
         /// <returns></returns>
-        private static TableQuery<DynamicTableEntity> InstanceQuery(IEventStreamIdentity identity)
+        private static string InstanceQuery(IEventStreamIdentity identity)
         {
-            return new TableQuery<DynamicTableEntity>()
-                .Where(TableQuery.GenerateFilterCondition("PartitionKey",
-                    QueryComparisons.Equal, identity.InstanceKey));
+            return TableClient.CreateQueryFilter($"PartitionKey eq {identity.InstanceKey} ");
         }
 
         /// <summary>
@@ -375,10 +334,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             // special case - dates before 1601
             if (pi.PropertyType == typeof(DateTime))
             {
-                DateTime val = (DateTime)propertyValue;
-                if (val.Year < 1601)
+                if (propertyValue.GetType() == typeof(DateTime))
                 {
-                    return true;
+                    DateTime val = (DateTime)propertyValue;
+                    if (val.Year < 1601)
+                    {
+                        return true;
+                    }
                 }
             }
             if (pi.PropertyType == typeof(DateTimeOffset))

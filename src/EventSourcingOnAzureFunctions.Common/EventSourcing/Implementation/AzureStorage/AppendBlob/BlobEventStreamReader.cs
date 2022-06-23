@@ -1,6 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -100,7 +100,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 {
                     await EventStreamBlob.DownloadToStreamAsync(targetStream);
                 }
-                catch (StorageException exBlob)
+                catch (Exception exBlob)
                 {
                     throw new EventStreamReadException(this, 0, "Unable to access the underlying event stream",
                         innerException: exBlob,

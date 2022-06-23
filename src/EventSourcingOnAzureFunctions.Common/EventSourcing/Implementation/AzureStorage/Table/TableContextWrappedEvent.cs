@@ -1,5 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -63,36 +63,36 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public DateTimeOffset  EventWrittenDateTime { get; set; }
 
         public TableContextWrappedEvent(IEvent eventToWrap, 
-            DynamicTableEntity dteRow)
+            TableEntity dteRow)
         {
 
             EventInstance = eventToWrap;
 
             if (null != dteRow )
             {
-                if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_COMMENTS) )
+                if (dteRow.ContainsKey(TableEventStreamBase.FIELDNAME_COMMENTS) )
                 {
-                    Commentary = dteRow.Properties[TableEventStreamBase.FIELDNAME_COMMENTS].StringValue;
+                    Commentary = dteRow.GetString(TableEventStreamBase.FIELDNAME_COMMENTS);
                 }
-                if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_CORRELATION_IDENTIFIER ) )
+                if (dteRow.ContainsKey(TableEventStreamBase.FIELDNAME_CORRELATION_IDENTIFIER ) )
                 {
-                    CorrelationIdentifier = dteRow.Properties[TableEventStreamBase.FIELDNAME_CORRELATION_IDENTIFIER].StringValue;
+                    CorrelationIdentifier = dteRow.GetString(TableEventStreamBase.FIELDNAME_CORRELATION_IDENTIFIER);
                 }
-                if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_CAUSATION_IDENTIFIER))
+                if (dteRow.ContainsKey(TableEventStreamBase.FIELDNAME_CAUSATION_IDENTIFIER))
                 {
-                    CausationIdentifier = dteRow.Properties[TableEventStreamBase.FIELDNAME_CAUSATION_IDENTIFIER].StringValue;
+                    CausationIdentifier = dteRow.GetString(TableEventStreamBase.FIELDNAME_CAUSATION_IDENTIFIER);
                 }
-                if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_SOURCE )  )
+                if (dteRow.ContainsKey(TableEventStreamBase.FIELDNAME_SOURCE )  )
                 {
-                    Source = dteRow.Properties[TableEventStreamBase.FIELDNAME_SOURCE].StringValue;
+                    Source = dteRow.GetString(TableEventStreamBase.FIELDNAME_SOURCE);
                 }
-                if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_VERSION ) )
+                if (dteRow.ContainsKey(TableEventStreamBase.FIELDNAME_VERSION ) )
                 {
-                    VersionNumber = dteRow.Properties[TableEventStreamBase.FIELDNAME_VERSION].Int32Value.GetValueOrDefault(1); 
+                    VersionNumber = dteRow.GetInt32(TableEventStreamBase.FIELDNAME_VERSION).GetValueOrDefault(1); 
                 }
-                if (dteRow.Properties.ContainsKey(TableEventStreamBase.FIELDNAME_WHO  ))
+                if (dteRow.ContainsKey(TableEventStreamBase.FIELDNAME_WHO))
                 {
-                    Who = dteRow.Properties[TableEventStreamBase.FIELDNAME_WHO].StringValue; 
+                    Who = dteRow.GetString(TableEventStreamBase.FIELDNAME_WHO); 
                 }
                 string sequenceNumberAsString = dteRow.RowKey;
                 if (! string.IsNullOrWhiteSpace(sequenceNumberAsString ) )
@@ -100,7 +100,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     SequenceNumber = TableEventStreamBase.SequenceNumberFromString(sequenceNumberAsString);
                 }
 
-                EventWrittenDateTime = dteRow.Timestamp;
+                EventWrittenDateTime = dteRow.Timestamp.GetValueOrDefault();
             }
         }
     }

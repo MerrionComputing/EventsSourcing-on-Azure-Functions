@@ -1,5 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,35 +34,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 List<IEvent> ret = new List<IEvent>();
 
-                TableContinuationToken token = new TableContinuationToken();
+                Azure.Pageable<TableEntity> getEventsQuery = Table.Query<TableEntity>(filter: CreateQuery(StartingSequenceNumber));
 
-                TableQuery getEventsQuery = CreateQuery(StartingSequenceNumber);
-
-                do
+                foreach (var entity in getEventsQuery)
                 {
-                    // create the query to be executed..
-                    var segment = await Table.ExecuteQuerySegmentedAsync(getEventsQuery,
-                         token,
-                         requestOptions: GetDefaultRequestOptions(),
-                         operationContext: GetDefaultOperationContext());
-
-                    foreach (DynamicTableEntity dteRow in segment)
+                    // Get the event data
+                    IEvent eventPayload = GetEventFromDynamicTableEntity(entity);
+                    if (null != eventPayload)
                     {
-                        // Process this one row as an event...
-                        // Get the event data
-                        IEvent eventPayload = GetEventFromDynamicTableEntity(dteRow);
-                        if (null != eventPayload)
-                        {
-                            // Add it to the end of the list
-                            ret.Add(eventPayload );
-                        }
+                        // Add it to the end of the list
+                        ret.Add(eventPayload);
                     }
-
-                    // update the continuation token to get the next chunk of records
-                    token = segment.ContinuationToken;
-
-                } while (null != token);
-
+                }
 
                 // return the resultant list
                 return ret;
@@ -90,43 +73,26 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 List<IEventContext> ret = new List<IEventContext>();
 
-                TableContinuationToken token = new TableContinuationToken();
+                Azure.Pageable<TableEntity> getEventsQuery = Table.Query<TableEntity>(filter: CreateQuery(StartingSequenceNumber));
 
-                TableQuery getEventsQuery = CreateQuery(StartingSequenceNumber);
-
-                do
+                foreach (var entity in getEventsQuery)
                 {
-                    // create the query to be executed..
-                    var segment = await Table.ExecuteQuerySegmentedAsync(getEventsQuery,
-                         token,
-                         requestOptions: GetDefaultRequestOptions(),
-                         operationContext: GetDefaultOperationContext());
-
-                    foreach (DynamicTableEntity  dteRow in segment )
+                    // Get the event data
+                    IEvent eventPayload = GetEventFromDynamicTableEntity(entity);
+                    if (null != eventPayload)
                     {
-                        // Process this one row as an event...
-                        // Get the event data
-                        IEvent eventPayload = GetEventFromDynamicTableEntity(dteRow);
-                        if (null != eventPayload)
+                        // Wrap it in the event context
+                        IEventContext wrappedEvent = WrapEventFromDynamicTableEntity(entity, eventPayload);
+                        if (null != wrappedEvent)
                         {
-                            // Wrap it in the event context
-                            IEventContext wrappedEvent = WrapEventFromDynamicTableEntity(dteRow, eventPayload);
-                            if (null != wrappedEvent)
+                            if ((!effectiveDateTime.HasValue) || (wrappedEvent.EventWrittenDateTime <= effectiveDateTime.Value))
                             {
-                                if ((!effectiveDateTime.HasValue) || (wrappedEvent.EventWrittenDateTime <= effectiveDateTime.Value))
-                                {
-                                    // Add it to the end of the list
-                                    ret.Add(wrappedEvent);
-                                }
+                                // Add it to the end of the list
+                                ret.Add(wrappedEvent);
                             }
                         }
                     }
-
-                    // update the continuation token to get the next chunk of records
-                    token = segment.ContinuationToken;
-
-                } while (null != token );
-
+                }
 
                 // return the resultant list
                 return ret;
@@ -142,7 +108,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         }
 
-        private IEventContext WrapEventFromDynamicTableEntity(DynamicTableEntity dteRow, 
+        private IEventContext WrapEventFromDynamicTableEntity(TableEntity dteRow, 
             IEvent eventPayload)
         {
             if (null != eventPayload )
@@ -155,16 +121,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         }
 
 
-        private IEvent GetEventFromDynamicTableEntity(DynamicTableEntity dteRow)
+        private IEvent GetEventFromDynamicTableEntity(TableEntity dteRow)
         {
             if (null != dteRow )
             {
                 // get the event name
                 string eventName = null;
 
-                if (dteRow.Properties.ContainsKey(FIELDNAME_EVENTTYPE))
+                if (dteRow.ContainsKey(FIELDNAME_EVENTTYPE))
                 {
-                    eventName = dteRow.Properties[FIELDNAME_EVENTTYPE].StringValue;
+                    eventName = dteRow.GetString(FIELDNAME_EVENTTYPE);
                 }
 
                 if (!string.IsNullOrWhiteSpace(eventName))
@@ -184,40 +150,62 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                         if (null != eventWrapper.EventPayload)
                         {
                             // Populate the properties from the table row
-                            foreach (var entityProperty in dteRow.Properties)
+                            foreach (string entityProperty in dteRow.Keys )
                             {
-                                if (!IsContextProperty(entityProperty.Key))
+                                if (!IsContextProperty(entityProperty))
                                 {
-                                    PropertyInfo pi = eventWrapper.EventPayload.GetType().GetProperty(entityProperty.Key);
+                                    PropertyInfo pi = eventWrapper.EventPayload.GetType().GetProperty(entityProperty);
                                     if (null != pi)
                                     {
                                         if (pi.CanWrite)
                                         {
-                                            if (!IsPropertyValueEmpty(pi, 
-                                                entityProperty.Value.PropertyAsObject ))
+                                            object fieldValue;
+
+                                            if (dteRow.TryGetValue(entityProperty, out fieldValue))
                                             {
-                                                if (pi.PropertyType.IsEnum)
+                                                if (!IsPropertyValueEmpty(pi,
+                                                    fieldValue ))
                                                 {
-                                                    // Emums are stored as strings
-                                                    string propertyValue = entityProperty.Value.StringValue;
-                                                    object value;
-                                                    if (Enum.TryParse(pi.PropertyType,
-                                                        propertyValue, out value))
+                                                    if (pi.PropertyType.IsEnum)
                                                     {
-                                                        pi.SetValue(eventWrapper.EventPayload, value);
+                                                        // Emums are stored as strings
+                                                        string propertyValue = dteRow.GetString(entityProperty);
+                                                        object value;
+                                                        if (Enum.TryParse(pi.PropertyType,
+                                                            propertyValue, out value))
+                                                        {
+                                                            pi.SetValue(eventWrapper.EventPayload, value);
+                                                        }
                                                     }
-                                                }
-                                                else
-                                                {
-                                                    pi.SetValue(eventWrapper.EventPayload,
-                                                        GetEntityPropertyValue(pi,
-                                                        entityProperty.Value.PropertyAsObject));
+                                                    else
+                                                    {
+                                                        // If it is a decimal it may be saved as a double ...
+                                                        if (pi.PropertyType == typeof(decimal))
+                                                        {
+                                                            if (fieldValue.GetType() == typeof(double))
+                                                            {
+                                                                fieldValue = Convert.ToDecimal( fieldValue);
+                                                            }
+                                                        }
+
+                                                        // If it is a datetime it may be saved as a datetimeoffset ...
+                                                        if (pi.PropertyType == typeof(DateTime))
+                                                        {
+                                                            if (fieldValue.GetType() == typeof(DateTimeOffset ))
+                                                            {
+                                                                fieldValue = ((DateTimeOffset)fieldValue).UtcDateTime ;
+                                                            }
+                                                        }
+
+                                                        pi.SetValue(eventWrapper.EventPayload,
+                                                            fieldValue);
+                                                    }
                                                 }
                                             }
                                         }
+                                        }
                                     }
                                 }
-                            }
                         }
 
                         return eventWrapper;
@@ -246,78 +234,20 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// <param name="StartingSequenceNumber">
         /// The 1-based sequence number to start from
         /// </param>
-        private TableQuery CreateQuery(int StartingSequenceNumber)
+        private string CreateQuery(int StartingSequenceNumber)
         {
-            return new TableQuery()
-                .Where(TableQuery.CombineFilters(
-                    TableQuery.GenerateFilterCondition("PartitionKey", 
-                          QueryComparisons.Equal, 
-                          InstanceKey),
-                    TableOperators.And,
-                    TableQuery.GenerateFilterCondition("RowKey",
-                         QueryComparisons.GreaterThanOrEqual,
-                         SequenceNumberAsString(StartingSequenceNumber))
-                    )
-                );
+            return TableClient.CreateQueryFilter($"PartitionKey eq {InstanceKey} and RowKey gt {SequenceNumberAsString(StartingSequenceNumber)} ");
         }
 
         /// <summary>
         /// Get all the "key" rows in the table
         /// </summary>
-        private TableQuery GetKeysQuery()
+        private string GetKeysQuery()
         {
-            return new TableQuery()
-                .Where(
-                    TableQuery.GenerateFilterCondition("PartitionKey",
-                         QueryComparisons.Equal,
-                         TableEntityIndexCardRecord.INDEX_CARD_PARTITION 
-                    )
-                );
-        }
-
-        /// <summary>
-        /// Get the standard request options to use when retrieving the event stream data from a table
-        /// </summary>
-        private TableRequestOptions GetDefaultRequestOptions()
-        {
-            return new TableRequestOptions()
-            {
-                 PayloadFormat = TablePayloadFormat.Json,
-                  TableQueryMaxItemCount = MAX_BATCH_SIZE
-            };
+            return TableClient.CreateQueryFilter($"RowKey eq {SequenceNumberAsString(0)} ");
         }
 
 
-        /// <summary>
-        /// Policy to allow read-access to the tables
-        /// </summary>
-        public SharedAccessAccountPolicy DefaultSharedAccessAccountPolicy
-        {
-            get
-            {
-                // Make a standard shared access policy to use 
-                return new SharedAccessAccountPolicy()
-                {
-                    Permissions =  SharedAccessAccountPermissions.Read
-                    | SharedAccessAccountPermissions.List
-                    ,
-                    ResourceTypes = SharedAccessAccountResourceTypes.Object,
-                    Services = SharedAccessAccountServices.Table,
-                    Protocols = SharedAccessProtocol.HttpsOnly
-                };
-            }
-        }
-
-        public SharedAccessTablePolicy DefaultSharedAccessTablePolicy
-        {
-            get
-            {
-                return new SharedAccessTablePolicy()
-                {
-                    Permissions = SharedAccessTablePermissions.Query 
-                };
-            }
-        }
 
 
         public async Task<IEnumerable<string>> GetAllInstanceKeys(DateTime? asOfDate)
@@ -327,43 +257,28 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 List<string> ret = new List<string>();
 
-                TableContinuationToken token = new TableContinuationToken();
+                Azure.Pageable<TableEntity> getInstancesQuery = Table.Query<TableEntity>(filter: GetKeysQuery());
 
-                TableQuery getKeysQuery = GetKeysQuery();
-
-                do
+                foreach (var dteRow in getInstancesQuery)
                 {
-                    // create the query to be executed..
-                    var segment = await Table.ExecuteQuerySegmentedAsync(getKeysQuery,
-                         token,
-                         requestOptions: GetDefaultRequestOptions(),
-                         operationContext: GetDefaultOperationContext());
-
-                    foreach (DynamicTableEntity dteRow in segment)
+                    bool include = true;
+                    if (dteRow.ContainsKey(nameof(TableEntityKeyRecord.Deleting)))
                     {
-                        bool include = true;
-                        if (dteRow.Properties.ContainsKey(nameof(TableEntityKeyRecord.Deleting)))
+                        if (dteRow.GetBoolean(nameof(TableEntityKeyRecord.Deleting)).GetValueOrDefault(false))
                         {
-                            if (dteRow.Properties[nameof(TableEntityKeyRecord.Deleting )].BooleanValue.GetValueOrDefault(false) )
-                            {
-                                include = false;
-                            }
-                        }
-                        if (include)
-                        {
-                            // add the "key"
-                            if (dteRow.Properties.ContainsKey(nameof(InstanceKey)))
-                            {
-                                ret.Add(dteRow.Properties[nameof(InstanceKey)].StringValue);
-                            }
+                            include = false;
                         }
                     }
-
-                    // update the continuation token to get the next chunk of records
-                    token = segment.ContinuationToken;
-
-                } while (null != token);
-
+                    if (include)
+                    {
+                        // add the "key"
+                        if (dteRow.ContainsKey(nameof(InstanceKey)))
+                        {
+                            ret.Add(dteRow.GetString(nameof(InstanceKey)));
+                        }
+                    }
+                }
+                
                 return ret;
             }
 

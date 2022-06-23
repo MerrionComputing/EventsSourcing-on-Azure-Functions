@@ -1,5 +1,5 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 
@@ -13,8 +13,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         : IEventStreamIdentity
     {
 
-        protected internal CloudStorageAccount _storageAccount;
-        private readonly CloudTableClient _cloudTableClient;
+        private readonly TableClient _cloudTableClient;
 
         private readonly string _domainName;
         /// <summary>
@@ -81,21 +80,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
-        public CloudTable Table
-        {
-            get
-            {
-                if (null != _cloudTableClient)
-                {
-                    CloudTable ret = _cloudTableClient.GetTableReference(this.TableName);
-                    return ret;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
 
         public TableClassificationSnapshotBase(IEventStreamIdentity identity,
             string classificationName,
@@ -126,24 +110,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             IConfigurationRoot config = builder.Build();
 
-            if (null != config)
-            {
-                if (!string.IsNullOrWhiteSpace(connectionStringName))
-                {
-                    _storageAccount = CloudStorageAccount.Parse(config.GetConnectionString(connectionStringName));
-                }
-            }
 
-            if (_storageAccount != null)
+            if (_cloudTableClient == null)
             {
-                _cloudTableClient = _storageAccount.CreateCloudTableClient();
+                _cloudTableClient = new TableClient(config.GetConnectionString(connectionStringName), this.TableName); // _storageAccount.CreateCloudTableClient();
 
                 if (null != _cloudTableClient)
                 {
-                    if (!Table.Exists())
-                    {
-                        Table.Create();
-                    }
+                    _cloudTableClient.CreateIfNotExists();
                 }
             }
 

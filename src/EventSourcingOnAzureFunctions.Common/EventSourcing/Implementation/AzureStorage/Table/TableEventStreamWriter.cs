@@ -1,12 +1,13 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using Microsoft.Azure.Cosmos.Table;
+using Azure.Data.Tables;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table
 {
@@ -81,34 +82,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
 
 
-            var dteEvent = MakeDynamicTableEntity(eventInstance, nextSequence);
+            TableEntity dteEvent = MakeDynamicTableEntity(eventInstance, nextSequence);
             if (null != dteEvent)
             {
-                await base.Table.ExecuteAsync(TableOperation.Insert(dteEvent), null, GetDefaultOperationContext()  );
+                await base.Table.AddEntityAsync(dteEvent);
             }
-
 
             return new AppendResult((nextSequence == 1), nextSequence);
 
         }
 
 
-        /// <summary>
-        /// Gets the operation context used to write data to the table
-        /// </summary>
-        /// <remarks>
-        /// This adds the correlation identifier to the operation so it can be seen in any tracing operation
-        /// </remarks>
-        public override OperationContext GetDefaultOperationContext()
-        {
-            OperationContext ret = base.GetDefaultOperationContext();
-            if (null != _writerContext)
-            {
-                // Add in the correlation identifier for tracing any storage issues
-                ret.ClientRequestID = _writerContext.CorrelationIdentifier;
-            }
-            return ret;
-        }
 
         /// <summary>
         /// Increment the sequence number for this event stream and return the new number
@@ -128,20 +112,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 tries += 1;
                 // read in the a [TableEntityKeyRecord]
-                TableOperation getKeyRecord = TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
                 await Table.CreateIfNotExistsAsync();
 
-                TableResult getFooter =  await Table.ExecuteAsync(
-                    getKeyRecord);
+                streamFooter = await Table.GetEntityAsync< TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
-                if (getFooter != null)
-                {
-                    if (getFooter.Result != null)
-                    {
-                        streamFooter = (TableEntityKeyRecord)getFooter.Result;
-                    }
-                }
 
                 if (null == streamFooter)
                 {
@@ -151,26 +126,26 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 try
                 {
-                    TableResult tres = null;
-                    if (string.IsNullOrWhiteSpace(streamFooter.ETag))
+                    Azure.Response tres;
+                    if (streamFooter.ETag.Equals (Azure.ETag.All ) )
                     {
-                        tres = await Table.ExecuteAsync(TableOperation.Insert(streamFooter));
+                        tres =await Table.AddEntityAsync(streamFooter);
                     }
                     else
                     {
-                        tres = await Table.ExecuteAsync(TableOperation.Replace(streamFooter));
+                        tres = await Table.UpdateEntityAsync(streamFooter, streamFooter.ETag );
                     }
-
-                    if (tres.HttpStatusCode == 204)
+                    
+                    if (tres.Status  == 204)
                     {
                         recordUpdated = true;
                     }
                 }
-                catch (Microsoft.Azure.Cosmos.Table.StorageException sEx)
+                catch (Azure.RequestFailedException  rEx)
                 {
-                    if (sEx.RequestInformation.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)
+                    if (rEx.Status == (int)HttpStatusCode.PreconditionFailed)
                     {
-                        // Precondition Failed - could not update the footer due to a concurrency error
+                        // Precondition Failed - could not update the footer due to a concurrency 🐊 error
                         recordUpdated = false;
                         // Wait a random-ish amount of time
                         int delayMilliseconds = 13 * new Random().Next(10, 100);
@@ -181,7 +156,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                         throw new EventStreamWriteException(this, streamFooter.LastSequence,
                                                 message: "Unable to increment the stream sequence number due to storage error",
                                                 source: "Table Event Stream Writer",
-                                                innerException: sEx);
+                                                innerException: rEx);
                     }
                 }
 
@@ -228,19 +203,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 tries += 1;
                 // read in the a [TableEntityKeyRecord]
-                TableOperation getKeyRecord = TableOperation.Retrieve<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
-
-
-                TableResult getFooter = await Table.ExecuteAsync(
-                    getKeyRecord);
-
-                if (getFooter != null)
-                {
-                    if (getFooter.Result != null)
-                    {
-                        streamFooter = (TableEntityKeyRecord)getFooter.Result;
-                    }
-                }
+                streamFooter = await Table.GetEntityAsync<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
 
                 if (null == streamFooter)
                 {
@@ -248,28 +211,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                 }
                 streamFooter.Deleting = true;
 
-                string lastETag = streamFooter.ETag;
 
                 try
                 {
-                    TableResult tres = await Table.ExecuteAsync (TableOperation.InsertOrReplace(streamFooter),
-                          null,
-                          new OperationContext
-                          {
-                              UserHeaders = new Dictionary<String, String>
-                              {
-                              { "If-Match", lastETag }
-                              }
-                          });
+                    Azure.Response tres =  await Table.UpdateEntityAsync(streamFooter, streamFooter.ETag);
 
-                    if (tres.HttpStatusCode == 204)
+                    if (tres.Status  == 204)
                     {
                         recordUpdated = true;
                     }
                 }
-                catch (Microsoft.Azure.Cosmos.Table.StorageException sEx)
+                catch (Azure.RequestFailedException rEx)
                 {
-                    if (sEx.RequestInformation.HttpStatusCode == (int)HttpStatusCode.PreconditionFailed)
+                    if (rEx.Status == (int)HttpStatusCode.PreconditionFailed)
                     {
                         // Precondition Failed - could not update the footer due to a concurrency error
                         recordUpdated = false;
@@ -282,7 +236,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                         throw new EventStreamWriteException(this, streamFooter.LastSequence,
                                                 message: "Unable to set the Deleting flag stream sequence number due to storage error",
                                                 source: "Table Event Stream Writer",
-                                                innerException: sEx);
+                                                innerException: rEx);
                     }
                 }
 
@@ -298,48 +252,25 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             // 2- delete the actual stream records in reverse order
             if (Table != null)
             {
-                // We need a continuation token as this is done in batches of 100...
-                TableContinuationToken token = new TableContinuationToken();
+                Azure.Pageable<TableEntity> getEventsToDeleteQuery = Table.Query<TableEntity>(filter: DeleteRowsQuery());
 
-                TableQuery getEventsToDeleteQuery = DeleteRowsQuery().Take(MAX_BATCH_SIZE);
+                int nextBatch = 0;
+                int currentRow = 0;
 
-                do
+                var batchedActions = new List<TableTransactionAction>();
+                foreach (var entity in getEventsToDeleteQuery)
                 {
+                    batchedActions.Add(new TableTransactionAction(TableTransactionActionType.Delete, entity));
 
-                    var batches = new List<TableBatchOperation>();
-                    int nextBatch = 0;
-
-                    // create the query to be executed..
-                    var segment = Table.ExecuteQuerySegmented(getEventsToDeleteQuery,
-                         token,
-                         operationContext: GetDefaultOperationContext());
-
-                    // update the continuation token to get the next chunk of records
-                    token = segment.ContinuationToken;
-
-                    int currentRow = 0;
-                    batches.Add(new TableBatchOperation());
-                    foreach (DynamicTableEntity dteRow in segment)
+                    if (currentRow % MAX_BATCH_SIZE == 0)
                     {
-                        if (currentRow % MAX_BATCH_SIZE == 0)
-                        {
-                            nextBatch += 1;
-                            batches.Add(new TableBatchOperation());
-                        }
-                        batches[nextBatch].Add(TableOperation.Delete(dteRow));
-                        currentRow += 1;
+                        // may need to split batches into groups of 100 actions
                     }
+                }
 
-                    foreach (var batchExecute  in batches )
-                    {
-                        if (batchExecute.Count  > 0)
-                        {
-                            Table.ExecuteBatch(batchExecute);
-                        }
-                    }
-                    
+                // Submit the batch.
+                await Table.SubmitTransactionAsync(batchedActions).ConfigureAwait(false);
 
-                } while (null != token);
             }
         }
 
@@ -347,14 +278,9 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// Create a query to get the events 
         /// for an instance key to delete them
         /// </summary>
-        private TableQuery DeleteRowsQuery()
+        private string  DeleteRowsQuery()
         {
-            return new TableQuery()
-                .Where(
-                    TableQuery.GenerateFilterCondition("PartitionKey",
-                          QueryComparisons.Equal,
-                          InstanceKey)
-                    );
+            return TableClient.CreateQueryFilter($"PartitionKey eq {InstanceKey}");
         }
 
         private IWriteContext _writerContext;
@@ -363,53 +289,53 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             _writerContext = writerContext;
         }
 
-        public DynamicTableEntity MakeDynamicTableEntity(IEvent eventToPersist,
+        public TableEntity MakeDynamicTableEntity(IEvent eventToPersist,
     int sequenceNumber)
         {
 
-            DynamicTableEntity ret = new DynamicTableEntity(this.InstanceKey,
+            TableEntity ret = new TableEntity(this.InstanceKey,
                 SequenceNumberAsString(sequenceNumber));
 
             // Add the event type
             if (!string.IsNullOrWhiteSpace(eventToPersist.EventTypeName))
             {
                 // Use the event type name given 
-                ret.Properties.Add(FIELDNAME_EVENTTYPE,
-                      new EntityProperty(eventToPersist.EventTypeName)); 
+                ret.Add(FIELDNAME_EVENTTYPE,
+                      eventToPersist.EventTypeName); 
             }
             else
             {
                 // fall back on the .NET name of the payload class
-                ret.Properties.Add(FIELDNAME_EVENTTYPE,
-                      new EntityProperty(EventNameAttribute.GetEventName(eventToPersist.GetType())));
+                ret.Add(FIELDNAME_EVENTTYPE,
+                      EventNameAttribute.GetEventName(eventToPersist.GetType()));
             }
 
             if (null != _writerContext)
             {
                 if (!string.IsNullOrWhiteSpace(_writerContext.Commentary))
                 {
-                    ret.Properties.Add(FIELDNAME_COMMENTS,
-                        new EntityProperty(_writerContext.Commentary));
+                    ret.Add(FIELDNAME_COMMENTS,
+                        _writerContext.Commentary);
                 }
                 if (!string.IsNullOrWhiteSpace(_writerContext.CorrelationIdentifier))
                 {
-                    ret.Properties.Add(FIELDNAME_CORRELATION_IDENTIFIER,
-                        new EntityProperty(_writerContext.CorrelationIdentifier));
+                    ret.Add(FIELDNAME_CORRELATION_IDENTIFIER,
+                        _writerContext.CorrelationIdentifier);
                 }
                 if (!string.IsNullOrWhiteSpace(_writerContext.Source))
                 {
-                    ret.Properties.Add(FIELDNAME_SOURCE,
-                        new EntityProperty(_writerContext.Source));
+                    ret.Add(FIELDNAME_SOURCE,
+                        _writerContext.Source);
                 }
                 if (!string.IsNullOrWhiteSpace(_writerContext.Who))
                 {
-                    ret.Properties.Add(FIELDNAME_WHO,
-                        new EntityProperty(_writerContext.Who));
+                    ret.Add(FIELDNAME_WHO,
+                        _writerContext.Who);
                 }
                 if (! string.IsNullOrWhiteSpace(_writerContext.SchemaName  ) )
                 {
-                    ret.Properties.Add(FIELDNAME_SCHEMA,
-                        new EntityProperty(_writerContext.SchemaName));  
+                    ret.Add(FIELDNAME_SCHEMA,
+                        _writerContext.SchemaName);  
                 }
             }
 
@@ -433,7 +359,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                             {
                                 if (!IsPropertyEmpty(pi, eventToPersist.EventPayload))
                                 {
-                                    ret.Properties.Add(pi.Name, MakeEntityProperty(pi, eventToPersist.EventPayload));
+                                    ret.Add(pi.Name, MakeEntityProperty(pi, eventToPersist.EventPayload));
                                 }
                             }
                         }
@@ -445,44 +371,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         }
 
-        public SharedAccessTablePolicy DefaultSharedAccessTablePolicy
-        {
-            get
-            {
-                return new SharedAccessTablePolicy()
-                {
-                    Permissions =
-                    SharedAccessTablePermissions.Add |
-                    SharedAccessTablePermissions.Query |
-                    SharedAccessTablePermissions.Update 
-                };
-            }
-        }
 
-        /// <summary>
-        /// Policy to allow read/writer access to the storage account the table(s) are in
-        /// </summary>
-        public SharedAccessAccountPolicy DefaultSharedAccessAccountPolicy
-        {
-            get
-            {
-                // Make a standard shared access policy to use 
-                return new SharedAccessAccountPolicy()
-                {
-                    Permissions = SharedAccessAccountPermissions.Create
-                    | SharedAccessAccountPermissions.Read
-                    | SharedAccessAccountPermissions.Update
-                    | SharedAccessAccountPermissions.Write
-                    | SharedAccessAccountPermissions.List
-                    | SharedAccessAccountPermissions.Delete 
 
-                    ,
-                    ResourceTypes = SharedAccessAccountResourceTypes.Object,
-                    Services = SharedAccessAccountServices.Table,
-                    Protocols = SharedAccessProtocol.HttpsOnly
-                };
-            }
-        }
 
         /// <summary>
         /// Constructor to create a table backed writer for a given event stream
@@ -501,63 +391,63 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         }
 
 
-        public static EntityProperty MakeEntityProperty(PropertyInfo pi,
+        public static object MakeEntityProperty(PropertyInfo pi,
             object eventPayload)
         {
 
             if (null == eventPayload)
             {
-                return new EntityProperty(string.Empty);
+                return string.Empty;
             }
 
             //cast it to the correct type?
             if (pi.PropertyType == typeof(bool))
             {
-                return new EntityProperty((bool)pi.GetValue(eventPayload, null));
+                return (bool)pi.GetValue(eventPayload, null);
             }
 
             if (pi.PropertyType == typeof(double))
             {
-                return new EntityProperty((double)pi.GetValue(eventPayload, null));
+                return (double)pi.GetValue(eventPayload, null);
             }
 
             if (pi.PropertyType == typeof(int))
             {
-                return new EntityProperty((int)pi.GetValue(eventPayload, null));
+                return (int)pi.GetValue(eventPayload, null);
             }
 
             if (pi.PropertyType == typeof(long))
             {
-                return new EntityProperty((long)pi.GetValue(eventPayload, null));
+                return (long)pi.GetValue(eventPayload, null);
             }
 
             if (pi.PropertyType == typeof(DateTimeOffset))
             {
-                return new EntityProperty((DateTimeOffset)pi.GetValue(eventPayload, null));
+                return (DateTimeOffset)pi.GetValue(eventPayload, null);
             }
 
             if (pi.PropertyType == typeof(Guid))
             {
-                return new EntityProperty((Guid)pi.GetValue(eventPayload, null));
+                return (Guid)pi.GetValue(eventPayload, null);
             }
 
             if (pi.PropertyType == typeof(DateTime))
             {
-                return new EntityProperty((DateTime)pi.GetValue(eventPayload, null));
+                return (DateTime)pi.GetValue(eventPayload, null);
             }
 
             if (pi.PropertyType == typeof(byte[]))
             {
-                return new EntityProperty((byte[])pi.GetValue(eventPayload, null));
+                return (byte[])pi.GetValue(eventPayload, null);
             }
 
             if (pi.PropertyType == typeof(decimal))
             {
                 decimal oVal = (decimal)pi.GetValue(eventPayload, null);
-                return new EntityProperty((double)oVal);
+                return (double)oVal;
             }
 
-            return new EntityProperty(pi.GetValue(eventPayload, null).ToString());
+            return pi.GetValue(eventPayload, null).ToString();
         }
 
         /// <summary>
@@ -573,7 +463,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             InstanceKey = this.InstanceKey 
             };
 
-            TableResult tres = await Table.ExecuteAsync(TableOperation.InsertOrReplace(indexCard));
+             await Table.AddEntityAsync<TableEntityIndexCardRecord>(indexCard);
 
         }
     }
