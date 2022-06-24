@@ -130,52 +130,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </summary>
         public Azure.ETag ETag { get; set; }
 
-#if OLD_TABLES_SDK
-        public void ReadEntity(IDictionary<string, EntityProperty> properties,
-                OperationContext operationContext)
-        {
-            if (null != properties)
-            {
-                if (properties.ContainsKey(nameof(DomainName)))
-                {
-                    DomainName = properties[nameof(DomainName)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(EntityTypeName)))
-                {
-                    EntityTypeName = properties[nameof(EntityTypeName)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(InstanceKey)))
-                {
-                    InstanceKey = properties[nameof(InstanceKey)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(WasEverIncluded)))
-                {
-                    WasEverIncluded = properties[nameof(WasEverIncluded)].BooleanValue.GetValueOrDefault(false) ;
-                }
-                if (properties.ContainsKey(nameof(WasEverExcluded)))
-                {
-                    WasEverExcluded = properties[nameof(WasEverExcluded)].BooleanValue.GetValueOrDefault(false);
-                }
-                if (properties.ContainsKey(nameof(CurrentClassification )))
-                {
-                    CurrentClassification = (ClassificationResponse.ClassificationResults) properties[nameof(WasEverExcluded)].Int32Value.GetValueOrDefault(0) ;
-                }
-            }
-        }
 
-        public IDictionary<string, EntityProperty> WriteEntity(OperationContext operationContext)
-        {
-            IDictionary<string, EntityProperty> ret = new Dictionary<string, EntityProperty>();
-            // Add the custom properties here
-            ret.Add(nameof(DomainName), EntityProperty.GeneratePropertyForString(DomainName));
-            ret.Add(nameof(EntityTypeName), EntityProperty.GeneratePropertyForString(EntityTypeName));
-            ret.Add(nameof(InstanceKey), EntityProperty.GeneratePropertyForString(InstanceKey));
-            ret.Add(nameof(WasEverIncluded), EntityProperty.GeneratePropertyForBool(WasEverIncluded));
-            ret.Add(nameof(WasEverExcluded), EntityProperty.GeneratePropertyForBool(WasEverExcluded));
-            ret.Add(nameof(CurrentClassification ), EntityProperty.GeneratePropertyForInt((int)CurrentClassification ));
-            return ret;
-        }
-
-#endif
     }
 }

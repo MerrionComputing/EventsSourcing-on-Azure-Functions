@@ -116,52 +116,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </summary>
         public Azure.ETag  ETag { get ; set; }
 
-        #if OLD_TABLES_SDK
-        public void ReadEntity(IDictionary<string, EntityProperty> properties,
-            OperationContext operationContext)
-        {
-            if (null != properties )
-            {
-                if (properties.ContainsKey(nameof(LastSequence)) )
-                {
-                    LastSequence = properties[nameof(LastSequence)].Int32Value.GetValueOrDefault(0);
-                }
-                if (properties.ContainsKey(nameof(Context )) )
-                {
-                    Context = properties[nameof(Context)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(DomainName) ))
-                {
-                    DomainName = properties[nameof(DomainName)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(EntityTypeName)))
-                {
-                    EntityTypeName = properties[nameof(EntityTypeName)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(InstanceKey )) )
-                {
-                    InstanceKey = properties[nameof(InstanceKey)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(Deleting )))
-                {
-                    Deleting = properties[nameof(Deleting )].BooleanValue.GetValueOrDefault(false) ;
-                }
-            }
-        }
-
-        public IDictionary<string, EntityProperty> WriteEntity(OperationContext operationContext)
-        {
-            IDictionary<string, EntityProperty> ret = new Dictionary<string, EntityProperty>();
-            // Add the custom properties here
-            ret.Add(nameof(LastSequence), EntityProperty.GeneratePropertyForInt(LastSequence) );
-            ret.Add(nameof(Context), EntityProperty.GeneratePropertyForString(Context));
-            ret.Add(nameof(DomainName), EntityProperty.GeneratePropertyForString(DomainName));
-            ret.Add(nameof(EntityTypeName), EntityProperty.GeneratePropertyForString(EntityTypeName));
-            ret.Add(nameof(InstanceKey), EntityProperty.GeneratePropertyForString(InstanceKey));
-            ret.Add(nameof(Deleting), EntityProperty.GeneratePropertyForBool(Deleting));
-            return ret;
-        }
-#endif
 
         /// <summary>
         /// Parameter-less constructor for serialisation

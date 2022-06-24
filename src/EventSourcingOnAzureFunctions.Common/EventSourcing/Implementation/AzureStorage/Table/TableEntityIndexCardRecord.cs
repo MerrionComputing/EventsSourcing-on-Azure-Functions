@@ -110,39 +110,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public Azure.ETag ETag { get; set; }
 
 
-#if OLD_TABLES_SDK
-        public void ReadEntity(IDictionary<string, EntityProperty> properties,
-          OperationContext operationContext)
-        {
-            if (null != properties)
-            {
-                if (properties.ContainsKey(nameof(DomainName)))
-                {
-                    DomainName = properties[nameof(DomainName)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(EntityTypeName)))
-                {
-                    EntityTypeName = properties[nameof(EntityTypeName)].StringValue;
-                }
-                if (properties.ContainsKey(nameof(InstanceKey)))
-                {
-                    InstanceKey = properties[nameof(InstanceKey)].StringValue;
-                }
-            }
-        }
-
-
-        public IDictionary<string, EntityProperty> WriteEntity(OperationContext operationContext)
-        {
-            IDictionary<string, EntityProperty> ret = new Dictionary<string, EntityProperty>();
-            // Add the custom properties here
-            ret.Add(nameof(DomainName), EntityProperty.GeneratePropertyForString(DomainName));
-            ret.Add(nameof(EntityTypeName), EntityProperty.GeneratePropertyForString(EntityTypeName));
-            ret.Add(nameof(InstanceKey), EntityProperty.GeneratePropertyForString(InstanceKey));
-            return ret;
-        }
-#endif
-
     }
 
 }
