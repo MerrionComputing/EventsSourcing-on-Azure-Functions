@@ -100,8 +100,19 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         {
             if (Table != null)
             {
-
-                TableEntityIndexCardRecord  ret = await Table.GetEntityAsync<TableEntityIndexCardRecord>(TableEntityIndexCardRecord.INDEX_CARD_PARTITION , this.InstanceKey);
+                TableEntityIndexCardRecord ret = null;
+                try
+                {
+                     ret = await Table.GetEntityAsync<TableEntityIndexCardRecord>(TableEntityIndexCardRecord.INDEX_CARD_PARTITION, this.InstanceKey);
+                }
+                catch (Azure.RequestFailedException ex)
+                {
+                    // Need to create a new stream footer if not found...but rethrow any other error
+                    if (ex.Status != 404)
+                    {
+                        throw;
+                    }
+                }
 
                 if (null != ret)
                 { 
@@ -130,7 +141,18 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
             await Table.CreateIfNotExistsAsync();
 
-            streamFooter = await Table.GetEntityAsync<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
+            try
+            {
+                streamFooter = await Table.GetEntityAsync<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
+            }
+            catch (Azure.RequestFailedException ex)
+            {
+                // Allow if stream footer not found...but rethrow any other error
+                if (ex.Status != 404)
+                {
+                    throw;
+                }
+            }
 
 
             if (null != streamFooter)

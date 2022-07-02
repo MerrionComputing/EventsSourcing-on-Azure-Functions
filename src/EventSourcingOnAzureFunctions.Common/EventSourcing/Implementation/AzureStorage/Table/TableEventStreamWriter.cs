@@ -115,19 +115,31 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 await Table.CreateIfNotExistsAsync();
 
-                streamFooter = await Table.GetEntityAsync< TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
-
+                try
+                {
+                    streamFooter = await Table.GetEntityAsync<TableEntityKeyRecord>(this.InstanceKey, SequenceNumberAsString(0));
+                }
+                catch (Azure.RequestFailedException ex)
+                {
+                    // Need to create a new stream footer if not found...but rethrow any other error
+                    if (ex.Status != 404)
+                    {
+                        throw;
+                    }
+                }
 
                 if (null == streamFooter)
                 {
                     streamFooter = new TableEntityKeyRecord(this);
+                    // create an index card...
+                    await WriteIndex();
                 }
                 streamFooter.LastSequence += 1;
 
                 try
                 {
                     Azure.Response tres;
-                    if (streamFooter.ETag.Equals (Azure.ETag.All ) )
+                    if (streamFooter.ETag.ToString() == "" )
                     {
                         tres =await Table.AddEntityAsync(streamFooter);
                     }
@@ -254,7 +266,6 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             {
                 Azure.Pageable<TableEntity> getEventsToDeleteQuery = Table.Query<TableEntity>(filter: DeleteRowsQuery());
 
-                int nextBatch = 0;
                 int currentRow = 0;
 
                 var batchedActions = new List<TableTransactionAction>();
@@ -270,6 +281,24 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
                 // Submit the batch.
                 await Table.SubmitTransactionAsync(batchedActions).ConfigureAwait(false);
+
+            }
+
+            // 3 - delete the index card
+            if (Table != null)
+            {
+                try
+                {
+                     Azure.Response resp =  await Table.DeleteEntityAsync(TableEntityIndexCardRecord.INDEX_CARD_PARTITION, this.InstanceKey);
+                }
+                catch (Azure.RequestFailedException ex)
+                {
+                    // Need to create a new stream footer if not found...but rethrow any other error
+                    if (ex.Status != 404)
+                    {
+                        throw;
+                    }
+                }
 
             }
         }
@@ -463,7 +492,17 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             InstanceKey = this.InstanceKey 
             };
 
-             await Table.AddEntityAsync<TableEntityIndexCardRecord>(indexCard);
+            try
+            {
+                await Table.AddEntityAsync<TableEntityIndexCardRecord>(indexCard);
+            } 
+            catch (Azure.RequestFailedException ex)
+            {
+                if (ex.Status != 409)
+                {
+                    throw;
+                }
+            }
 
         }
     }
