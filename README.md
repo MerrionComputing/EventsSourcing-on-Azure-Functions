@@ -1,7 +1,5 @@
 # Event Sourcing on Azure Functions
 
-[![Join the chat at https://gitter.im/Accounting-on-Azure-Functions/Event-sourcing-on-azure-functions](https://badges.gitter.im/Accounting-on-Azure-Functions/Event-sourcing-on-azure-functions.svg)](https://gitter.im/Accounting-on-Azure-Functions/Event-sourcing-on-azure-functions?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 A library to demonstrate doing Event Sourcing as a data persistence mechanism for Azure Functions.
 
 ![.NET](https://github.com/MerrionComputing/EventsSourcing-on-Azure-Functions/workflows/.NET/badge.svg)
