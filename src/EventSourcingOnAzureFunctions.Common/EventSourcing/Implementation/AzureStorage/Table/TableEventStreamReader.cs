@@ -236,7 +236,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         /// </param>
         private string CreateQuery(int StartingSequenceNumber)
         {
-            return TableClient.CreateQueryFilter($"PartitionKey eq {InstanceKey} and RowKey gt {SequenceNumberAsString(StartingSequenceNumber)} ");
+            return TableClient.CreateQueryFilter($"PartitionKey eq {InstanceKey} and RowKey ge {SequenceNumberAsString(StartingSequenceNumber)} ");
         }
 
         /// <summary>
