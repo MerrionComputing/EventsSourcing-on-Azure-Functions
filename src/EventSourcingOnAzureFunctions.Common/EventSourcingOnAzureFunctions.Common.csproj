@@ -42,7 +42,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.6.0" />
-    <PackageReference Include="Azure.Storage.Queues" Version="12.10.0" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.11.0" />
     <PackageReference Include="DotNetEnv" Version="2.3.0" />
     <PackageReference Include="Microsoft.Azure.DurableTask.Core" Version="2.10.0" /> 
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" /> 
