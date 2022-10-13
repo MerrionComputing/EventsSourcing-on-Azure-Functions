@@ -43,7 +43,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
                             }
                             if (ret == ClassificationResponse.ClassificationResults.Exclude)
                             {
-                                wasEverIncluded = true;
+                                wasEverExcluded = true;
                             }
                         }
                     }
