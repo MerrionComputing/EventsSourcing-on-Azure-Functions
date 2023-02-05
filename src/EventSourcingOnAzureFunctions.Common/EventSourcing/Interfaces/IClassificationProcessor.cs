@@ -47,7 +47,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </summary>
         /// <param name="classificationToRun">
         /// The instance of the classification to run
-        /// </typeparam>
+        /// </param>
         /// <param name="asOfDate">
         /// If set, only run the classification up until this date/time
         /// </param>
@@ -59,7 +59,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// <param name="asOfDate">
         /// (Optional) The date as of which to get all the instance keys
         /// </param>
-        /// <remarks
+        /// <remarks>
         /// This is to allow for set-based functionality
         /// </remarks>    
         Task<IEnumerable<string>> GetAllInstanceKeys(DateTime? asOfDate);

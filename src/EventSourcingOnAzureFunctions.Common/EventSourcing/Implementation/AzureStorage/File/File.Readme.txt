@@ -1,0 +1,5 @@
+﻿File implementation
+===================
+
+This implementation stores each event in a file with the file patrh and filename giving the 
+event sequence.

@@ -41,21 +41,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Data.Tables" Version="12.6.0" />
-    <PackageReference Include="Azure.Storage.Queues" Version="12.11.0" />
-    <PackageReference Include="DotNetEnv" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Azure.DurableTask.Core" Version="2.10.0" /> 
+    <PackageReference Include="Azure.Data.Tables" Version="12.7.1" />
+    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.12.1" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.12.0" />
+    <PackageReference Include="DotNetEnv" Version="2.5.0" />
+    <PackageReference Include="Microsoft.Azure.DurableTask.Core" Version="2.12.1" /> 
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" /> 
-    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.33" /> 
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.36" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="4.0.1" /> 
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.7.2" /> 
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="3.2.0" /> 
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.12" /> 
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.9.1" /> 
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="3.2.1" /> 
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.2.0" /> 
     <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="4.0.1" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.1" /> 
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" /> 
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" /> 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" /> 
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="6.2.1">
+    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="6.4.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

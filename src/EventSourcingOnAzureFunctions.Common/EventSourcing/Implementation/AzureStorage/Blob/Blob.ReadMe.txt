@@ -1,0 +1,4 @@
+﻿Blob implementation
+===================
+
+This implementation allows for projection snapshots to be stored as standard Azure blobs.

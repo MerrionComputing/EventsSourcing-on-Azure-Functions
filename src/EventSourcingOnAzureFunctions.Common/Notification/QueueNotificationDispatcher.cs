@@ -329,7 +329,7 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// The as-of date of the event in the event stream for which this notification occured
         /// </param>
         /// <returns>
-        /// A notification message < 64kb long as pipe-separated values
+        /// A notification message less than 64kb long as pipe-separated values
         /// </returns>
         public static string MakeMessageString(IEventStreamIdentity targetEntity,
             string NotificationType,

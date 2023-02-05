@@ -1,5 +1,6 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -154,16 +155,40 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
             return null;
         }
 
+        /// <summary>
+        /// Create a classification processor that works over streams based on an append blob
+        /// </summary>
+        /// <param name="blobEventStreamReader">
+        /// The reader that reads events from an append blob
+        /// </param>
         public ClassificationProcessor(BlobEventStreamReader blobEventStreamReader)
         {
             // Initialise the reader to use to read the events to be processed
             this.eventStreamReader = blobEventStreamReader;
         }
 
+        /// <summary>
+        /// Create a classification processor that works over streams based on an Azure table
+        /// </summary>
+        /// <param name="tableEventStreamReader">
+        /// The reader that reads events from an Azure table
+        /// </param>
         public ClassificationProcessor(TableEventStreamReader tableEventStreamReader)
         {
             // Initialise the reader to use to read the events to be processed
             this.eventStreamReader = tableEventStreamReader;
+        }
+
+        /// <summary>
+        /// Create a classification processor that works over streams based on Azure files
+        /// </summary>
+        /// <param name="fileEventStreamReader">
+        /// The reader that reads events from Azure files
+        /// </param>
+        public ClassificationProcessor(FileEventStreamReader fileEventStreamReader)
+        {
+            // Initialise the reader to use to read the events to be processed
+            this.eventStreamReader = fileEventStreamReader;
         }
     }
 }

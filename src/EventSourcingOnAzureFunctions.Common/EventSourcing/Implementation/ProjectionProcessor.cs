@@ -1,6 +1,7 @@
 ﻿using EventSourcingOnAzureFunctions.Common.EventSourcing.Exceptions;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using System;
 using System.Threading.Tasks;
@@ -74,6 +75,12 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation
         {
             // Initialise the reader to use to read the events to be processed
             this.eventStreamReader = tableEventStreamReader;
+        }
+
+        public ProjectionProcessor(FileEventStreamReader fileEventStreamReader)
+        {
+            // Initialise the reader to use to read the events to be processed
+            this.eventStreamReader = fileEventStreamReader;
         }
     }
 }

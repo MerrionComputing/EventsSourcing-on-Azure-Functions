@@ -27,7 +27,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces
         /// </summary>
         /// <param name="projectionToRun">
         /// The projection to run
-        /// </typeparam>
+        /// </param>
         /// <param name="asOfDate">
         /// If set, only run the projection up until this date/time
         /// </param>

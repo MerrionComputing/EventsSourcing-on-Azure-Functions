@@ -1,6 +1,5 @@
 ﻿using Azure.Messaging.EventGrid;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
-using ImpromptuInterface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;

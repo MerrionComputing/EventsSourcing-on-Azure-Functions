@@ -2383,7 +2383,17 @@
             The value to use for that named parameter for this run
             </param>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:EventSourcingOnAzureFunctions.Common.EventSourcing.Classification.GetAllInstanceKeys(System.Nullable{System.DateTime})" -->
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Classification.GetAllInstanceKeys(System.Nullable{System.DateTime})">
+            <summary>
+            Get all of the unique instances of this domain/entity type
+            </summary>
+            <param name="asOfDate">
+            (Optional) The date as of which to get all the instance keys
+            </param>
+            <remarks>
+            This is to allow for set-based functionality
+            </remarks>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Classification.#ctor(EventSourcingOnAzureFunctions.Common.Binding.ClassificationAttribute,EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamSettings,EventSourcingOnAzureFunctions.Common.Notification.INotificationDispatcher,EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassificationSnapshotReader,EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassificationSnapshotWriter)">
             <summary>
             Create the projection from the attribute linked to the function parameter
@@ -3046,6 +3056,37 @@
             Writer to save projection snapshots in an Azure storage blob
             </summary>
         </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamBase.DomainName">
+            <summary>
+            The domain in which this event stream is set
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamBase.EntityTypeName">
+            <summary>
+            The type of entity for which this event stream pertains
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamBase.InstanceKey">
+            <summary>
+            The specific uniquely identitified instance of the entity to which this event stream pertains
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamBase.StorageConnectionStringSettingName">
+            <summary>
+            The name of the default connection string to use for the domain
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamReader.Create(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity,System.String)">
+            <summary>
+            Creates an azure table storage based event stream reader for the given aggregate
+            </summary>
+            <param name="identity">
+            The unique identifier of the event stream to read
+            </param>
+            <param name="connectionStringName">
+            The name of the connection string to use to do the reading from the table
+            </param>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableClassificationRecord.DomainName">
             <summary>
             The domain in which this event stream is set
@@ -3635,8 +3676,28 @@
             If set, only run the classification up until this date/time
             </param>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassificationProcessor.Classify(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassification,System.Nullable{System.DateTime})" -->
-        <!-- Badly formed XML comment ignored for member "M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassificationProcessor.GetAllInstanceKeys(System.Nullable{System.DateTime})" -->
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassificationProcessor.Classify(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassification,System.Nullable{System.DateTime})">
+            <summary>
+            Run the given classification over the underlying event stream
+            </summary>
+            <param name="classificationToRun">
+            The instance of the classification to run
+            </param>
+            <param name="asOfDate">
+            If set, only run the classification up until this date/time
+            </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassificationProcessor.GetAllInstanceKeys(System.Nullable{System.DateTime})">
+            <summary>
+            Get all of the unique instances of this domain/entity type
+            </summary>
+            <param name="asOfDate">
+            (Optional) The date as of which to get all the instance keys
+            </param>
+            <remarks>
+            This is to allow for set-based functionality
+            </remarks>    
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IClassificationSnapshotReader">
             <summary>
             Reader to load snapshots of a classification
@@ -3804,7 +3865,17 @@
             This is typically only used for audit trails as all business functionality should depend on the event data alone
             </returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamReader.GetAllInstanceKeys(System.Nullable{System.DateTime})" -->
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamReader.GetAllInstanceKeys(System.Nullable{System.DateTime})">
+            <summary>
+            Get all of the unique instances of this domain/entity type
+            </summary>
+            <param name="asOfDate">
+            (Optional) The date as of which to get all the instance keys
+            </param>
+            <remarks>
+            This is to allow for set-based functionality
+            </remarks>    
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamSettings.LoadFromConfig(System.String)">
             <summary>
             Load the settings from the application configuration
@@ -4031,7 +4102,17 @@
             If set, only run the projection up until this date/time
             </param>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IProjectionProcessor.Process``1(``0,System.Nullable{System.DateTime})" -->
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IProjectionProcessor.Process``1(``0,System.Nullable{System.DateTime})">
+            <summary>
+            Run the given projection over the underlying event stream
+            </summary>
+            <param name="projectionToRun">
+            The projection to run
+            </param>
+            <param name="asOfDate">
+            If set, only run the projection up until this date/time
+            </param>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IProjectionSnapshotReader">
             <summary>
             Reader to load snapshots of a projection
@@ -5115,6 +5196,25 @@
             </param>
             <returns></returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:EventSourcingOnAzureFunctions.Common.Notification.QueueNotificationDispatcher.MakeMessageString(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity,System.String,System.String,System.Int32,System.Nullable{System.DateTime})" -->
+        <member name="M:EventSourcingOnAzureFunctions.Common.Notification.QueueNotificationDispatcher.MakeMessageString(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity,System.String,System.String,System.Int32,System.Nullable{System.DateTime})">
+            <summary>
+            Turn the properties passed in into a string to be sent via the queue
+            </summary>
+            <param name="targetEntity">
+            What the notification occured for
+            </param>
+            <param name="NotificationType">
+            The type of notification that occured 
+            </param>
+            <param name="asOfSequenceNumber">
+            The sequence number of the event stream for which this notification occured
+            </param>
+            <param name="asOfDate">
+            The as-of date of the event in the event stream for which this notification occured
+            </param>
+            <returns>
+            A notification message less than 64kb long as pipe-separated values
+            </returns>
+        </member>
     </members>
 </doc>
