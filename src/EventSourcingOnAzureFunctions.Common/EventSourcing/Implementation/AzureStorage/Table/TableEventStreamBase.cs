@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table
 {
     public abstract class TableEventStreamBase
-        : EventStreamBase, 
+        : AzureStorageEventStreamBase, 
         IEventStreamIdentity
     {
 
@@ -178,6 +178,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public TableEventStreamBase(IEventStreamIdentity identity,
             bool writeAccess = false,
             string connectionStringName = @"")
+            : base(identity.DomainName, writeAccess,connectionStringName )
         {
 
             _domainName = identity.DomainName;

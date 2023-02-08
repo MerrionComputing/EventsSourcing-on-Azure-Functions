@@ -12,6 +12,11 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         : EventStreamBase
     {
 
+        /// <summary>
+        /// The default folder where uncateggorised entities are stored
+        /// </summary>
+        public const string ORPHANS_FOLDER = "uncategorised";
+
         private readonly string _domainName;
         protected internal CloudStorageAccount _storageAccount;
 
@@ -83,6 +88,62 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
                     _storageAccount = CloudStorageAccount.Parse(connectionString);
                 }
             }
+        }
+
+
+
+        /// <summary>
+        /// Turn a name into a valid folder name for azure blob storage
+        /// </summary>
+        /// <param name="rawName">
+        /// The name of the thing we want to turn into a blob storage folder name
+        /// </param>
+        /// <returns>
+        /// A folder name that can be used to locate this object type's event streams
+        /// </returns>
+        /// <remarks>
+        /// Container names must start With a letter Or number, And can contain only letters, numbers, And the dash (-) character.
+        /// Every dash (-) character must be immediately preceded And followed by a letter Or number; consecutive dashes are Not permitted in container names.
+        /// All letters in a container name must be lowercase.
+        /// Container names must be from 3 through 63 characters long.
+        /// </remarks>
+        public static string MakeValidStorageFolderName(string rawName)
+        {
+
+            if (string.IsNullOrWhiteSpace(rawName))
+            {
+                return ORPHANS_FOLDER;
+            }
+
+
+            char[] invalidCharacters = @" _!,.;':@£$%^&*()+=/\#~{}[]?<>".ToCharArray();
+            string cleanName = string.Join('-', rawName.Split(invalidCharacters));
+
+            if (cleanName.StartsWith('-'))
+            {
+                cleanName = cleanName.TrimStart('-');
+            }
+
+            if (cleanName.EndsWith('-'))
+            {
+                cleanName = cleanName.TrimEnd('-');
+            }
+
+            if (cleanName.Length < 3)
+            {
+                cleanName += "-abc";
+            }
+
+            cleanName = cleanName.Replace("--", "-");
+
+            if (cleanName.Length > 63)
+            {
+                string uniqueId = cleanName.GetHashCode().ToString();
+                cleanName = cleanName.Substring(0, 63 - uniqueId.Length) + uniqueId;
+            }
+
+            return cleanName.ToLowerInvariant();
+
         }
     }
 }

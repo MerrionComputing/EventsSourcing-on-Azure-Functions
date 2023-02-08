@@ -65,13 +65,13 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
 
         /// <summary>
-        /// Creates an azure table storage based event stream reader for the given aggregate
+        /// Creates an azure file storage based event stream reader for the given aggregate
         /// </summary>
         /// <param name="identity">
         /// The unique identifier of the event stream to read
         /// </param>
         /// <param name="connectionStringName">
-        /// The name of the connection string to use to do the reading from the table
+        /// The name of the connection string to use to do the reading from the files
         /// </param>
         public static FileEventStreamReader Create(IEventStreamIdentity identity,
             string connectionStringName = @"")

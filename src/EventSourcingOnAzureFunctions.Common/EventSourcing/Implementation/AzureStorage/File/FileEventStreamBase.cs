@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File
 {
     public abstract class FileEventStreamBase
-        : EventStreamBase,
+        : AzureStorageEventStreamBase,
         IEventStreamIdentity
     {
 
@@ -52,6 +52,16 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             }
         }
 
+        /// <summary>
+        /// Does a stream already exist for this event stream identity
+        /// </summary>
+        /// <remarks>
+        /// We use the existence of the stream footer record as proof of stream existence
+        /// </remarks>
+        protected async internal Task<bool> StreamAlreadyExists()
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// The name of the default connection string to use for the domain
@@ -68,6 +78,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
         public FileEventStreamBase(IEventStreamIdentity identity,
             bool writeAccess = false,
             string connectionStringName = @"")
+            : base(identity.DomainName, writeAccess, connectionStringName)
         {
 
             _domainName = identity.DomainName;
@@ -84,5 +95,15 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
 
         }
 
+
+
+        public static string MakeEventFilename(string DomainName,
+            string EntityTypeName,
+            string InstanceKey,
+            int SequenceNumber = 0)
+        {
+            string foldername = MakeValidStorageFolderName(DomainName + "/" + EntityTypeName + "/" + InstanceKey);
+            return $"{foldername}.event.{SequenceNumber.ToString("0000000000")}";
+        }
     }
 }

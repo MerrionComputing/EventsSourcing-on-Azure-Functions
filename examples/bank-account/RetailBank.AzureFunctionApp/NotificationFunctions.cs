@@ -21,49 +21,5 @@ namespace RetailBank.AzureFunctionApp
     public static class NotificationFunctions
     {
 
-        /// <summary>
-        /// This event is triggered whenever a new bank account entity notification is sent via EventGrid,
-        /// and just adds a row to the "all-bank-accounts.txt" file
-        /// </summary>
-        [FunctionName("OnNewBankAccountNotification")]
-        public static void OnNewBankAccountNotification([EventGridTrigger()]EventGridEvent eventGridEvent,
-            [Blob("bank/reference-data/all-bank-accounts.txt", 
-            FileAccess.Write , 
-            Connection = "RetailBank")] TextWriter bankAccountList,
-            ILogger log)
-        {
-
-            #region Logging
-            if (null != log)
-            {
-                log.LogInformation("OnNewEntityNotification called");
-                if (null != eventGridEvent.Data)
-                {
-                    log.LogInformation(eventGridEvent.Data.ToString());
-                }
-            }
-            #endregion
-
-
-            if (null != eventGridEvent.Data)
-            {
-                NewEntityEventGridPayload payload = eventGridEvent.Data.ToObjectFromJson<NewEntityEventGridPayload>();
-                if (null != payload )
-                {
-                    // New bank account is uniquely identified by key
-                    string newAccountNumber = payload.InstanceKey;  
-                    if (! string.IsNullOrWhiteSpace(newAccountNumber ) )
-                    {
-                        bankAccountList.WriteLine(newAccountNumber);
-                        bankAccountList.Flush(); 
-                    }
-                }
-            }
-            else
-            {
-                throw new ArgumentException( "Event grid message has no data");
-            }
-
-        }
     }
 }

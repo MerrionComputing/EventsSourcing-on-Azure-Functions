@@ -6,6 +6,7 @@ using System.Reflection;
 using EventSourcingOnAzureFunctions.Common.Binding;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table;
+using EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File;
 using EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces;
 using Microsoft.Extensions.Configuration;
 
@@ -159,7 +160,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         {
             string connectionStringName = GetConnectionStringName(attribute); 
 
-            if (GetBackingImplementationType(attribute ).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATIOIN_TABLE , StringComparison.OrdinalIgnoreCase  )  )
+            if (GetBackingImplementationType(attribute ).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATION_TABLE , StringComparison.OrdinalIgnoreCase  )  )
             {
                 return new TableEventStreamWriter(attribute, connectionStringName: connectionStringName);
             }
@@ -175,9 +176,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         {
             string connectionStringName = GetConnectionStringName(attribute);
 
-            if (GetBackingImplementationType(attribute).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATIOIN_TABLE, StringComparison.OrdinalIgnoreCase))
+            if (GetBackingImplementationType(attribute).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATION_TABLE , StringComparison.OrdinalIgnoreCase))
             {
                 return TableEventStreamReader.CreateProjectionProcessor(attribute, connectionStringName: connectionStringName);
+            }
+
+            if (GetBackingImplementationType(attribute).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATION_FILE , StringComparison.OrdinalIgnoreCase))
+            {
+                return FileEventStreamReader.CreateProjectionProcessor(attribute, connectionStringName: connectionStringName);
             }
 
             // Default to AppendBlob
@@ -191,7 +197,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
         {
             string connectionStringName = GetConnectionStringName(attribute);
 
-            if (GetBackingImplementationType(attribute).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATIOIN_TABLE, StringComparison.OrdinalIgnoreCase))
+            if (GetBackingImplementationType(attribute).Equals(EventStreamSetting.EVENTSTREAMIMPLEMENTATION_TABLE, StringComparison.OrdinalIgnoreCase))
             {
                 return TableEventStreamReader.CreateClassificationProcessor(attribute, connectionStringName: connectionStringName);
             }
@@ -213,7 +219,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
     {
 
         public static string EVENTSTREAMIMPLEMENTATION_APPENDBLOB = @"AppendBlob";
-        public static string EVENTSTREAMIMPLEMENTATIOIN_TABLE = @"Table";
+        public static string EVENTSTREAMIMPLEMENTATION_TABLE = @"Table";
+        public static string EVENTSTREAMIMPLEMENTATION_FILE = @"File";
 
         /// <summary>
         /// The name of the type of entity that this event stream setting is for
@@ -243,8 +250,8 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
 
         public EventStreamSetting()
         {
-            // Default storage to append blob
-            Storage = EVENTSTREAMIMPLEMENTATION_APPENDBLOB;
+            // Default storage to Table
+            Storage = EVENTSTREAMIMPLEMENTATION_TABLE ;
         }
 
 
@@ -315,7 +322,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
             {
                 if (environmentStringValue.StartsWith("Table;")  )
                 {
-                    ret.Storage = EVENTSTREAMIMPLEMENTATIOIN_TABLE; 
+                    ret.Storage = EVENTSTREAMIMPLEMENTATION_TABLE; 
                     if (environmentStringValue.Length > @"Table;".Length  )
                     {
                         ret.ConnectionStringName = environmentStringValue.Substring(6);  
@@ -327,6 +334,14 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing
                     if (environmentStringValue.Length > @"AppendBlob;".Length)
                     {
                         ret.ConnectionStringName = environmentStringValue.Substring(11);
+                    }
+                }
+                if (environmentStringValue.StartsWith("File;"))
+                {
+                    ret.Storage = EVENTSTREAMIMPLEMENTATION_FILE;
+                    if (environmentStringValue.Length > @"File;".Length)
+                    {
+                        ret.ConnectionStringName = environmentStringValue.Substring(5);
                     }
                 }
             }

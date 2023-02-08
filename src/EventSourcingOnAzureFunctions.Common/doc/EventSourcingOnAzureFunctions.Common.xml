@@ -2860,11 +2860,6 @@
             The stream of data to read events from
             </param>
         </member>
-        <member name="F:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamBase.ORPHANS_FOLDER">
-            <summary>
-            The default folder where uncateggorised entities are stored
-            </summary>
-        </member>
         <member name="F:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamBase.EVENTSTREAM_FOLDER">
             <summary>
             The default subfolder where the event streams are stored
@@ -2909,23 +2904,6 @@
             </summary>
             <remarks>
             This is similar in concept to FileSystemInfo.Refresh
-            </remarks>
-        </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamBase.MakeValidStorageFolderName(System.String)">
-            <summary>
-            Turn a name into a valid folder name for azure blob storage
-            </summary>
-            <param name="rawName">
-            The name of the thing we want to turn into a blob storage folder name
-            </param>
-            <returns>
-            A folder name that can be used to locate this object type's event streams
-            </returns>
-            <remarks>
-            Container names must start With a letter Or number, And can contain only letters, numbers, And the dash (-) character.
-            Every dash (-) character must be immediately preceded And followed by a letter Or number; consecutive dashes are Not permitted in container names.
-            All letters in a container name must be lowercase.
-            Container names must be from 3 through 63 characters long.
             </remarks>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamReader.Create(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity,System.String)">
@@ -3000,6 +2978,11 @@
              Common functionality that both reader and writer use to access any event store based on Azure storage
             </summary>
         </member>
+        <member name="F:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AzureStorageEventStreamBase.ORPHANS_FOLDER">
+            <summary>
+            The default folder where uncateggorised entities are stored
+            </summary>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AzureStorageEventStreamBase.DomainName">
             <summary>
             The domain name in which this event stream is residing
@@ -3014,6 +2997,23 @@
             <summary>
             The name of the default connection string to use for the domain
             </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AzureStorageEventStreamBase.MakeValidStorageFolderName(System.String)">
+            <summary>
+            Turn a name into a valid folder name for azure blob storage
+            </summary>
+            <param name="rawName">
+            The name of the thing we want to turn into a blob storage folder name
+            </param>
+            <returns>
+            A folder name that can be used to locate this object type's event streams
+            </returns>
+            <remarks>
+            Container names must start With a letter Or number, And can contain only letters, numbers, And the dash (-) character.
+            Every dash (-) character must be immediately preceded And followed by a letter Or number; consecutive dashes are Not permitted in container names.
+            All letters in a container name must be lowercase.
+            Container names must be from 3 through 63 characters long.
+            </remarks>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Blob.BlobSnapshotBase.MakeSnapshotFilename(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.ISnapshot)">
             <summary>
@@ -3056,6 +3056,26 @@
             Writer to save projection snapshots in an Azure storage blob
             </summary>
         </member>
+        <member name="T:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEntityIndexCardRecord">
+            <summary>
+            An index card record that is used to tell when a given entity came into being
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEntityIndexCardRecord.DomainName">
+            <summary>
+            The domain in which this event stream is set
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEntityIndexCardRecord.EntityTypeName">
+            <summary>
+            The type of entity for which this event stream pertains
+            </summary>
+        </member>
+        <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEntityIndexCardRecord.InstanceKey">
+            <summary>
+            The specific uniquely identitified instance of the entity to which this event stream pertains
+            </summary>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamBase.DomainName">
             <summary>
             The domain in which this event stream is set
@@ -3071,6 +3091,14 @@
             The specific uniquely identitified instance of the entity to which this event stream pertains
             </summary>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamBase.StreamAlreadyExists">
+            <summary>
+            Does a stream already exist for this event stream identity
+            </summary>
+            <remarks>
+            We use the existence of the stream footer record as proof of stream existence
+            </remarks>
+        </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamBase.StorageConnectionStringSettingName">
             <summary>
             The name of the default connection string to use for the domain
@@ -3078,13 +3106,29 @@
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamReader.Create(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity,System.String)">
             <summary>
-            Creates an azure table storage based event stream reader for the given aggregate
+            Creates an azure file storage based event stream reader for the given aggregate
             </summary>
             <param name="identity">
             The unique identifier of the event stream to read
             </param>
             <param name="connectionStringName">
-            The name of the connection string to use to do the reading from the table
+            The name of the connection string to use to do the reading from the files
+            </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamWriter.DeleteStream">
+            <summary>
+            Delete all the files for a given event stream
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamWriter.#ctor(EventSourcingOnAzureFunctions.Common.EventSourcing.Interfaces.IEventStreamIdentity,System.String)">
+            <summary>
+            Constructor to create a n Azure files backed writer for a given event stream
+            </summary>
+            <param name="identity">
+            The identity of the entity for which to create an event stream writer
+            </param>
+            <param name="connectionStringName">
+            (Optional) The name of the connection string to use to access the azure storage
             </param>
         </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableClassificationRecord.DomainName">
@@ -3490,6 +3534,30 @@
             </summary>
             <param name="parameterName">
             The name of the parameter to find
+            </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.ClassificationProcessor.#ctor(EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.AppendBlob.BlobEventStreamReader)">
+            <summary>
+            Create a classification processor that works over streams based on an append blob
+            </summary>
+            <param name="blobEventStreamReader">
+            The reader that reads events from an append blob
+            </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.ClassificationProcessor.#ctor(EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.Table.TableEventStreamReader)">
+            <summary>
+            Create a classification processor that works over streams based on an Azure table
+            </summary>
+            <param name="tableEventStreamReader">
+            The reader that reads events from an Azure table
+            </param>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.ClassificationProcessor.#ctor(EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.AzureStorage.File.FileEventStreamReader)">
+            <summary>
+            Create a classification processor that works over streams based on Azure files
+            </summary>
+            <param name="fileEventStreamReader">
+            The reader that reads events from Azure files
             </param>
         </member>
         <member name="P:EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.EventInstance.EventTypeName">

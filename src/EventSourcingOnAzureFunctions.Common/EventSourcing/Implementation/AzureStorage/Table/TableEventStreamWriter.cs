@@ -43,7 +43,7 @@ namespace EventSourcingOnAzureFunctions.Common.EventSourcing.Implementation.Azur
             if (streamConstraint != EventStreamExistenceConstraint.Loose )
             {
                 // find out if the stream exists
-                bool exists = await StreamAlreadyExists();
+                bool exists = await this.StreamAlreadyExists();
                 if (streamConstraint== EventStreamExistenceConstraint.MustExist )
                 {
                     if (! exists )
