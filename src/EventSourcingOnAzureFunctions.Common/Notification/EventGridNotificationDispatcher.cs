@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using EventSourcingOnAzureFunctions.Common.EventSourcing;
 using Azure.Messaging.EventGrid;
+using System.Globalization;
 
 namespace EventSourcingOnAzureFunctions.Common.Notification
 {
@@ -589,60 +590,31 @@ namespace EventSourcingOnAzureFunctions.Common.Notification
         /// <remarks>
         /// See https://www.w3.org/TR/trace-context/#examples-of-http-traceparent-headers
         /// </remarks>
-        public static string MakeTraceParent(string correlationIdentifier, string causationIdentifier)
+        public static string MakeTraceParent(int correlationIdentifier, int causationIdentifier)
         {
 
             string version = "00";
             string traceFlags = "00"; //not sampled
+            string correlation = @"00000000000000000000000000000000";
+            string causation = @"0000000000000000";
 
-            if (! string.IsNullOrWhiteSpace(correlationIdentifier ) )
+            if (correlationIdentifier  > 0)
             {
                 // turn it into an 16-byte array of lowercase hex
-                correlationIdentifier = StringToByteArray(16, correlationIdentifier);
-            }
-            else
-            {
-                correlationIdentifier = @"00000000000000000000000000000000";
+                correlation = correlationIdentifier.ToString("X16");
             }
 
-            if (! string.IsNullOrWhiteSpace(causationIdentifier ) )
+            if ( causationIdentifier > 0 )
             {
                 // turn it into an 8-byte array of lowercase hex
-                causationIdentifier = StringToByteArray(8, causationIdentifier);
+                causation = causationIdentifier.ToString("X8");
             }
-            else
-            {
-                causationIdentifier = @"0000000000000000";
-            }
+
 
             // If not able to make a header, return a "null" one
-            return $"{version}-{correlationIdentifier}-{causationIdentifier}-{traceFlags}";
+            return $"{version}-{correlation}-{causation}-{traceFlags}";
         }
 
 
-        /// <summary>
-        /// Turn a string into a byte array to make a correlation/causation ID useful for W3C tracing
-        /// </summary>
-        /// <param name="length">
-        /// The length of array we need
-        /// </param>
-        /// <param name="input">
-        /// The source string we are turning into an array
-        /// </param>
-        public static string StringToByteArray(int length, string input)
-        {
-            if (length <= 0)
-            {
-                throw new ArgumentException("Length must be greater than zero"); 
-            }
-
-            if (! string.IsNullOrWhiteSpace(input ) )
-            {
-
-            }
-
-            return new string('0', length);
-            
-        }
     }
 }

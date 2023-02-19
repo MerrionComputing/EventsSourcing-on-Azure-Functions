@@ -174,7 +174,7 @@ namespace RetailBank.AzureFunctionApp
         /// </param>
         [FunctionName("GetBalance")]
         public static async Task<HttpResponseMessage> GetBalanceRun(
-          [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetBalance/{accountnumber}/{asOfDate?}" )]HttpRequestMessage req,
+          [HttpTrigger(AuthorizationLevel.Anonymous , "GET", Route = @"GetBalance/{accountnumber}/{asOfDate?}" )]HttpRequestMessage req,
           string accountnumber,
           string asOfDate,
           [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
@@ -273,7 +273,7 @@ namespace RetailBank.AzureFunctionApp
         /// </param>
         [FunctionName("DepositMoney")]
         public static async Task<HttpResponseMessage> DepositMoneyRun(
-              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"DepositMoney/{accountnumber}")]HttpRequestMessage req,
+              [HttpTrigger(AuthorizationLevel.Anonymous , "POST", Route = @"DepositMoney/{accountnumber}")]HttpRequestMessage req,
               string accountnumber,
               [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
         {
@@ -339,7 +339,7 @@ namespace RetailBank.AzureFunctionApp
         /// <returns></returns>
         [FunctionName("WithdrawMoney")]
         public static async Task<HttpResponseMessage> WithdrawMoneyRun(
-              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"WithdrawMoney/{accountnumber}")]HttpRequestMessage req,
+              [HttpTrigger(AuthorizationLevel.Anonymous , "POST", Route = @"WithdrawMoney/{accountnumber}")]HttpRequestMessage req,
               string accountnumber,
               [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
               [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance,
@@ -459,7 +459,7 @@ namespace RetailBank.AzureFunctionApp
         /// <returns></returns>
         [FunctionName("SetBeneficialOwner") ]
         public static async Task<HttpResponseMessage> SetBeneficialOwnerRun(
-              [HttpTrigger(AuthorizationLevel.Function, "POST", Route = "SetBeneficialOwner/{accountnumber}/{ownername}")]HttpRequestMessage req,
+              [HttpTrigger(AuthorizationLevel.Anonymous , "POST", Route = "SetBeneficialOwner/{accountnumber}/{ownername}")]HttpRequestMessage req,
               string accountnumber,
               string ownername,
               [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents)
@@ -503,7 +503,7 @@ namespace RetailBank.AzureFunctionApp
         #region Get all account numbers
         [FunctionName("GetAllAccounts")]
         public static async Task<HttpResponseMessage> GetAllAccountsRun(
-  [HttpTrigger(AuthorizationLevel.Function, "GET", Route = @"GetAllAccounts/{asOfDate?}")]HttpRequestMessage req,
+  [HttpTrigger(AuthorizationLevel.Anonymous , "GET", Route = @"GetAllAccounts/{asOfDate?}")]HttpRequestMessage req,
    string asOfDate,
   [Classification("Bank", "Account", "ALL", nameof(InterestAccruedToday))] Classification clsAllAccounts)
         {
@@ -539,7 +539,7 @@ namespace RetailBank.AzureFunctionApp
         /// </summary>
         [FunctionName("SetOverdraftLimit")]
         public static async Task<HttpResponseMessage> SetOverdraftLimitRun(
-          [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"SetOverdraftLimit/{accountnumber}")]HttpRequestMessage req,
+          [HttpTrigger(AuthorizationLevel.Anonymous , "POST", Route = @"SetOverdraftLimit/{accountnumber}")]HttpRequestMessage req,
           string accountnumber,
           [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
           [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance)
@@ -635,7 +635,7 @@ namespace RetailBank.AzureFunctionApp
         /// </summary>
         [FunctionName("AccrueInterest")]
         public static async Task<HttpResponseMessage> AccrueInterestRun(
-          [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"AccrueInterest/{accountnumber}")]HttpRequestMessage req,
+          [HttpTrigger(AuthorizationLevel.Anonymous, "POST", Route = @"AccrueInterest/{accountnumber}")]HttpRequestMessage req,
           string accountnumber,
           [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
           [Projection("Bank", "Account", "{accountnumber}", nameof(Balance))] Projection prjBankAccountBalance,
@@ -736,7 +736,7 @@ namespace RetailBank.AzureFunctionApp
         /// </summary>
         [FunctionName("PayInterest")]
         public static async Task<HttpResponseMessage> PayInterestRun(
-          [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"PayInterest/{accountnumber}")]HttpRequestMessage req,
+          [HttpTrigger(AuthorizationLevel.Anonymous , "POST", Route = @"PayInterest/{accountnumber}")]HttpRequestMessage req,
           string accountnumber,
           [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
           [Projection("Bank", "Account", "{accountnumber}", nameof(InterestDue ))] Projection prjInterestDue,
@@ -841,7 +841,7 @@ namespace RetailBank.AzureFunctionApp
         /// </remarks>
         [FunctionName("ExtendOverdraftForInterest")]
         public static async Task<HttpResponseMessage> ExtendOverdraftForInterestRun(
-          [HttpTrigger(AuthorizationLevel.Function, "POST", Route = @"ExtendOverdraftForInterest/{accountnumber}")]HttpRequestMessage req,
+          [HttpTrigger(AuthorizationLevel.Anonymous , "POST", Route = @"ExtendOverdraftForInterest/{accountnumber}")]HttpRequestMessage req,
           string accountnumber,
           [EventStream("Bank", "Account", "{accountnumber}")]  EventStream bankAccountEvents,
           [Projection("Bank", "Account", "{accountnumber}", nameof(InterestDue))] Projection prjInterestDue,
@@ -896,7 +896,7 @@ namespace RetailBank.AzureFunctionApp
                     }
                 }
 
-                // Not needed
+                // In not needed
                 return req.CreateResponse<ProjectionFunctionResponse>(System.Net.HttpStatusCode.OK,
                 ProjectionFunctionResponse.CreateResponse(startTime,
                 false,

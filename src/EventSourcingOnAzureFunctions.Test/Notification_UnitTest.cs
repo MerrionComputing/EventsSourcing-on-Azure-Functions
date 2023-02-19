@@ -56,18 +56,31 @@ namespace EventSourcingOnAzureFunctions.Test
         }
 
 
-        //StringToByteArray
+        //Make trace parent
         [TestMethod]
-        public void StringToByteArray_Empty_TestMethod()
+        public void MakeTraceParent_Empty_TestMethod()
         {
 
             string expected = "00-00000000000000000000000000000000-0000000000000000-00";
             string actual = "Not set";
 
-            actual = EventGridNotificationDispatcher.MakeTraceParent("", "");
+            actual = EventGridNotificationDispatcher.MakeTraceParent(0,0);
 
             Assert.AreEqual(expected, actual);
             
+        }
+
+        [TestMethod]
+        public void MakeTraceParent_NotEmpty_TestMethod()
+        {
+
+            string expected = "00-00000000000000000000000000000000-0000000000000000-00";
+            string actual = "Not set";
+
+            actual = EventGridNotificationDispatcher.MakeTraceParent(408, 216);
+
+            Assert.AreNotEqual(expected, actual);
+
         }
     }
 }

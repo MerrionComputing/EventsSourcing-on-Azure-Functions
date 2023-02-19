@@ -4894,7 +4894,7 @@
             The original subject part with dot separators
             </param>
         </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.Notification.EventGridNotificationDispatcher.MakeTraceParent(System.String,System.String)">
+        <member name="M:EventSourcingOnAzureFunctions.Common.Notification.EventGridNotificationDispatcher.MakeTraceParent(System.Int32,System.Int32)">
             <summary>
             Make a string that can be passed to the W3C Trace header as a trace parent
             </summary>
@@ -4907,17 +4907,6 @@
             <remarks>
             See https://www.w3.org/TR/trace-context/#examples-of-http-traceparent-headers
             </remarks>
-        </member>
-        <member name="M:EventSourcingOnAzureFunctions.Common.Notification.EventGridNotificationDispatcher.StringToByteArray(System.Int32,System.String)">
-            <summary>
-            Turn a string into a byte array to make a correlation/causation ID useful for W3C tracing
-            </summary>
-            <param name="length">
-            The length of array we need
-            </param>
-            <param name="input">
-            The source string we are turning into an array
-            </param>
         </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Notification.INotificationDispatcher">
             <summary>
