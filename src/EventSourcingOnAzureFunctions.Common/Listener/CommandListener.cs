@@ -24,15 +24,19 @@ namespace EventSourcingOnAzureFunctions.Common.Listener
         /// <summary>
         /// Create a new command listener for the given event instance
         /// </summary>
-        public CommandListener(ITriggeredFunctionExecutor executor, CommandStepTriggerAttribute stepTriggerAttribute )
+        public CommandListener(ITriggeredFunctionExecutor executor, 
+            CommandStepTriggerAttribute stepTriggerAttribute )
             : base(executor )
         {
             _stepTriggerAttribute = stepTriggerAttribute;
         }
 
+        /// <summary>
+        /// Cancel this command listener
+        /// </summary>
         public void Cancel()
         {
-            throw new NotImplementedException();
+            this.StopAsync(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>

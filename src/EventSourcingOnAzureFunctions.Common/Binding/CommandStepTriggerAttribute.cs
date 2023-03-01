@@ -50,5 +50,26 @@ namespace EventSourcingOnAzureFunctions.Common.Binding
                 return _commandStepName;
             }
         }
+
+        /// <summary>
+        /// Mark a function to be triggered for a given command step
+        /// </summary>
+        /// <param name="DomainName">
+        /// The name of the business domain this command is executed in
+        /// </param>
+        /// <param name="CommandName">
+        /// The name of the command to execute
+        /// </param>
+        /// <param name="StepName">
+        /// The name of the step to execute
+        /// </param>
+        public CommandStepTriggerAttribute(string DomainName,
+            string CommandName,
+            string StepName)
+        {
+            _domainName = DomainName;
+            _commandName = CommandName;
+            _commandStepName = StepName;
+        }
     }
 }

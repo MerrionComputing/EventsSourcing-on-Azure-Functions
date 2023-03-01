@@ -23,7 +23,8 @@ namespace EventSourcingOnAzureFunctions.Common.Listener
         /// <summary>
         /// Create a new query event listener for the given query instance
         /// </summary>
-        public QueryListener(ITriggeredFunctionExecutor executor, QueryTriggerAttribute queryTrigger)
+        public QueryListener(ITriggeredFunctionExecutor executor,
+            QueryTriggerAttribute queryTrigger)
             : base(executor)
         {
             _queryTrigger = queryTrigger;
@@ -39,9 +40,12 @@ namespace EventSourcingOnAzureFunctions.Common.Listener
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Cancel this query listener
+        /// </summary>
         public void Cancel()
         {
-            throw new NotImplementedException();
+            this.StopAsync(CancellationToken.None).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>

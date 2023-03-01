@@ -9,6 +9,14 @@ using System.Threading.Tasks;
 
 namespace EventSourcingOnAzureFunctions.Common.Listener
 {
+    /// <summary>
+    /// A listener to fire off an Azure function whenever a matching event is written to the 
+    /// event stream
+    /// </summary>
+    /// <remarks>
+    /// This will only trigger functions in the same function app - all intra domain communtication
+    /// should be performed by Azure EventGrid
+    /// </remarks>
     public sealed class EventTriggerListener
         : ListenerWorker, IListener
     {

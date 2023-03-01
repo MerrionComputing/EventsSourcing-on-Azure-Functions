@@ -124,6 +124,20 @@
             The name of the specific step of this command
             </summary>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Binding.CommandStepTriggerAttribute.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Mark a function to be triggered for a given command step
+            </summary>
+            <param name="DomainName">
+            The name of the business domain this command is executed in
+            </param>
+            <param name="CommandName">
+            The name of the command to execute
+            </param>
+            <param name="StepName">
+            The name of the step to execute
+            </param>
+        </member>
         <member name="T:EventSourcingOnAzureFunctions.Common.Binding.CommandStepTriggerAttributeBindingProvider">
             <summary>
             The provider to bind a NewEntityAttribute to the parameter/function triggered 
@@ -4373,6 +4387,11 @@
             Create a new command listener for the given event instance
             </summary>
         </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.CommandListener.Cancel">
+            <summary>
+            Cancel this command listener
+            </summary>
+        </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.Listener.CommandListener.Dispose">
             <summary>
             If this listener uses disposable objects then the IDisposable interface will need to be fully implemented
@@ -4509,6 +4528,11 @@
         <member name="M:EventSourcingOnAzureFunctions.Common.Listener.QueryListener.#ctor(Microsoft.Azure.WebJobs.Host.Executors.ITriggeredFunctionExecutor,EventSourcingOnAzureFunctions.Common.Binding.QueryTriggerAttribute)">
             <summary>
             Create a new query event listener for the given query instance
+            </summary>
+        </member>
+        <member name="M:EventSourcingOnAzureFunctions.Common.Listener.QueryListener.Cancel">
+            <summary>
+            Cancel this query listener
             </summary>
         </member>
         <member name="M:EventSourcingOnAzureFunctions.Common.Listener.QueryListener.Dispose">
